@@ -1,0 +1,10 @@
+assets/external/
+.states
+*.py[cod]
+.web
+*.db
+.venv/
+__pycache__/
+*.pyc
+.web/
+.last_build_failed

@@ -1,0 +1,9 @@
+[project]
+name = "web"
+version = "0.1.0"
+description = "cv web app (Reflex) - standard main.py entry point"
+requires-python = ">=3.13"
+dependencies = ["reflex>=0.7", "httpx"]
+
+[tool.uv]
+package = false
