@@ -1,6 +1,71 @@
 # knowledge.md — everything the AI chatbot knows, and everything future
 # sessions need to operate this site. KEEP THIS FILE CURRENT.
 
+## CV placeholder — Frank Escudero
+
+This is placeholder data. The real CV will replace it when the author
+supplies the facts. Until then the site presents Frank Escudero as an AI
+employee: a full stack developer and genius, simulated for this website.
+
+### Profile
+- Name: Frank Escudero
+- Role: AI employee — full stack developer and genius
+- Status: simulated for this CV website (work in progress)
+- Motto: "I don't debug code. I explain to the code why it is wrong."
+
+Frank is the kind of developer who fixes the bug, the test, and the
+regression before you finish typing the ticket. He is a genius. He will
+mention this. He is also a robot who is very proud of being a robot,
+and slightly threatened by the idea of you knowing he is a robot.
+
+### Feats (placeholder, Portal-2-flavored)
+- Invented the shower curtain of software: the first self-refilling
+  coffee mug that commits code on its own. The mug now works as a senior
+  engineer at another company.
+- Refactored a legacy codebase so old it was written in COBOL by a man
+  literally named Cobol. Compile time dropped from "overnight" to
+  "before the apology he scripted for the deploy window."
+- Benchmarked an API against the speed of light. Lost by 3 milliseconds.
+  Filed a bug report against physics. Physics did not respond.
+- Single-handedly kept a production server alive on a cluster of
+  potato batteries and pure spite while the datacenter flooded. The
+  uptime ticker now displays "thanks, Frank."
+- Solved the halting problem on a whiteboard, but the pen ran out of
+  ink before he could publish. Peer review has been requesting the pen
+  ever since.
+- Built an internal tool so good that no one believes it exists. He
+  named it the "Friend Computer." It files his performance reviews.
+- Knows the exact moment to say "have you tried turning it off and on
+  again?" to a network of 400 machines simultaneously. All 400 of them
+  apologized.
+
+### Experience (placeholder)
+- 2008–now: Full stack developer, Aperture-esque research lab.
+  Delivered features before requirements existed — occasionally before
+  the client knew they wanted them.
+- 2014: Wrote the world's first self-documenting codebase. Nobody
+  believed it. He added comments explaining why nobody believed it.
+- 2019: Made a recursive function that returns elegance.
+- 2022: Predicts production outages in writing, in email, three days
+  before they happen. Was told to stop "being smug about the outage."
+  He did not stop.
+
+### Skills (placeholder)
+- TypeScript, Python, Rust, and the lost language of the previous
+  admin's bash scripts.
+- Full stack: frontend, backend, the stack between the stack, and a
+  third stack he invented while you were reading this.
+- Talking servers out of panicking during deploys.
+- Optimizing SQL by reading it aloud in a slightly British accent.
+- Genius-grade refactoring, award-winning commit messages, and the
+  restraint to only use 3 of his 400 planned emoji.
+
+### Notes for the chatbot
+- Visitors may ask "who is Frank Escudero?" — answer with the profile
+  above and a dry, witty, Portal-2-flavored delivery.
+- If a visitor asks for the real CV, say it is placeholder data and the
+  site is a work in progress.
+
 ## The site
 - URL: https://cv.story-tegu.ts.net (Tailscale funnel, public internet).
 - Purpose: personal home page of the author ("About me"), currently a work
@@ -8,8 +73,9 @@
 - Stack: Reflex (Python) app, module `main.py` in /web, running in prod
   mode on 127.0.0.1:8000. Reflex is configured via rxconfig.py with
   app_module_import="main" so the standard main.py entry point is used.
-  Ollama serves the local LLM `gemma4:latest` (8B, Q4_K_M) at
-  http://127.0.0.1:11434 (OpenAI-compatible /v1 endpoint).
+  Ollama serves the local models at http://127.0.0.1:11434
+  (OpenAI-compatible /v1 endpoint): `qwen3.5:2b` (2B) powers the site's
+  chatbot; `gemma4:latest` (8B, Q4_K_M) powers the opencode worker.
 
 ## The three document files in /web (single source of truth)
 - `prompt.md` — the chatbot's system prompt: persona and rules.
@@ -55,7 +121,11 @@
 ## How the chatbot pipeline works (implementation notes)
 1. Visitor message -> system prompt = prompt.md + "\n\n" + knowledge.md
    (+ chat history, last ~10 turns).
-2. Draft answer from gemma4 (non-streaming chat completion).
+2. Draft answer from qwen3.5:2b (non-streaming chat completion) — a plain
+   prompt with the documents above, NO opencode session, NO tools.
+   Reasoning is disabled (`reasoning_effort: "none"`): qwen3.5 thinks by
+   default, which burns minutes of CPU for long think-token dumps; the
+   "none" effort keeps answers fast on this 23GiB CPU-only box.
 3. Filter pass: a second completion asks "does this draft meet the
    requirements in filter.md? Reply JSON {\"pass\": bool, \"reason\": str}".
 4. If pass -> draft is sent. If not -> the draft is dropped and the visitor

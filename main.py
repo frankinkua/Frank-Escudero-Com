@@ -10,7 +10,7 @@ import reflex as rx
 logger = logging.getLogger("web")
 WEB = pathlib.Path("/web")
 OLLAMA_URL = "http://127.0.0.1:11434"
-OLLAMA_MODEL = "gemma4:latest"
+OLLAMA_MODEL = "qwen3.5:2b"
 FALLBACK = (
     "I couldn't formulate a reliable answer right now. "
     "The site is still a work in progress - ask again later."
@@ -56,7 +56,12 @@ async def _ai_call(messages: list[dict[str, str]]) -> str:
     async with httpx.AsyncClient(base_url=OLLAMA_URL, timeout=httpx.Timeout(300.0)) as client:
         resp = await client.post(
             "/v1/chat/completions",
-            json={"model": OLLAMA_MODEL, "messages": messages, "temperature": 0.4},
+            json={
+                "model": OLLAMA_MODEL,
+                "messages": messages,
+                "temperature": 0.4,
+                "reasoning_effort": "none",
+            },
         )
         resp.raise_for_status()
         return resp.json()["choices"][0]["message"]["content"].strip()
