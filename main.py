@@ -88,6 +88,9 @@ class State(rx.State):
     question: str = ""
     busy: bool = False
 
+    def set_question(self, value: str):
+        self.question = value
+
     async def handle_submit(self):
         q = self.question.strip()
         if not q or self.busy:
@@ -131,8 +134,8 @@ def chat_message(item: dict[str, str]) -> rx.Component:
     is_user = item["role"] == "user"
     return rx.box(
         rx.text(item["content"]),
-        alignSelf="flex-end" if is_user else "flex-start",
-        background="#1f2937" if is_user else "#182032",
+        alignSelf=rx.cond(is_user, "flex-end", "flex-start"),
+        background=rx.cond(is_user, "#1f2937", "#182032"),
         color="#e8ecf4",
         border="1px solid #2f3b52",
         borderRadius="0.8rem",
