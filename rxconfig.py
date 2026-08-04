@@ -7,5 +7,6 @@ config = rx.Config(
     backend_port=8000,
     frontend_port=8000,
     telemetry_enabled=False,
+    show_built_with_reflex=False,
     disable_plugins=[SitemapPlugin],
 )
