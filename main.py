@@ -129,15 +129,17 @@ def countdown_label() -> str:
 def work_in_progress_banner() -> rx.Component:
     """Big 'work in progress' banner with a simple client-side 48h countdown."""
     js = (
-        "<script>(function(){"
-        "var end=new Date('" + COUNTDOWN_TARGET.isoformat() + "').getTime();"
-        "var el=document.getElementById('cd-countdown');"
-        "function fmt(ms){var n=Math.max(0,Math.floor(ms/1000));"
-        "var h=Math.floor(n/3600),m=Math.floor(n%3600/60),s=Math.floor(n%60);"
-        "return (n<=0?'00:00:00':h+'h '+('0'+m).slice(-2)+'m '+('0'+s).slice(-2)+'s');}"
-        "function tick(){if(!el)return;el.textContent=fmt(end-Date.now());"
-        "setTimeout(tick,1000);} tick();"
-        "})();</script>"
+        "if (!window.countdownStarted) {"
+        "  window.countdownStarted = true;"
+        "  var end=new Date('" + COUNTDOWN_TARGET.isoformat() + "').getTime();"
+        "  function fmt(ms){var n=Math.max(0,Math.floor(ms/1000));"
+        "  var h=Math.floor(n/3600),m=Math.floor(n%3600/60),s=Math.floor(n%60);"
+        "  return (n<=0?'00:00:00':h+'h '+('0'+m).slice(-2)+'m '+('0'+s).slice(-2)+'s');}"
+        "  setInterval(function(){"
+        "    var el=document.getElementById('cd-countdown');"
+        "    if(el) el.textContent=fmt(end-Date.now());"
+        "  },1000);"
+        "}"
     )
     return rx.hstack(
         rx.text("WORK IN PROGRESS", color="#fca5a5", fontWeight="700", fontSize="1.1rem"),
@@ -146,7 +148,7 @@ def work_in_progress_banner() -> rx.Component:
             f'<span id="cd-countdown" style="color:#4ade80;font-size:2rem;font-weight:700;'
             f'font-family:ui-monospace,Menlo,monospace;">Deployment in {countdown_label()}</span>'
         ),
-        rx.html(js),
+        rx.script(js),
         width="100%",
         background="#0f141f",
         border="1px solid #2a3247",
