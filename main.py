@@ -10,6 +10,7 @@ from datetime import datetime, timedelta, timezone
 import httpx
 import reflex as rx
 from openai import AsyncOpenAI
+from zoneinfo import ZoneInfo
 
 logger = logging.getLogger("web")
 WEB = pathlib.Path("/web")
@@ -56,6 +57,7 @@ BROWSER_INFO_JS = (
     "cores:navigator.hardwareConcurrency||0,"
     "mem:navigator.deviceMemory||0,"
     "online:navigator.onLine,"
+    "now:Date.now(),"
     "screen:screen.width+'x'+screen.height"
     "})"
 )
@@ -89,23 +91,131 @@ def detect_language(prefs: str) -> str:
 
 
 async def _geo_lookup(ip: str) -> dict[str, str]:
-    """Best-effort public IP -> country/city/region. Never raises."""
+    """Best-effort public IP -> country/countryCode/city/lat/lon/timezone. Never raises."""
     if not ip or ip in {"127.0.0.1", "::1"}:
         return {}
     try:
         async with httpx.AsyncClient(timeout=3.0) as c:
-            r = await c.get(f"http://ip-api.com/json/{ip}", params={"fields": "status,country,regionName,city,timezone"})
+            r = await c.get(
+                f"http://ip-api.com/json/{ip}",
+                params={"fields": "status,country,countryCode,regionName,city,lat,lon,timezone"},
+            )
             d = r.json()
         if d.get("status") == "success":
             return {
                 "country": d.get("country", ""),
+                "country_code": d.get("countryCode", ""),
                 "region": d.get("regionName", ""),
                 "city": d.get("city", ""),
+                "lat": d.get("lat", ""),
+                "lon": d.get("lon", ""),
                 "timezone": d.get("timezone", ""),
             }
     except Exception:  # noqa: BLE001
         pass
     return {}
+
+
+def _country_flag(country_code: str) -> str:
+    """ISO 3166-1 alpha-2 -> flag emoji (regional indicator symbols)."""
+    cc = (country_code or "").upper().strip()
+    if len(cc) != 2 or not cc.isalpha():
+        return ""
+    return chr(0x1F1E6 + ord(cc[0]) - ord("A")) + chr(0x1F1E6 + ord(cc[1]) - ord("A"))
+
+
+# Best-guess language -> flag emoji when the visitor's country is unknown.
+_LANG_FLAGS = {
+    "en": "🇬🇧", "de": "🇩🇪", "nl": "🇳🇱", "fr": "🇫🇷", "es": "🇪🇸", "pt": "🇵🇹",
+    "it": "🇮🇹", "pl": "🇵🇱", "ru": "🇷🇺", "tr": "🇹🇷", "sv": "🇸🇪", "no": "🇳🇴",
+    "da": "🇩🇰", "fi": "🇫🇮", "hu": "🇭🇺", "cs": "🇨🇿", "ro": "🇷🇴", "bg": "🇧🇬",
+    "uk": "🇺🇦", "el": "🇬🇷", "he": "🇮🇱", "ar": "🇸🇦", "fa": "🇮🇷", "hi": "🇮🇳",
+    "bn": "🇧🇩", "ja": "🇯🇵", "zh": "🇨🇳", "ko": "🇰🇷", "th": "🇹🇭", "vi": "🇻🇳",
+    "id": "🇮🇩", "ms": "🇲🇾", "ca": "🇦🇩", "hr": "🇭🇷", "sk": "🇸🇰", "sl": "🇸🇮",
+    "lt": "🇱🇹", "lv": "🇱🇻", "et": "🇪🇪", "is": "🇮🇸",
+}
+
+
+def _language_flag(lang: str) -> str:
+    """Spoken language name (e.g. 'German') -> flag emoji, best-effort."""
+    for code, name in _LANG_NAMES.items():
+        if name == lang:
+            return _LANG_FLAGS.get(code, "")
+    return ""
+
+
+# WMO weather codes -> (emoji, plain-word description).
+_WMO = {
+    0: ("☀️", "clear"),
+    1: ("🌤️", "mostly sunny"),
+    2: ("⛅", "partly cloudy"),
+    3: ("☁️", "overcast"),
+    45: ("🌫️", "foggy"),
+    48: ("🌫️", "icy fog"),
+    51: ("🌦️", "light drizzle"),
+    53: ("🌦️", "drizzle"),
+    55: ("🌧️", "heavy drizzle"),
+    56: ("🌧️", "freezing drizzle"),
+    57: ("🌧️", "freezing drizzle"),
+    61: ("🌦️", "light rain"),
+    63: ("🌧️", "rain"),
+    65: ("🌧️", "heavy rain"),
+    66: ("🌧️", "freezing rain"),
+    67: ("🌧️", "freezing rain"),
+    71: ("🌨️", "light snow"),
+    73: ("🌨️", "snow"),
+    75: ("❄️", "heavy snow"),
+    77: ("🌨️", "snow grains"),
+    80: ("🌦️", "light showers"),
+    81: ("🌧️", "showers"),
+    82: ("⛈️", "heavy showers"),
+    85: ("🌨️", "snow showers"),
+    86: ("🌨️", "heavy snow showers"),
+    95: ("⛈️", "thunderstorm"),
+    96: ("⛈️", "thunderstorm with hail"),
+    99: ("⛈️", "thunderstorm with hail"),
+}
+
+
+async def _weather_lookup(lat: str, lon: str) -> dict[str, str]:
+    """Best-effort current weather from open-meteo (no key). Never raises."""
+    if not lat or not lon:
+        return {}
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as c:
+            r = await c.get(
+                "https://api.open-meteo.com/v1/forecast",
+                params={
+                    "latitude": lat,
+                    "longitude": lon,
+                    "current_weather": "true",
+                    "timezone": "auto",
+                },
+            )
+            d = r.json()
+        cw = (d.get("current_weather") or {})
+        emoji, word = _WMO.get(cw.get("weathercode", -1), ("🌡️", "unknown"))
+        temp = cw.get("temperature")
+        return {
+            "emoji": emoji,
+            "word": word,
+            "temp": f"{temp:+.0f}°C" if isinstance(temp, (int, float)) else "",
+            "is_day": bool(cw.get("is_day", 1)),
+        }
+    except Exception:  # noqa: BLE001
+        pass
+    return {}
+
+
+def _time_of_day(hour: int) -> str:
+    """Map a local 0-23 hour to a greeting phrase (for the LLM's flavour)."""
+    if 5 <= hour < 12:
+        return "morning"
+    if 12 <= hour < 18:
+        return "afternoon"
+    if 18 <= hour < 22:
+        return "evening"
+    return "night"
 
 
 def _git(cmd: list[str]) -> str:
@@ -505,30 +615,74 @@ class State(rx.State):
             detail.append(f"likely country: {geo['country']}")
         logger.info("greeting: detail=%r", detail)
 
+        # Visitor's local time: derive from the browser-reported epoch ms and
+        # timezone so "good evening" matches where they actually are.
+        local_epoch_s = 0
+        try:
+            local_epoch_s = float(browser.get("now") or 0) / 1000.0
+        except (TypeError, ValueError):
+            pass
+        tz_name = browser.get("tz") or geo.get("timezone") or "UTC"
+        local_hour: int | None = None
+        try:
+            local_hour = datetime.fromtimestamp(local_epoch_s, ZoneInfo(tz_name)).hour
+        except Exception:  # noqa: BLE001
+            local_hour = None
+        logger.info("greeting: tz=%r local_hour=%r", tz_name, local_hour)
+        time_of_day = _time_of_day(local_hour) if local_hour is not None else ""
+
+        # Weather for their location (best-effort, open-meteo, no key).
+        weather = await _weather_lookup(geo.get("lat", ""), geo.get("lon", ""))
+        logger.info("greeting: weather=%r", weather)
+
+        # Flags: prefer country flag (precise, from the IP geo), fall back to
+        # the device-language flag.
+        country_flag = _country_flag(geo.get("country_code", ""))
+        lang_flag = _language_flag(lang)
+        flag = country_flag or lang_flag
+        location = ""
+        if geo.get("city") and geo.get("country"):
+            location = f"{geo['city']}, {geo['country']}"
+        elif geo.get("country"):
+            location = geo["country"]
+        logger.info("greeting: flag=%r country_flag=%r lang_flag=%r location=%r", flag, country_flag, lang_flag, location)
+
         self.messages.append({"role": "assistant", "content": ""})
         yield
         try:
             client = get_chat_client()
+            parts = [
+                read_doc("prompt.md"),
+                "\n\nKNOWLEDGE:\n",
+                read_doc("knowledge.md"),
+                "\n\nNow: you just detected a new visitor. Write a short ",
+                f"personal greeting for them in {lang} (the visitor's language - ",
+                f"EVERY word you write must be in {lang}, no exceptions). ",
+                "Make it warm and relevant.",
+            ]
+            if time_of_day:
+                parts.append(f" Their local time is {time_of_day}.")
+            if weather.get("word"):
+                parts.append(f" The weather there is {weather['word']} {weather['emoji']}.")
+            if location:
+                parts.append(f" They are in {location}.")
+            if flag:
+                parts.append(f" Their country flag is {flag}. Put that flag at the START of the greeting.")
+            parts.append(
+                " Craft the greeting around their local time and weather when available "
+                "(e.g. a rainy evening gets a rain emoji and a 'cozy' note). Include the "
+                "country/language flag emoji as the very first character. It must be 1-3 "
+                "sentences, feel natural, and END by asking the visitor who they are. Do "
+                "not mention IP addresses, tokens, or anything sensitive. "
+                f"Visitor details: {'; '.join(detail) or 'no browser details available'}."
+            )
+            system_content = "".join(parts)
             stream = await client.chat.completions.create(
                 model=CHAT_MODEL,
                 messages=[
                     {
                         "role": "system",
-                        "content": (
-                            read_doc("prompt.md")
-                            + "\n\nKNOWLEDGE:\n"
-                            + read_doc("knowledge.md")
-                            + "\n\nNow: you just detected a new visitor. Write a short "
-                            f"personal greeting for them in {lang} (the visitor's language - "
-                            f"EVERY word you write must be in {lang}, no exceptions). "
-                            "Make it warm and relevant. YOU MUST explicitly reference at "
-                            "least one of the visitor details given below (e.g. their device, "
-                            "screen, or region) so the greeting feels genuinely tailored. "
-                            "It must be 1-3 sentences, feel natural, and END by asking the "
-                            "visitor who they are. Do not mention IP addresses, tokens, or "
-                            "anything sensitive. "
-                            f"Visitor details: {'; '.join(detail) or 'no browser details available'}."
-                        ),
+                        "content": system_content,
                     },
                     {"role": "user", "content": "Greet me and ask who I am."},
                 ],
@@ -550,7 +704,8 @@ class State(rx.State):
             if not chunks:
                 self.messages[-1]["content"] = (
                     f"Hi! I'm Frank's assistant — welcome. I can tell you're in "
-                    f"{detail[0] if detail else 'a browser'} right now. Who are you?"
+                    f"{location or detail[0] if location or detail else 'a browser'} "
+                    f"right now. Who are you?"
                 )
         except Exception as exc:  # noqa: BLE001
             logger.exception("greeting generation failed")

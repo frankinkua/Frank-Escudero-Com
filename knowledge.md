@@ -33,7 +33,15 @@
 2. Draft answer from LM Studio `prism-ml/bonsai-27b` (streaming chat completion), reasoning disabled (`reasoning_effort: "none"`).
 3. Filter pass: a second completion checks the draft against filter.md and replies JSON {"pass": bool, "reason": str}.
 4. Pass -> draft sent to visitor. Fail -> polite fallback. Failures are logged.
-- On first visit the site also sends a personalized greeting: the browser's language/platform/timezone plus a public IP geolookup are used to greet the visitor in their own language and ask who they are.
+- On first visit the site also sends a personalized greeting: the browser's
+  language/platform/timezone + epoch ms (`Date.now()`) plus a public IP
+  geolookup are used to greet the visitor in their own language and ask who
+  they are. The greeting can include: the visitor's local time of day
+  (morning/afternoon/evening/night, from their timezone), current weather
+  (open-meteo, no key, via lat/lon from the IP lookup), their city/country,
+  and a country or language flag emoji. Location precision is city-level via
+  ip-api.com; a MaxMind GeoLite2 `.mmdb` is NOT installed (would need the
+  `geoip2` package + DB file for offline lookups).
 
 ## Conventions
 - `/web` is a git repo; generated dirs (.venv, .web, __pycache__) are gitignored. One commit per meaningful change.
