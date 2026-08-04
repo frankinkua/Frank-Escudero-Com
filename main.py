@@ -331,7 +331,7 @@ async def _ai_call(messages: list[dict[str, str]]) -> str:
     return resp.choices[0].message.content.strip()
 
 
-async def filter_draft(draft: str) -> tuple[bool, str]:
+async def filter_draft(question: str, draft: str) -> tuple[bool, str]:
     system = (
         "You are a strict quality filter. Apply the requirements below to the "
         'draft answer and reply with JSON only: {"pass": true} or '
@@ -340,7 +340,7 @@ async def filter_draft(draft: str) -> tuple[bool, str]:
     )
     messages = [
         {"role": "system", "content": system},
-        {"role": "user", "content": f"Draft answer to review:\n\n{draft}"},
+        {"role": "user", "content": f"Visitor question: {question}\n\nDraft answer to review:\n\n{draft}"},
     ]
     try:
         raw = await _ai_call(messages)
@@ -390,7 +390,7 @@ class State(rx.State):
                     self.messages[-1]["content"] = "".join(chunks)
                     yield
             draft = "".join(chunks).strip()
-            ok, reason = await filter_draft(draft)
+            ok, reason = await filter_draft(q, draft)
             if not ok:
                 logger.warning("answer filtered out: %s", reason)
             self.messages[-1]["content"] = draft if ok else FALLBACK
