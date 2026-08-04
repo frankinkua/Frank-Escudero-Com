@@ -110,6 +110,10 @@ Red lines (stop, fix, then commit): non-200 on `/`, "work in progress" count != 
 7. **No internet for pip.** Host has no outbound for `pip install`. If a dependency is missing, it must be vendored or already vendored under the venv.
 8. **Chat + worker share one LLM box.** LM Studio on frank's LAN at `http://192.168.178.120:1234/v1`, model `prism-ml/bonsai-27b` (reasoning, 256k ctx) powers both chat and the cron worker; keep it loaded in the box's VRAM. NVIDIA passthrough is a **host-side** task (you own the driver) — agents in this LXC must not touch `/dev/nvidia*`.
 9. **Edit the app, not the framework.** Anything that seems to require editing `site-packages/reflex/**` is an API misuse — work around it in `app/` or `main.py`. The box can't `pip install`.
+10. **Reflex suppresses INFO logs by default.** `logger.info(...)` from `main.py` never reached `/var/log/websiteserver.log` until we gave the `web` logger its own `StreamHandler(level=INFO)` (see top of `main.py`). To debug the greeting/chat pipeline, grep the log for `greeting:` / `chat backend` — but only after confirming INFO is enabled.
+11. **Never feed the raw timezone to the LLM.** Passed `timezone: Europe/Berlin` to a greeting prompt, and the model answered "you are in Berlin". Resolve the local time-of-day server-side and pass that instead; the model must not be handed a timezone string it can turn into a location.
+12. **Funnel visitors on the tailnet have no usable geo IP.** Socket shows `127.0.0.1`; tailnet clients come in as CGNAT `100.x` (can't be geolocated). Only public-IP visitors resolve to a city. The greeting degrades gracefully (`geo={}`) — that is by design.
+13. **The `updated` footer line = git commit date of `/web` HEAD** (via `app_updated()`), so it doubles as a "am I running the latest build?" check. It bumps only on a new commit, not on restart.
 
 ---
 
@@ -126,7 +130,7 @@ Red lines (stop, fix, then commit): non-200 on `/`, "work in progress" count != 
 v0.1.0 (<7-char git SHA>)        updated <UTC date>
 ```
 - `v0.1.0 (29c8ec7)` — version + short SHA of `/web` HEAD.
-- `updated 2026-08-04 11:39:51` — time `index()` rendered (UTC). It moves when the app restarts, which is why restarts must be intentional.
+- `updated 2026-08-04 23:08:28` — git commit date of `/web` HEAD (UTC, via `app_updated()`). It bumps only on a new commit, so it doubles as a "running the latest build?" indicator. See learning 13.
 
 ---
 

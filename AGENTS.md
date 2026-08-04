@@ -80,6 +80,18 @@ ps -ef | grep -E 'tailscaled.*no-logs-no-support' | grep -v grep || echo "FIX: t
 ```
 Never `reflex run` from a shell — that leaks children and leaves `:8000` half-bound, which is exactly what triggers the tailscaled log bomb (see below).
 
+## Greeting/chat debugging (time-saver #2)
+- The `web` logger has its own INFO StreamHandler (top of `main.py`); without it Reflex
+  suppresses INFO and you'll see nothing in `/var/log/websiteserver.log`. Grep for `greeting:`
+  / `chat backend` to trace the pipeline (raw browser JSON -> ip -> geo -> lang -> weather ->
+  chunks).
+- Funnel visitors on the tailnet resolve to a CGNAT `100.x` IP that ip-api.com can't geolocate
+  (`geo={}`) — that is expected, the greeting degrades gracefully. Do not "fix" it.
+- Never put the raw timezone string in a prompt handed to the LLM — the model repeats it as a
+  location ("Europe/Berlin" -> "you are in Berlin"). Pass only the resolved local time-of-day.
+- Windows browsers can't render flag emoji; when `platform` contains `Win`, the greeting omits
+  the flag and names the country/language in plain text instead.
+
 ## The log-bomb lesson (time-saver #1)
 - Symptom: `/var/lib/tailscale/tailscaled.log1.txt` swelled to 49 GB; disk fell to 0% free; Reflex restarts failed to bind `:8000`; Funnel returned 502.
 - Root cause: `tailscaled` logtail retried `dial 127.0.0.1:8000: connect: connection refused` recursively during a rebuild, while `tailscaled` was started **without** `--no-logs-no-support`.

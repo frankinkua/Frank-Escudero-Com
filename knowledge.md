@@ -47,6 +47,22 @@
   render flag emoji (regional-indicator chars show as letters), so the greeting
   must NOT start with a flag emoji when the platform is Windows - use the
   country/device language in plain text instead.
+- Greeting gotchas (learned the hard way):
+  - Behind the Tailscale Funnel the socket IP is `127.0.0.1`, and a visitor on
+    the tailnet shows up as a CGNAT `100.x` address that ip-api.com cannot
+    geolocate (`geo={}`). Only public-IP visitors (e.g. phone on LTE) resolve to
+    a city. The greeting must therefore degrade gracefully when geo is empty.
+  - NEVER hand the raw timezone string to the LLM: it repeats it as a location
+    (`timezone: Europe/Berlin` -> "you are in Berlin"). Only pass the resolved
+    local time-of-day ("their local time is evening"). City/country must come
+    exclusively from the IP geolocation.
+  - The `web` logger needs its own `StreamHandler(level=INFO)`: Reflex's default
+    config suppresses INFO, so `greeting:` diagnostics never reached
+    `/var/log/websiteserver.log`. Grep that file for `greeting:` to debug.
+  - Language detection: `str(x) for x in (a or b or c)` iterates the STRING
+    character-by-character (parens do not make a tuple) - pass the raw string.
+  - open-meteo has NO `/v1/astronomy` endpoint (returns 404); sunrise, sunset and
+    moon_phase all come from `/v1/forecast` with `daily=sunrise,sunset,moon_phase`.
 
 ## Conventions
 - `/web` is a git repo; generated dirs (.venv, .web, __pycache__) are gitignored. One commit per meaningful change.
