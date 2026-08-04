@@ -596,12 +596,8 @@ async def filter_draft(question: str, draft: str) -> tuple[bool, str]:
 
 class State(rx.State):
     messages: list[dict[str, str]] = []
-    question: str = ""
     busy: bool = False
     greeted: bool = False
-
-    def set_question(self, value: str):
-        self.question = value
 
     def probe_browser(self):
         """on_load hook: ask the client for its fingerprint, feed on_browser_info."""
@@ -793,12 +789,14 @@ class State(rx.State):
                 "Hi! I'm Frank's assistant. Ask me anything about Frank's CV. Who are you?"
             )
 
-    async def handle_submit(self):
-        q = self.question.strip()
+    async def handle_submit(self, form_data: dict):
+        # Read straight from the DOM's FormData at submit time (the input is
+        # uncontrolled) so Android GBoard autocomplete can't double characters
+        # by racing a server round-trip on every keystroke.
+        q = str(form_data.get("question") or "").strip()
         if not q or self.busy:
             return
         self.messages.append({"role": "user", "content": q})
-        self.question = ""
         self.busy = True
         self.messages.append({"role": "assistant", "content": ""})
         yield
@@ -883,11 +881,10 @@ def chat_panel() -> rx.Component:
             rx.hstack(
                 rx.el.input(
                     name="question",
-                    value=State.question,
-                    on_change=State.set_question,
                     placeholder="Ask something about this site...",
                     disabled=State.busy,
                     auto_complete="off",
+                    auto_capitalize="off",
                     style={
                         "flex": "1",
                         "background": "#0d1117",
@@ -911,6 +908,7 @@ def chat_panel() -> rx.Component:
             ),
             on_submit=State.handle_submit,
             auto_complete="off",
+            reset_on_submit=True,
             width="100%",
             marginTop="1rem",
         ),
