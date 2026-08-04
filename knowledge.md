@@ -41,7 +41,10 @@
   (open-meteo, no key, via lat/lon from the IP lookup), their city/country,
   and a country or language flag emoji. Location precision is city-level via
   ip-api.com; a MaxMind GeoLite2 `.mmdb` is NOT installed (would need the
-  `geoip2` package + DB file for offline lookups).
+  `geoip2` package + DB file for offline lookups). Windows system fonts do NOT
+  render flag emoji (regional-indicator chars show as letters), so the greeting
+  must NOT start with a flag emoji when the platform is Windows - use the
+  country/device language in plain text instead.
 
 ## Conventions
 - `/web` is a git repo; generated dirs (.venv, .web, __pycache__) are gitignored. One commit per meaningful change.

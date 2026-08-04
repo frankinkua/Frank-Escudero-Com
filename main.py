@@ -13,6 +13,11 @@ from openai import AsyncOpenAI
 from zoneinfo import ZoneInfo
 
 logger = logging.getLogger("web")
+logger.setLevel(logging.INFO)
+if not logger.handlers:
+    _console = logging.StreamHandler()
+    _console.setLevel(logging.INFO)
+    logger.addHandler(_console)
 WEB = pathlib.Path("/web")
 # Remote LM Studio OpenAI-compatible endpoint (self-hosted at frank's LAN).
 # Same box/model the cron worker uses; bonsai stays loaded in VRAM.
@@ -587,33 +592,14 @@ class State(rx.State):
         logger.info("greeting: geo=%r", geo)
 
         # Language: prefer the browser's reported language, then the header.
-        prefs = " ".join(
-            str(x) for x in (
-                browser.get("lang") or browser.get("langs") or header.accept_language
-            ) if x
+        prefs = (
+            browser.get("lang")
+            or browser.get("langs")
+            or header.accept_language
+            or ""
         )
         lang = detect_language(prefs) if prefs else "English"
         logger.info("greeting: lang=%r (prefs=%r, accept=%r)", lang, prefs, header.accept_language)
-
-        # Assemble the context we pass to the LLM.
-        detail: list[str] = []
-        if browser.get("platform"):
-            detail.append(f"platform: {browser['platform']}")
-        if browser.get("screen"):
-            detail.append(f"screen: {browser['screen']}")
-        if browser.get("cores"):
-            detail.append(f"cpu cores: {browser['cores']}")
-        if browser.get("mem"):
-            detail.append(f"memory: {browser['mem']} GiB")
-        if browser.get("online"):
-            detail.append("device: online")
-        if browser.get("tz"):
-            detail.append(f"timezone: {browser['tz']}")
-        if geo.get("city") and geo.get("country"):
-            detail.append(f"likely region: {geo['city']}, {geo['country']}")
-        elif geo.get("country"):
-            detail.append(f"likely country: {geo['country']}")
-        logger.info("greeting: detail=%r", detail)
 
         # Visitor's local time: derive from the browser-reported epoch ms and
         # timezone so "good evening" matches where they actually are.
@@ -631,6 +617,27 @@ class State(rx.State):
         logger.info("greeting: tz=%r local_hour=%r", tz_name, local_hour)
         time_of_day = _time_of_day(local_hour) if local_hour is not None else ""
 
+        # Assemble the context we pass to the LLM. The raw timezone string is
+        # deliberately NOT included: the model would repeat it as a location
+        # (e.g. "Europe/Berlin" -> "you're in Berlin"). Only the resolved
+        # local-time-of-day is mentioned.
+        detail: list[str] = []
+        if browser.get("platform"):
+            detail.append(f"platform: {browser['platform']}")
+        if browser.get("screen"):
+            detail.append(f"screen: {browser['screen']}")
+        if browser.get("cores"):
+            detail.append(f"cpu cores: {browser['cores']}")
+        if browser.get("mem"):
+            detail.append(f"memory: {browser['mem']} GiB")
+        if browser.get("online"):
+            detail.append("device: online")
+        if geo.get("city") and geo.get("country"):
+            detail.append(f"likely region: {geo['city']}, {geo['country']} (from IP geolocation)")
+        elif geo.get("country"):
+            detail.append(f"likely country: {geo['country']} (from IP geolocation)")
+        logger.info("greeting: detail=%r", detail)
+
         # Weather for their location (best-effort, open-meteo, no key).
         weather = await _weather_lookup(geo.get("lat", ""), geo.get("lon", ""))
         logger.info("greeting: weather=%r", weather)
@@ -640,12 +647,13 @@ class State(rx.State):
         country_flag = _country_flag(geo.get("country_code", ""))
         lang_flag = _language_flag(lang)
         flag = country_flag or lang_flag
+        is_windows = bool(browser.get("platform") and "Win" in browser["platform"])
         location = ""
         if geo.get("city") and geo.get("country"):
             location = f"{geo['city']}, {geo['country']}"
         elif geo.get("country"):
             location = geo["country"]
-        logger.info("greeting: flag=%r country_flag=%r lang_flag=%r location=%r", flag, country_flag, lang_flag, location)
+        logger.info("greeting: flag=%r country_flag=%r lang_flag=%r location=%r windows=%r", flag, country_flag, lang_flag, location, is_windows)
 
         self.messages.append({"role": "assistant", "content": ""})
         yield
@@ -666,13 +674,20 @@ class State(rx.State):
                 parts.append(f" The weather there is {weather['word']} {weather['emoji']}.")
             if location:
                 parts.append(f" They are in {location}.")
-            if flag:
+            if flag and not is_windows:
                 parts.append(f" Their country flag is {flag}. Put that flag at the START of the greeting.")
+            elif location:
+                parts.append(
+                    " Do NOT use flag emoji. Mention their country/region by name in "
+                    "plain text (Windows fonts cannot render flag emoji)."
+                )
             parts.append(
                 " Craft the greeting around their local time and weather when available "
-                "(e.g. a rainy evening gets a rain emoji and a 'cozy' note). Include the "
-                "country/language flag emoji as the very first character. It must be 1-3 "
-                "sentences, feel natural, and END by asking the visitor who they are. Do "
+                "(e.g. a rainy evening gets a rain emoji and a 'cozy' note). It must be "
+                "1-3 sentences, feel natural, and END by asking the visitor who they are. "
+                "Only name their city/country if the visitor details actually provide a "
+                "location. NEVER invent or guess a city from the timezone - if you are "
+                "not told where they are, greet them warmly without naming a place. Do "
                 "not mention IP addresses, tokens, or anything sensitive. "
                 f"Visitor details: {'; '.join(detail) or 'no browser details available'}."
             )
