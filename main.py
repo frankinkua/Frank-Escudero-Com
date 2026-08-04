@@ -182,10 +182,34 @@ _WMO = {
 }
 
 
+# Moon phase index -> (emoji, name). open-meteo reports 0=new .. 0.5=full .. 1=new.
+_MOON = [
+    ("🌑", "new moon"),
+    ("🌒", "waxing crescent"),
+    ("🌓", "first quarter"),
+    ("🌔", "waxing gibbous"),
+    ("🌕", "full moon"),
+    ("🌖", "waning gibbous"),
+    ("🌗", "last quarter"),
+    ("🌘", "waning crescent"),
+]
+
+
+def _moon_phase(phase: object) -> tuple[str, str]:
+    """open-meteo moon_phase (0..1) -> (emoji, name)."""
+    try:
+        p = float(phase)
+    except (TypeError, ValueError):
+        return "", ""
+    idx = round(p * 8) % 8
+    return _MOON[idx]
+
+
 async def _weather_lookup(lat: str, lon: str) -> dict[str, str]:
-    """Best-effort current weather from open-meteo (no key). Never raises."""
+    """Best-effort current weather + sun/moon times from open-meteo (no key). Never raises."""
     if not lat or not lon:
         return {}
+    out: dict[str, str] = {}
     try:
         async with httpx.AsyncClient(timeout=3.0) as c:
             r = await c.get(
@@ -201,15 +225,45 @@ async def _weather_lookup(lat: str, lon: str) -> dict[str, str]:
         cw = (d.get("current_weather") or {})
         emoji, word = _WMO.get(cw.get("weathercode", -1), ("🌡️", "unknown"))
         temp = cw.get("temperature")
-        return {
+        out.update({
             "emoji": emoji,
             "word": word,
             "temp": f"{temp:+.0f}°C" if isinstance(temp, (int, float)) else "",
             "is_day": bool(cw.get("is_day", 1)),
-        }
+        })
     except Exception:  # noqa: BLE001
         pass
-    return {}
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as c:
+            r = await c.get(
+                "https://api.open-meteo.com/v1/forecast",
+                params={
+                    "latitude": lat,
+                    "longitude": lon,
+                    "daily": "sunrise,sunset,moon_phase",
+                    "timezone": "auto",
+                    "forecast_days": "1",
+                },
+            )
+            d = r.json()
+        day = (d.get("daily") or {})
+        moon_emoji, moon_name = _moon_phase((day.get("moon_phase") or [None])[0])
+
+
+        def _clock(v: object) -> str:
+            """'2026-08-04T05:47' -> '05:47', else ''."""
+            s = str(v or "")
+            return s.split("T")[-1][:5] if "T" in s else s[:5]
+
+        out.update({
+            "sunrise": _clock((day.get("sunrise") or [""])[0]),
+            "sunset": _clock((day.get("sunset") or [""])[0]),
+            "moon": moon_name,
+            "moon_emoji": moon_emoji,
+        })
+    except Exception:  # noqa: BLE001
+        pass
+    return out
 
 
 def _time_of_day(hour: int) -> str:
@@ -672,6 +726,15 @@ class State(rx.State):
                 parts.append(f" Their local time is {time_of_day}.")
             if weather.get("word"):
                 parts.append(f" The weather there is {weather['word']} {weather['emoji']}.")
+            if weather.get("sunrise") and weather.get("sunset"):
+                parts.append(
+                    f" The sun there rises at {weather['sunrise']} and sets at "
+                    f"{weather['sunset']} local time."
+                )
+            if weather.get("moon"):
+                parts.append(
+                    f" The moon there is in its {weather['moon']} phase {weather['moon_emoji']}."
+                )
             if location:
                 parts.append(f" They are in {location}.")
             if flag and not is_windows:
@@ -682,11 +745,13 @@ class State(rx.State):
                     "plain text (Windows fonts cannot render flag emoji)."
                 )
             parts.append(
-                " Craft the greeting around their local time and weather when available "
-                "(e.g. a rainy evening gets a rain emoji and a 'cozy' note). It must be "
-                "1-3 sentences, feel natural, and END by asking the visitor who they are. "
-                "Only name their city/country if the visitor details actually provide a "
-                "location. NEVER invent or guess a city from the timezone - if you are "
+                " Craft the greeting around their local time, the sun cycle and the moon "
+                "when available (e.g. a rainy evening gets a rain emoji and a 'cozy' note; "
+                "at night, talk about the moon and when the sun will rise; during the day, "
+                "mention sunset). Never say the sun is out at night or vice versa. It must "
+                "be 1-3 sentences, feel natural, and END by asking the visitor who they "
+                "are. Only name their city/country if the visitor details actually provide "
+                "a location. NEVER invent or guess a city from the timezone - if you are "
                 "not told where they are, greet them warmly without naming a place. Do "
                 "not mention IP addresses, tokens, or anything sensitive. "
                 f"Visitor details: {'; '.join(detail) or 'no browser details available'}."

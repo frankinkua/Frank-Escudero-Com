@@ -39,6 +39,8 @@
   they are. The greeting can include: the visitor's local time of day
   (morning/afternoon/evening/night, from their timezone), current weather
   (open-meteo, no key, via lat/lon from the IP lookup), their city/country,
+  local sunrise/sunset times and the current moon phase (open-meteo
+  `/v1/forecast` with `daily=sunrise,sunset,moon_phase`),
   and a country or language flag emoji. Location precision is city-level via
   ip-api.com; a MaxMind GeoLite2 `.mmdb` is NOT installed (would need the
   `geoip2` package + DB file for offline lookups). Windows system fonts do NOT
