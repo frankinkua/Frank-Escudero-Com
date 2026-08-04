@@ -376,6 +376,14 @@ def worker_log_page() -> rx.Component:
     )
 
 
+def chat_scroll_js() -> str:
+    """JS that pins #chat-log to the bottom (called after message updates)."""
+    return (
+        "var el=document.getElementById('chat-log');"
+        "if(el)el.scrollTop=el.scrollHeight;"
+    )
+
+
 def _system_message() -> dict[str, str]:
     return {
         "role": "system",
@@ -439,16 +447,34 @@ class State(rx.State):
         if self.greeted:
             return
         self.greeted = True
+        logger.info("greeting: on_browser_info raw=%r", info)
 
         browser: dict[str, str] = {}
         try:
             browser = json.loads(info or "{}")
+            # Reflex may deliver the JS result double-JSON-encoded (a quoted
+            # string). Unwrap one layer so `browser` is a dict, not a string.
+            if isinstance(browser, str):
+                logger.info("greeting: info was double-encoded, unwrapping")
+                browser = json.loads(browser)
+            if not isinstance(browser, dict):
+                logger.info("greeting: info parsed to %r, resetting", type(browser).__name__)
+                browser = {}
         except Exception:  # noqa: BLE001
-            pass
+            logger.warning("greeting: failed to parse info, treating as empty", exc_info=True)
+        logger.info("greeting: browser=%r", browser)
 
         header = self.router.headers  # server-side, from the HTTP request
         ip = self.router.session.client_ip
-        geo = await _geo_lookup(ip)
+        # Behind the Tailscale Funnel the real client IP usually comes through
+        # x-forwarded-for (set by the funnel). Fall back to the socket IP.
+        # raw_headers preserves the original (likely hyphenated) header keys.
+        raw = getattr(header, "raw_headers", None) or {}
+        forwarded = raw.get("x-forwarded-for") or raw.get("X-Forwarded-For") or ""
+        real_ip = forwarded.partition(",")[0].strip() or ip
+        logger.info("greeting: ip=%r forwarded=%r -> real_ip=%r", ip, forwarded, real_ip)
+        geo = await _geo_lookup(real_ip)
+        logger.info("greeting: geo=%r", geo)
 
         # Language: prefer the browser's reported language, then the header.
         prefs = " ".join(
@@ -457,6 +483,7 @@ class State(rx.State):
             ) if x
         )
         lang = detect_language(prefs) if prefs else "English"
+        logger.info("greeting: lang=%r (prefs=%r, accept=%r)", lang, prefs, header.accept_language)
 
         # Assemble the context we pass to the LLM.
         detail: list[str] = []
@@ -466,12 +493,17 @@ class State(rx.State):
             detail.append(f"screen: {browser['screen']}")
         if browser.get("cores"):
             detail.append(f"cpu cores: {browser['cores']}")
+        if browser.get("mem"):
+            detail.append(f"memory: {browser['mem']} GiB")
+        if browser.get("online"):
+            detail.append("device: online")
         if browser.get("tz"):
             detail.append(f"timezone: {browser['tz']}")
         if geo.get("city") and geo.get("country"):
             detail.append(f"likely region: {geo['city']}, {geo['country']}")
         elif geo.get("country"):
             detail.append(f"likely country: {geo['country']}")
+        logger.info("greeting: detail=%r", detail)
 
         self.messages.append({"role": "assistant", "content": ""})
         yield
@@ -488,11 +520,13 @@ class State(rx.State):
                             + read_doc("knowledge.md")
                             + "\n\nNow: you just detected a new visitor. Write a short "
                             f"personal greeting for them in {lang} (the visitor's language - "
-                            f"EVERY word you write must be in {lang}, no exceptions). Make it "
-                            "warm and relevant using only the visitor details below. It must be "
-                            "1-3 sentences, feel natural, and END by asking the visitor who "
-                            "they are. Do not mention IP addresses, tokens, or anything "
-                            "sensitive. "
+                            f"EVERY word you write must be in {lang}, no exceptions). "
+                            "Make it warm and relevant. YOU MUST explicitly reference at "
+                            "least one of the visitor details given below (e.g. their device, "
+                            "screen, or region) so the greeting feels genuinely tailored. "
+                            "It must be 1-3 sentences, feel natural, and END by asking the "
+                            "visitor who they are. Do not mention IP addresses, tokens, or "
+                            "anything sensitive. "
                             f"Visitor details: {'; '.join(detail) or 'no browser details available'}."
                         ),
                     },
@@ -511,7 +545,8 @@ class State(rx.State):
                 if delta:
                     chunks.append(delta)
                     self.messages[-1]["content"] = "".join(chunks)
-                    yield
+                    yield rx.call_script(chat_scroll_js())
+            logger.info("greeting: chunks=%d text=%r", len(chunks), self.messages[-1]["content"])
             if not chunks:
                 self.messages[-1]["content"] = (
                     f"Hi! I'm Frank's assistant — welcome. I can tell you're in "
@@ -551,19 +586,20 @@ class State(rx.State):
                 if delta:
                     chunks.append(delta)
                     self.messages[-1]["content"] = "".join(chunks)
-                    yield
+                    yield rx.call_script(chat_scroll_js())
             draft = "".join(chunks).strip()
             ok, reason = await filter_draft(q, draft)
             if not ok:
                 logger.warning("answer filtered out: %s", reason)
             self.messages[-1]["content"] = draft if ok else FALLBACK
+            yield rx.call_script(chat_scroll_js())
         except Exception as exc:  # noqa: BLE001
             logger.exception("chat backend failure")
             self.messages[-1]["content"] = (
                 f"(chat backend error: {exc.__class__.__name__})"
             )
         self.busy = False
-        yield
+        yield rx.call_script(chat_scroll_js())
 
 
 def banner() -> rx.Component | None:
@@ -602,6 +638,7 @@ def chat_panel() -> rx.Component:
         rx.heading("Ask the site", size="2", color="#e8ecf4", marginBottom="1rem"),
         rx.vstack(
             rx.foreach(State.messages, chat_message),
+            id="chat-log",
             spacing="3",
             width="100%",
             overflowY="auto",
@@ -615,6 +652,7 @@ def chat_panel() -> rx.Component:
                     on_change=State.set_question,
                     placeholder="Ask something about this site...",
                     disabled=State.busy,
+                    auto_complete="off",
                     style={
                         "flex": "1",
                         "background": "#0d1117",
@@ -637,6 +675,7 @@ def chat_panel() -> rx.Component:
                 width="100%",
             ),
             on_submit=State.handle_submit,
+            auto_complete="off",
             width="100%",
             marginTop="1rem",
         ),
