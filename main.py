@@ -9,11 +9,25 @@ from datetime import datetime, timedelta, timezone
 
 import httpx
 import reflex as rx
+from openai import AsyncOpenAI
 
 logger = logging.getLogger("web")
 WEB = pathlib.Path("/web")
-OLLAMA_URL = "http://127.0.0.1:11434"
-OLLAMA_MODEL = "qwen3.5:0.8b"
+# Remote LM Studio OpenAI-compatible endpoint (self-hosted at frank's LAN).
+# NOTE: this is an external service; revoke/invalidate the key if it leaks.
+CHAT_URL = "http://192.168.178.120:1235/v1"
+CHAT_API_KEY = "lm-studio"  # LM Studio gate; keep as placeholder token
+CHAT_MODEL = "nvidia/nemotron-3-nano-4b"
+chat_client: AsyncOpenAI | None = None
+
+
+def get_chat_client() -> AsyncOpenAI:
+    global chat_client
+    if chat_client is None:
+        chat_client = AsyncOpenAI(
+            base_url=CHAT_URL, api_key=CHAT_API_KEY, timeout=httpx.Timeout(300.0)
+        )
+    return chat_client
 FALLBACK = (
     "I couldn't formulate a reliable answer right now. "
     "The site is still a work in progress - ask again later."
@@ -41,12 +55,12 @@ def _git(cmd: list[str]) -> str:
 
 
 def app_version() -> str:
-    """Short deploy version: APP_VERSION env, else 'v0.1.0 (+gitSHA)'."""
+    """Short deploy version: APP_VERSION env, else '0.1.0 (<7-char git SHA>)' (no leading v)."""
     env_v = os.environ.get("APP_VERSION", "").strip()
     if env_v:
-        return env_v
+        return env_v.lstrip("v")
     sha = _git(["git", "rev-parse", "--short", "HEAD"])
-    return f"v0.1.0 ({sha})" if sha else "v0.1.0"
+    return f"0.1.0 ({sha})" if sha else "0.1.0"
 
 
 def app_updated() -> str:
@@ -80,6 +94,13 @@ def page_footer() -> rx.Component:
         ),
         rx.text(
             f"updated {UPDATED_LABEL}",
+            fontSize="0.75rem",
+            color="#64748b",
+            fontFamily="ui-monospace, Menlo, monospace",
+        ),
+        rx.link(
+            "worker log",
+            href="/worker-log",
             fontSize="0.75rem",
             color="#64748b",
             fontFamily="ui-monospace, Menlo, monospace",
@@ -181,6 +202,115 @@ def build_failed_marker() -> str | None:
     return None
 
 
+WORKER_LOG = pathlib.Path("/var/log/opencode-worker.log")
+
+
+def worker_run_summary() -> list[dict[str, str]]:
+    """Parse per-run lines out of the worker log into a reverse-chron summary."""
+    try:
+        lines = WORKER_LOG.read_text(errors="replace").splitlines()
+    except OSError:
+        return []
+    runs: dict[int, dict[str, str]] = {}
+    order: list[int] = []
+    for ln in lines:
+        marker = " worker: run "
+        if marker not in ln:
+            continue
+        try:
+            pre, rest = ln.split(marker, 1)
+            num, _, tail = rest.partition(" ")
+            n = int(num)
+            ts = pre.strip()
+        except (ValueError, IndexError):
+            continue
+        if n not in runs:
+            runs[n] = {"run": num, "ts": ts, "start": tail, "end": "", "rc": "", "status": ""}
+            order.append(n)
+        d = runs[n]
+        if tail.startswith("start"):
+            d["start"] = tail[len("start"):].strip().strip("()")
+            d["ts"] = ts
+        elif tail.startswith("done"):
+            d["end"] = ts
+            d["status"] = tail[len("done"):].strip()
+        elif tail.startswith("committed"):
+            d["status"] = d["status"] or "committed"
+        elif tail.startswith("SITE DOWN"):
+            d["status"] = "SITE DOWN (rolled back)"
+        elif tail.startswith("finished"):
+            d["status"] = d["status"] or "finished"
+    return [runs[n] for n in reversed(order)]
+
+
+def worker_log_tail(lines: int = 60) -> str:
+    try:
+        return "\n".join(WORKER_LOG.read_text(errors="replace").splitlines()[-lines:])
+    except OSError:
+        return "(no worker log yet)"
+
+
+def worker_log_page() -> rx.Component:
+    runs = worker_run_summary()
+    summary = [
+        rx.text("No worker runs logged yet.", color=MUTED)
+        if not runs
+        else rx.vstack(
+            *[
+                rx.box(
+                    rx.hstack(
+                        rx.text(f"run {d['run']}", color=ACCENT, fontWeight="600"),
+                        rx.text(d["ts"], color=MUTED, fontSize="0.8rem"),
+                        justify="between",
+                        width="100%",
+                    ),
+                    rx.text(d.get("start", ""), color="#c9d2e3", fontSize="0.85rem"),
+                    rx.text(
+                        f"{d.get('end', '-')}  {d.get('status', '')}",
+                        color=MUTED,
+                        fontSize="0.8rem",
+                    ),
+                    background="#131826",
+                    border="1px solid #2a3247",
+                    borderRadius="0.5rem",
+                    padding="0.7rem 0.9rem",
+                    width="100%",
+                )
+                for d in runs
+            ],
+            spacing="2",
+            width="100%",
+        ),
+    ]
+    return rx.center(
+        rx.vstack(
+            rx.heading("worker log", size="4", color="#e8ecf4"),
+            rx.link("Back to main", href="/", color=ACCENT, fontSize="0.85rem"),
+            rx.text("per-run summary (most recent first)", color=MUTED, fontSize="0.8rem"),
+            *summary,
+            rx.text("raw tail", color=MUTED, fontSize="0.8rem"),
+            rx.box(
+                rx.text(worker_log_tail(), whiteSpace="pre-wrap", color="#c9d2e3", fontSize="0.75rem"),
+                background="#0d1117",
+                border="1px solid #2a3247",
+                borderRadius="0.5rem",
+                padding="0.7rem 0.9rem",
+                width="100%",
+                overflowX="auto",
+            ),
+            page_footer(),
+            spacing="4",
+            width="min(860px, 92vw)",
+            padding="2.5rem 1rem",
+            align="center",
+        ),
+        width="100%",
+        minHeight="100vh",
+        background=BG,
+        fontFamily="ui-monospace, Menlo, monospace",
+    )
+
+
 def _system_message() -> dict[str, str]:
     return {
         "role": "system",
@@ -189,18 +319,16 @@ def _system_message() -> dict[str, str]:
 
 
 async def _ai_call(messages: list[dict[str, str]]) -> str:
-    async with httpx.AsyncClient(base_url=OLLAMA_URL, timeout=httpx.Timeout(300.0)) as client:
-        resp = await client.post(
-            "/v1/chat/completions",
-            json={
-                "model": OLLAMA_MODEL,
-                "messages": messages,
-                "temperature": 0.4,
-                "reasoning_effort": "none",
-            },
-        )
-        resp.raise_for_status()
-        return resp.json()["choices"][0]["message"]["content"].strip()
+    """Full (non-streamed) completion via the remote LM Studio endpoint."""
+    client = get_chat_client()
+    resp = await client.chat.completions.create(
+        model=CHAT_MODEL,
+        messages=messages,
+        temperature=0.4,
+        reasoning_effort="none",
+        max_tokens=2048,
+    )
+    return resp.choices[0].message.content.strip()
 
 
 async def filter_draft(draft: str) -> tuple[bool, str]:
@@ -239,18 +367,38 @@ class State(rx.State):
         self.messages.append({"role": "user", "content": q})
         self.question = ""
         self.busy = True
+        self.messages.append({"role": "assistant", "content": ""})
         yield
         try:
-            history = [_system_message(), *self.messages[-10:]]
-            draft = await _ai_call(history)
+            history = [_system_message(), *self.messages[:-1][-10:]]
+            client = get_chat_client()
+            stream = await client.chat.completions.create(
+                model=CHAT_MODEL,
+                messages=history,
+                temperature=0.4,
+                reasoning_effort="none",
+                max_tokens=2048,
+                stream=True,
+            )
+            chunks: list[str] = []
+            async for event in stream:
+                if not event.choices:
+                    continue
+                delta = event.choices[0].delta.content or ""
+                if delta:
+                    chunks.append(delta)
+                    self.messages[-1]["content"] = "".join(chunks)
+                    yield
+            draft = "".join(chunks).strip()
             ok, reason = await filter_draft(draft)
             if not ok:
                 logger.warning("answer filtered out: %s", reason)
-            reply = draft if ok else FALLBACK
+            self.messages[-1]["content"] = draft if ok else FALLBACK
         except Exception as exc:  # noqa: BLE001
             logger.exception("chat backend failure")
-            reply = f"(chat backend error: {exc.__class__.__name__})"
-        self.messages.append({"role": "assistant", "content": reply})
+            self.messages[-1]["content"] = (
+                f"(chat backend error: {exc.__class__.__name__})"
+            )
         self.busy = False
         yield
 
@@ -338,14 +486,14 @@ def index() -> rx.Component:
     return rx.center(
         rx.vstack(
             rx.hstack(
-                rx.heading("work in progress", size="5", color="#e8ecf4"),
+                rx.heading("Agentic Generated Self-Hosted AI Webserver", size="5", color="#e8ecf4"),
                 rx.link("timeline", href="/timeline", color=MUTED, fontSize="0.8rem"),
                 width="min(720px, 92vw)",
                 justify="between",
                 alignItems="center",
             ),
             work_in_progress_banner(),
-            rx.text("this is a work in progress...", color=ACCENT),
+            rx.text("a zero-trust CV site built and maintained by Frank.", color=ACCENT),
             banner(),
             chat_panel(),
             rx.hstack(
@@ -428,3 +576,4 @@ app.add_page(cv, route="/cv", title="CV — Frank Escudero")
 app.add_page(deploy, route="/deploy", title="Deployment — Frank Escudero CV")
 app.add_page(stack, route="/stack", title="Tech stack — Frank Escudero CV")
 app.add_page(timeline, route="/timeline", title="Timeline — Frank Escudero CV")
+app.add_page(worker_log_page, route="/worker-log", title="Worker log — Frank Escudero CV")
