@@ -45,6 +45,68 @@ CARD = {
 ACCENT = "#4ade80"
 MUTED = "#66708a"
 
+# Client-side probe: run once per page load, JSON-encodes what the browser
+# tells us so the server can personalise the greeting. Fires via rx.call_script.
+BROWSER_INFO_JS = (
+    "JSON.stringify({"
+    "lang:navigator.language||'',"
+    "langs:(navigator.languages||[]).join(','),"
+    "tz:(Intl.DateTimeFormat().resolvedOptions().timeZone)||'',"
+    "platform:navigator.platform||'',"
+    "cores:navigator.hardwareConcurrency||0,"
+    "mem:navigator.deviceMemory||0,"
+    "online:navigator.onLine,"
+    "screen:screen.width+'x'+screen.height"
+    "})"
+)
+
+# Maps an IETF language tag (en-US, de, fr, nl, es...) to a spoken English name
+# so the LLM can address the visitor in the right language even when the tag
+# is ambiguous. Best-effort; unknown tags fall back to the raw code.
+_LANG_NAMES = {
+    "en": "English", "de": "German", "nl": "Dutch", "fr": "French",
+    "es": "Spanish", "pt": "Portuguese", "it": "Italian", "pl": "Polish",
+    "ru": "Russian", "tr": "Turkish", "sv": "Swedish", "no": "Norwegian",
+    "da": "Danish", "fi": "Finnish", "hu": "Hungarian", "cs": "Czech",
+    "ro": "Romanian", "bg": "Bulgarian", "uk": "Ukrainian", "el": "Greek",
+    "he": "Hebrew", "ar": "Arabic", "fa": "Persian", "hi": "Hindi",
+    "bn": "Bengali", "ja": "Japanese", "zh": "Chinese", "ko": "Korean",
+    "th": "Thai", "vi": "Vietnamese", "id": "Indonesian", "ms": "Malay",
+    "ca": "Catalan", "hr": "Croatian", "sk": "Slovak", "sl": "Slovenian",
+    "lt": "Lithuanian", "lv": "Latvian", "et": "Estonian", "is": "Icelandic",
+}
+
+
+def detect_language(prefs: str) -> str:
+    """Pick the visitor's best language from an Accept-Language string."""
+    for part in prefs.split(","):
+        tag = part.split(";")[0].strip().lower()
+        if not tag or tag == "*":
+            continue
+        base = tag.split("-")[0]
+        return _LANG_NAMES.get(base, base)
+    return "English"
+
+
+async def _geo_lookup(ip: str) -> dict[str, str]:
+    """Best-effort public IP -> country/city/region. Never raises."""
+    if not ip or ip in {"127.0.0.1", "::1"}:
+        return {}
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as c:
+            r = await c.get(f"http://ip-api.com/json/{ip}", params={"fields": "status,country,regionName,city,timezone"})
+            d = r.json()
+        if d.get("status") == "success":
+            return {
+                "country": d.get("country", ""),
+                "region": d.get("regionName", ""),
+                "city": d.get("city", ""),
+                "timezone": d.get("timezone", ""),
+            }
+    except Exception:  # noqa: BLE001
+        pass
+    return {}
+
 
 def _git(cmd: list[str]) -> str:
     try:
@@ -359,9 +421,107 @@ class State(rx.State):
     messages: list[dict[str, str]] = []
     question: str = ""
     busy: bool = False
+    greeted: bool = False
 
     def set_question(self, value: str):
         self.question = value
+
+    def probe_browser(self):
+        """on_load hook: ask the client for its fingerprint, feed on_browser_info."""
+        return rx.call_script(BROWSER_INFO_JS, callback=State.on_browser_info)
+
+    async def on_browser_info(self, info: str):
+        """First event: browser fingerprint from the client -> personal greeting.
+
+        Runs on page load (via on_load -> rx.call_script callback). Guarded by
+        `greeted` so navigating back to `/` doesn't greet twice per session.
+        """
+        if self.greeted:
+            return
+        self.greeted = True
+
+        browser: dict[str, str] = {}
+        try:
+            browser = json.loads(info or "{}")
+        except Exception:  # noqa: BLE001
+            pass
+
+        header = self.router.headers  # server-side, from the HTTP request
+        ip = self.router.session.client_ip
+        geo = await _geo_lookup(ip)
+
+        # Language: prefer the browser's reported language, then the header.
+        prefs = " ".join(
+            str(x) for x in (
+                browser.get("lang") or browser.get("langs") or header.accept_language
+            ) if x
+        )
+        lang = detect_language(prefs) if prefs else "English"
+
+        # Assemble the context we pass to the LLM.
+        detail: list[str] = []
+        if browser.get("platform"):
+            detail.append(f"platform: {browser['platform']}")
+        if browser.get("screen"):
+            detail.append(f"screen: {browser['screen']}")
+        if browser.get("cores"):
+            detail.append(f"cpu cores: {browser['cores']}")
+        if browser.get("tz"):
+            detail.append(f"timezone: {browser['tz']}")
+        if geo.get("city") and geo.get("country"):
+            detail.append(f"likely region: {geo['city']}, {geo['country']}")
+        elif geo.get("country"):
+            detail.append(f"likely country: {geo['country']}")
+
+        self.messages.append({"role": "assistant", "content": ""})
+        yield
+        try:
+            client = get_chat_client()
+            stream = await client.chat.completions.create(
+                model=CHAT_MODEL,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            read_doc("prompt.md")
+                            + "\n\nKNOWLEDGE:\n"
+                            + read_doc("knowledge.md")
+                            + "\n\nNow: you just detected a new visitor. Write a short "
+                            f"personal greeting for them in {lang} (the visitor's language - "
+                            f"EVERY word you write must be in {lang}, no exceptions). Make it "
+                            "warm and relevant using only the visitor details below. It must be "
+                            "1-3 sentences, feel natural, and END by asking the visitor who "
+                            "they are. Do not mention IP addresses, tokens, or anything "
+                            "sensitive. "
+                            f"Visitor details: {'; '.join(detail) or 'no browser details available'}."
+                        ),
+                    },
+                    {"role": "user", "content": "Greet me and ask who I am."},
+                ],
+                temperature=0.7,
+                reasoning_effort="none",
+                max_tokens=300,
+                stream=True,
+            )
+            chunks: list[str] = []
+            async for event in stream:
+                if not event.choices:
+                    continue
+                delta = event.choices[0].delta.content or ""
+                if delta:
+                    chunks.append(delta)
+                    self.messages[-1]["content"] = "".join(chunks)
+                    yield
+            if not chunks:
+                self.messages[-1]["content"] = (
+                    f"Hi! I'm Frank's assistant — welcome. I can tell you're in "
+                    f"{detail[0] if detail else 'a browser'} right now. Who are you?"
+                )
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("greeting generation failed")
+            self.messages[-1]["content"] = (
+                "Hi! I'm Frank's assistant. Ask me anything about Frank's CV. Who are you?"
+            )
 
     async def handle_submit(self):
         q = self.question.strip()
@@ -573,7 +733,7 @@ app = rx.App(
         rx.el.meta(name="description", content="Frank Escudero CV - zero-trust, self-hosted, AI-updated virtual employee."),
     ],
 )
-app.add_page(index, route="/", title="Frank Escudero — virtual-employee CV")
+app.add_page(index, route="/", title="Frank Escudero — virtual-employee CV", on_load=State.probe_browser)
 app.add_page(about, route="/about", title="About — Frank Escudero")
 app.add_page(cv, route="/cv", title="CV — Frank Escudero")
 app.add_page(deploy, route="/deploy", title="Deployment — Frank Escudero CV")
