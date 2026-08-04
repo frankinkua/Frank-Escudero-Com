@@ -18,8 +18,7 @@
 - Site: **`https://cv.story-tegu.ts.net`** (Tailscale Funnel `/` -> `127.0.0.1:8000`).
 - Stack: Reflex 0.9.7, Python 3.13, `uv`, `--env prod`, `backend_port=8000`, `frontend_port=8000`.
 - Host: systemd-less Debian 13 LXC (`cv`), PID 1 = `bash`; **boot = `/root/.bashrc`**.
-- On-cpu only. **`qwen3.5:0.8b`** for chat (`ollama`). `gemma4` not running. **NVIDIA passthrough is pending host-side driver install** — do not start `gemma4`, do not touch `/dev/nvidia*`, do not expect `chats` to be fast.
-- `openai` SDK talks to **local** `ollama`-compatible `CHAT_URL="http://127.0.0.1:11434/v1"`, `CHAT_MODEL="qwen3.5:0.8b"`. Do not rewrite to a remote endpoint unless you own that endpoint.
+- Chat + cron worker both use **LM Studio** on frank's LAN: `CHAT_URL="http://192.168.178.120:1234/v1"`, `CHAT_MODEL="prism-ml/bonsai-27b"` (a reasoning model, 256k ctx, loaded in the box's VRAM). This is a remote endpoint — do not rewrite it to local ollama, and never touch `/dev/nvidia*` here (no GPU passthrough in this LXC).
 - Release target is **2026-08-05 16:00 UTC** (a fixed deployment date). The countdown is **client-side JS seeded from `COUNTDOWN_TARGET`** in `main.py` — do not "fix" it to match server time; the target itself is correct as a fixed milestone.
 - "work in progress" text appears **exactly once** on `/` (the banner). That is an invariant.
 
@@ -36,7 +35,7 @@
   `rx.App(head_components=[rx.el.link(rel="icon", href=<data-uri>)])`.
 - `<title>` + `<meta description>` live in `head_components`/`rx.App`. Do not duplicate per page unless the title genuinely differs.
 - `rx.Html(...)` content is SSR-rendered *and* client-rendered. If a snippet needs the browser, wrap it in `if (typeof document !== 'undefined')` (see the theme script pattern already in `index()`).
-- Chat: `filter_draft(question, draft)` rejects a draft ONLY on clear safety/security leaks (see `/web/filter.md`). Grounded on-topic answers pass by default. Keep `CHAT_MODEL` small.
+- Chat: `filter_draft(question, draft)` rejects a draft ONLY on clear safety/security leaks (see `/web/filter.md`). Grounded on-topic answers pass by default.
 
 ## How to test (do this before every commit)
 ### A. Syntax + import (instant, offline)

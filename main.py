@@ -14,10 +14,11 @@ from openai import AsyncOpenAI
 logger = logging.getLogger("web")
 WEB = pathlib.Path("/web")
 # Remote LM Studio OpenAI-compatible endpoint (self-hosted at frank's LAN).
+# Same box/model the cron worker uses; bonsai stays loaded in VRAM.
 # NOTE: this is an external service; revoke/invalidate the key if it leaks.
-CHAT_URL = "http://192.168.178.120:1235/v1"
+CHAT_URL = "http://192.168.178.120:1234/v1"
 CHAT_API_KEY = "lm-studio"  # LM Studio gate; keep as placeholder token
-CHAT_MODEL = "nvidia/nemotron-3-nano-4b"
+CHAT_MODEL = "prism-ml/bonsai-27b"
 chat_client: AsyncOpenAI | None = None
 
 

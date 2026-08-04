@@ -108,16 +108,15 @@ Red lines (stop, fix, then commit): non-200 on `/`, "work in progress" count != 
 5. **Never `reflex run` from a shell.** Always use `/etc/init.d/websiteserver restart`. Ad-hoc `reflex run` leaks children and half-binds `:8000`, which is the exact condition that triggers the tailscaled log bomb (see 6).
 6. **The 49 GB log bomb, root-caused.** `tailscaled` logtail retried `dial 127.0.0.1:8000: connect: connection refused` recursively during a rebuild, while tailscaled was running without `--no-logs-no-support`. Result: `tailscaled.log1.txt` hit 49 GB, disk to 0%, builds failed, Funnel 502. Fixed in `start-rdp-server.sh` via `--no-logs-no-support` + `2>/dev/null`; log1 now sits at 0 B. If `ps -ef | grep tailscaled` lacks that flag, re-apply it immediately.
 7. **No internet for pip.** Host has no outbound for `pip install`. If a dependency is missing, it must be vendored or already vendored under the venv.
-8. **GPU is pending.** `qwen3.5:0.8b` (on-cpu, via ollama at `CHAT_URL=http://127.0.0.1:11434/v1`) powers chat. `gemma4` is not running; NVIDIA passthrough is a host-side task (you own the driver). Agents: do not touch `/dev/nvidia*` or try to start `gemma4`.
+8. **Chat + worker share one LLM box.** LM Studio on frank's LAN at `http://192.168.178.120:1234/v1`, model `prism-ml/bonsai-27b` (reasoning, 256k ctx) powers both chat and the cron worker; keep it loaded in the box's VRAM. NVIDIA passthrough is a **host-side** task (you own the driver) — agents in this LXC must not touch `/dev/nvidia*`.
 9. **Edit the app, not the framework.** Anything that seems to require editing `site-packages/reflex/**` is an API misuse — work around it in `app/` or `main.py`. The box can't `pip install`.
 
 ---
 
 ## Chat (Ask the site)
-- Backend: **local** ollama-compatible `http://127.0.0.1:11434/v1`, model `qwen3.5:0.8b` (small/on-cpu → expect chatty but slow).
+- Backend: **remote** LM Studio `http://192.168.178.120:1234/v1`, model `prism-ml/bonsai-27b` (reasoning, kept loaded in VRAM). Same endpoint the cron worker uses.
 - SDK: `openai` (`AsyncOpenAI`). Streaming into the assistant message.
 - Safety gate: `filter_draft(question, draft)` rejects ONLY on clear safety/security leaks; grounded on-topic answers pass. Rules in `/web/filter.md` (brief: no secrets leaked, no hostile rewrites of the CV).
-- Keep the model small; on-cpu `qwen3.5:0.8b` is tuned for latency over fidelity.
 
 ---
 
