@@ -27,7 +27,9 @@ echo "worker: model=$MODEL url=$URL timeout=${TIMEOUT_MINUTES}m"
 log "run start (model=$MODEL)"
 
 OPTS=()
-[ "${AUTO_APPROVE:-1}" = "1" ] && OPTS+=(--auto)
+# YOLO mode: auto-approve EVERY permission prompt (no auth, no waiting).
+# Equivalent to `--auto` + `--dangerously-skip-permissions`; fully autonomous.
+[ "${YOLO_MODE:-1}" = "1" ] && OPTS+=(--yolo)
 if [ -n "$URL" ]; then
     SUFFIX="${MODEL#*/}"
     export OPENCODE_CONFIG_CONTENT="$(python3 - "$URL" "$SUFFIX" <<'EOF'
