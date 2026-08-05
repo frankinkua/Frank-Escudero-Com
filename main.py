@@ -486,6 +486,35 @@ def read_doc(name: str) -> str:
         return f"<!-- missing {name} -->"
 
 
+# Markdown pages that are searchable (site content Frank wants indexed).
+SEARCH_DOCS = [
+    "knowledge.md", "cv.md", "projects.md", "deploy.md", "stack.md",
+    "timeline.md", "contact.md", "about.md",
+]
+
+
+def search_docs(query: str, limit: int = 8) -> list[dict[str, str]]:
+    """Simple case-insensitive full-text search over the markdown docs."""
+    q = (query or "").strip().lower()
+    if not q:
+        return []
+    hits: list[dict[str, str]] = []
+    for name in SEARCH_DOCS:
+        text = read_doc(name)
+        low = text.lower()
+        start = 0
+        while len(hits) < limit and start < len(low):
+            pos = low.find(q, start)
+            if pos < 0:
+                break
+            begin = max(0, pos - 60)
+            end = min(len(text), pos + len(q) + 80)
+            snippet = text[begin:end].replace("\n", " ").strip()
+            hits.append({"page": name, "snippet": snippet})
+            start = pos + len(q)
+    return hits
+
+
 def build_failed_marker() -> str | None:
     marker = WEB / ".last_build_failed"
     try:
@@ -794,6 +823,14 @@ class State(rx.State):
     busy: bool = False
     greeted: bool = False
     visitor_context: dict[str, str] = {}
+    search_results: list[dict[str, str]] = []
+    searched: bool = False
+
+    def do_search(self, form_data: dict):
+        """Full-text search over the markdown docs (instant, server-side)."""
+        q = str(form_data.get("search") or "").strip()
+        self.searched = True
+        self.search_results = search_docs(q)
 
     def probe_browser(self):
         """on_load hook: ask the client for its fingerprint, feed on_browser_info."""
@@ -1156,6 +1193,81 @@ def chat_panel() -> rx.Component:
     )
 
 
+def search_panel() -> rx.Component:
+    return rx.box(
+        rx.heading("Search the site", size="2", color="#e8ecf4", marginBottom="1rem"),
+        rx.el.form(
+            rx.hstack(
+                rx.el.input(
+                    name="search",
+                    placeholder="Search CV, projects, stack, timeline...",
+                    auto_complete="off",
+                    style={
+                        "flex": "1",
+                        "background": "#0d1117",
+                        "color": "#e8ecf4",
+                        "border": "1px solid #2a3247",
+                        "borderRadius": "0.5rem",
+                        "padding": "0.6rem 0.8rem",
+                        "fontFamily": "inherit",
+                    },
+                ),
+                rx.button(
+                    "Search",
+                    type="submit",
+                    background="#3b82f6",
+                    color="#0b0e14",
+                    fontWeight="600",
+                ),
+                spacing="2",
+                width="100%",
+            ),
+            on_submit=State.do_search,
+            auto_complete="off",
+            reset_on_submit=True,
+            width="100%",
+            marginTop="1rem",
+        ),
+        rx.cond(
+            State.searched,
+            rx.box(
+                rx.cond(
+                    State.search_results.length() == 0,
+                    rx.text("No results.", color=MUTED),
+                    rx.foreach(
+                        State.search_results,
+                        lambda r: rx.box(
+                            rx.text(
+                                f"in {r['page']}: ",
+                                color=ACCENT,
+                                fontSize="0.8rem",
+                                fontWeight="600",
+                            ),
+                            rx.text(r["snippet"], color="#c9d2e3", fontSize="0.85rem"),
+                            background="#131826",
+                            border="1px solid #2a3247",
+                            borderRadius="0.5rem",
+                            padding="0.6rem 0.8rem",
+                            width="100%",
+                        ),
+                    ),
+                ),
+                spacing="2",
+                width="100%",
+                marginTop="1rem",
+            ),
+            rx.text(
+                "Search runs over the markdown behind every page.",
+                color=MUTED,
+                fontSize="0.8rem",
+                marginTop="1rem",
+            ),
+        ),
+        **CARD,
+        width="min(720px, 92vw)",
+    )
+
+
 def index() -> rx.Component:
     return rx.center(
         rx.vstack(
@@ -1170,6 +1282,7 @@ def index() -> rx.Component:
             rx.text("a zero-trust CV site built and maintained by Frank.", color=ACCENT),
             banner(),
             chat_panel(),
+            search_panel(),
             rx.hstack(
                 rx.link("About me", href="/about", color=ACCENT),
                 rx.link("CV", href="/cv", color=ACCENT),
