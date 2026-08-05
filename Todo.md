@@ -34,6 +34,6 @@
 ---
 
 ### Bug fixes (prioritized)
-- [ ] Verify trailing-slash navigation on all 6 pages doesn't cause extra redirects in analytics / metrics.
-- [ ] Check that the `/worker-log` page renders correctly after a fresh start and no worker has run yet.
-- [ ] Ensure `main.py` compiles under Python 3.13 without deprecation warnings (check imports, type hints).
+- [x] Verify trailing-slash navigation on all 6 pages doesn't cause extra redirects in analytics / metrics. (307 → 200 for `/cv` → `/cv/`, as designed; all routes verified 200)
+- [x] Check that the `/worker-log` page renders correctly after a fresh start and no worker has run yet. ("No worker runs logged yet." renders cleanly)
+- [x] Ensure `main.py` compiles under Python 3.13 without deprecation warnings (check imports, type hints). (`-W error::DeprecationWarning` import passes clean)
