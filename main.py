@@ -677,6 +677,43 @@ def chat_scroll_js() -> str:
     )
 
 
+def _visitor_notify_text(ctx: dict[str, str], ip: str, geo: dict[str, str]) -> str:
+    """Full visitor fingerprint for the owner's ntfy notification (incl. IP)."""
+    ctx = ctx or {}
+    geo = geo or {}
+    latlon = ""
+    if geo.get("lat") and geo.get("lon"):
+        latlon = f"{geo['lat']},{geo['lon']}"
+    fields = [
+        ("IP", ip),
+        ("Location", ctx.get("location")),
+        ("Country", geo.get("country")),
+        ("Country code", geo.get("country_code")),
+        ("Region", geo.get("region")),
+        ("City", geo.get("city")),
+        ("Lat/Lon", latlon),
+        ("Timezone", geo.get("timezone") or ctx.get("tz")),
+        ("Language", ctx.get("lang")),
+        ("Locale", ctx.get("locale")),
+        ("Platform", ctx.get("platform")),
+        ("Device", ctx.get("device")),
+        ("Local time", ctx.get("local_time")),
+        ("Time of day", ctx.get("time_of_day")),
+        ("Weather", ctx.get("weather")),
+        ("Temp", ctx.get("temp")),
+        ("Feels like", ctx.get("feels_like")),
+        ("Humidity", ctx.get("humidity")),
+        ("Pressure", ctx.get("pressure")),
+        ("Wind", ctx.get("wind")),
+        ("Precip", ctx.get("precip")),
+        ("Warning", ctx.get("warning")),
+        ("Sunrise", ctx.get("sunrise")),
+        ("Sunset", ctx.get("sunset")),
+        ("Moon", ctx.get("moon")),
+    ]
+    return "\n".join(f"{k}: {v}" for k, v in fields if v)
+
+
 def _visitor_context_text(ctx: dict[str, str]) -> str:
     """Format the collected visitor context into an LLM-readable block."""
     if not ctx:
@@ -1167,12 +1204,10 @@ class State(rx.State):
             self.visitor_ip, self.visitor_geo,
         )
         site_store.backfill_geo(self.visitor_ip, self.visitor_geo)
-        location = ctx.get("location") or self.visitor_geo.get("city") or self.visitor_geo.get("country") or "unknown location"
-        platform = ctx.get("platform") or ""
         greet = self.messages[-1]["content"].strip().splitlines()[0][:80]
         _notify(
             "New visitor",
-            f"{location} · {platform or 'unknown device'}\n{greet}",
+            _visitor_notify_text(ctx, self.visitor_ip, self.visitor_geo) + f"\n\nGreeting: {greet}",
             ["wave"],
         )
 
@@ -1189,10 +1224,10 @@ class State(rx.State):
         site_store.log_conv_message(self.conv_id, "user", q, self.visitor_ip, self.visitor_geo)
         if self.conv_id not in _NOTIFIED_CONVS:
             _NOTIFIED_CONVS.add(self.conv_id)
-            location = self.visitor_geo.get("city") or self.visitor_geo.get("country") or "unknown location"
             _notify(
                 "Visitor message",
-                f"{location}\n{q[:140]}",
+                _visitor_notify_text(self.visitor_context, self.visitor_ip, self.visitor_geo)
+                + f"\n\nQuestion: {q[:140]}",
                 ["speech_balloon"],
             )
         self.busy = True

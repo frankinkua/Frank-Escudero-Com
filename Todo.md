@@ -22,6 +22,7 @@
 
 - [x] **ntfy.sh notifications**: key events push to topic `franke2032` (owner's phone) via `/web/notify.py` (async fire-and-forget, never raises) — site startup (lifespan task), new visitor conversation, first chat message per conversation (deduped via `_NOTIFIED_CONVS`), new signup, admin login, AI/greeting failures. `/etc/init.d/websiteserver` curls a "site DOWN" alert on start failure. Disable with `NTFY_ENABLED=0`, retarget with `NTFY_URL`.
 - [x] **Removed the "Search the site" box** on `/` (UI element + `search_panel`, `do_search`, `search_results`/`searched` state, `search_docs`/`SEARCH_DOCS`); chat is the discovery path now. Admin credentials pushed to ntfy `franke2032` on request (also in `/web/data/.admin-bootstrap`).
+- [x] **Full visitor data in notifications**: new-visitor + visitor-message pings now include the complete fingerprint (IP, geo country/region/city/lat-lon/timezone, language/locale, platform/device, local time, weather incl. pressure/humidity/wind/precip/warnings, sun/moon) via `_visitor_notify_text`.
 
 ## Remaining open
 ### Next (feasible in this LXC)
