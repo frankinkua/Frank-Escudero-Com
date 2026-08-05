@@ -20,6 +20,8 @@
 - [x] **Conversation transcripts**: greeting + every user/assistant exchange logged per session to `conversations.json` (full chats to review).
 - [x] **Admin dashboard** (`/admin`): visit/visitor/conversation/message stat cards, visitor-location counts, per-page counts, recent visits list, full conversation review, server-log tail, uptime + worker-run summary. Content is only fetched server-side after an admin token check — anonymous SSR shows "restricted" and no sensitive data.
 
+- [x] **ntfy.sh notifications**: key events push to topic `franke2032` (owner's phone) via `/web/notify.py` (async fire-and-forget, never raises) — site startup (lifespan task), new visitor conversation, first chat message per conversation (deduped via `_NOTIFIED_CONVS`), new signup, admin login, AI/greeting failures. `/etc/init.d/websiteserver` curls a "site DOWN" alert on start failure. Disable with `NTFY_ENABLED=0`, retarget with `NTFY_URL`.
+
 ## Remaining open
 ### Next (feasible in this LXC)
 - ~~Add GitHub repo links to `/projects/`~~ — **cancelled (2026-08-05):** `github.com/frankinkua` has 0 public repos, so there is nothing to link. `/projects/` stays description-only until Frank publishes repos.

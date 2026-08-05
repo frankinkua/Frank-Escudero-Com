@@ -16,6 +16,7 @@ import reflex as rx
 from openai import AsyncOpenAI
 from zoneinfo import ZoneInfo
 
+import notify
 import site_store
 
 logger = logging.getLogger("web")
@@ -169,6 +170,18 @@ def server_log_tail(lines: int = 40) -> str:
         )
     except OSError:
         return "(no server log yet)"
+
+
+# Fire-and-forget ntfy push (never delays the visitor's own request).
+def _notify(title: str, message: str, tags: list[str] | None = None) -> None:
+    try:
+        asyncio.get_running_loop().create_task(notify.send(title, message, tags))
+    except RuntimeError:
+        pass
+
+
+# Conversations we already pushed a "first message" notification for (per process).
+_NOTIFIED_CONVS: set[str] = set()
 
 
 def _country_flag(country_code: str) -> str:
@@ -912,6 +925,8 @@ class State(rx.State):
         self.user_role = user["role"]
         self.is_admin = user["role"] == "admin"
         self.session_token = site_store.create_session(email, user["role"], self.user_name)
+        if self.is_admin:
+            _notify("Admin login", f"{email} signed in to the admin dashboard.", ["lock"])
         return rx.redirect("/")
 
     async def do_signup(self, form_data: dict):
@@ -932,6 +947,7 @@ class State(rx.State):
         self.user_role = "user"
         self.is_admin = False
         self.session_token = site_store.create_session(email, "user", self.user_name)
+        _notify("New signup", f"{self.user_name} <{email}> subscribed for updates.", ["party_popper"])
         return rx.redirect("/")
 
     async def do_signout(self):
@@ -1182,11 +1198,20 @@ class State(rx.State):
             self.messages[-1]["content"] = (
                 "Hi! I'm Frank's assistant. Ask me anything about Frank's CV. Who are you?"
             )
+            _notify("⚠ AI greeting failed", "A visitor arrived but the LLM greeting failed.", ["warning"])
         site_store.log_conv_message(
             self.conv_id, "assistant", self.messages[-1]["content"],
             self.visitor_ip, self.visitor_geo,
         )
         site_store.backfill_geo(self.visitor_ip, self.visitor_geo)
+        location = ctx.get("location") or self.visitor_geo.get("city") or self.visitor_geo.get("country") or "unknown location"
+        platform = ctx.get("platform") or ""
+        greet = self.messages[-1]["content"].strip().splitlines()[0][:80]
+        _notify(
+            "New visitor",
+            f"{location} · {platform or 'unknown device'}\n{greet}",
+            ["wave"],
+        )
 
     async def handle_submit(self, form_data: dict):
         # Read straight from the DOM's FormData at submit time (the input is
@@ -1199,6 +1224,14 @@ class State(rx.State):
             self.conv_id = "c_" + secrets.token_hex(6)
         self.messages.append({"role": "user", "content": q})
         site_store.log_conv_message(self.conv_id, "user", q, self.visitor_ip, self.visitor_geo)
+        if self.conv_id not in _NOTIFIED_CONVS:
+            _NOTIFIED_CONVS.add(self.conv_id)
+            location = self.visitor_geo.get("city") or self.visitor_geo.get("country") or "unknown location"
+            _notify(
+                "Visitor message",
+                f"{location}\n{q[:140]}",
+                ["speech_balloon"],
+            )
         self.busy = True
         self.messages.append({"role": "assistant", "content": ""})
         yield
@@ -1233,6 +1266,7 @@ class State(rx.State):
             self.messages[-1]["content"] = (
                 f"(chat backend error: {exc.__class__.__name__})"
             )
+            _notify("⚠ Chat backend error", f"{exc.__class__.__name__}: {q[:80]}", ["warning"])
         site_store.log_conv_message(
             self.conv_id, "assistant", self.messages[-1]["content"],
             self.visitor_ip, self.visitor_geo,
@@ -1884,6 +1918,17 @@ def admin_page() -> rx.Component:
     )
 
 
+async def _notify_startup() -> None:
+    try:
+        await notify.send(
+            "CV site started",
+            f"{VERSION_LABEL} · {UPDATED_LABEL} UTC\nRoutes live at https://cv.story-tegu.ts.net",
+            ["computer"],
+        )
+    except Exception:  # noqa: BLE001
+        logger.exception("startup notification failed")
+
+
 try:
     _boot = site_store.ensure_admin()
     if _boot:
@@ -1916,6 +1961,8 @@ app.add_page(login_page, route="/login", title="Sign in — Frank Escudero CV", 
 app.add_page(signup_page, route="/signup", title="Sign up — Frank Escudero CV", on_load=State.load_public)
 app.add_page(profile_page, route="/profile", title="Profile — Frank Escudero CV", on_load=State.load_profile)
 app.add_page(admin_page, route="/admin", title="Admin — Frank Escudero CV", on_load=State.load_admin)
+
+app.register_lifespan_task(_notify_startup)
 
 
 async def _rss(request):
