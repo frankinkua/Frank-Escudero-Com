@@ -40,13 +40,20 @@
   (morning/afternoon/evening/night, from their timezone), current weather
   (open-meteo, no key, via lat/lon from the IP lookup), their city/country,
   local sunrise/sunset times and the current moon phase (open-meteo
-  `/v1/forecast` with `daily=sunrise,sunset,moon_phase`),
-  and a country or language flag emoji. Location precision is city-level via
-  ip-api.com; a MaxMind GeoLite2 `.mmdb` is NOT installed (would need the
-  `geoip2` package + DB file for offline lookups). Windows system fonts do NOT
-  render flag emoji (regional-indicator chars show as letters), so the greeting
-  must NOT start with a flag emoji when the platform is Windows - use the
-  country/device language in plain text instead.
+  `/v1/forecast` with `daily=sunrise,sunset,moon_phase`), current conditions
+  (temperature, feels-like, humidity, precipitation, pressure, wind speed)
+  plus a derived weather warning for severe codes (freezing rain, heavy rain,
+  thunderstorms/hail), and a country or language flag emoji. Location precision
+  is city-level via ip-api.com; a MaxMind GeoLite2 `.mmdb` is NOT installed
+  (would need the `geoip2` package + DB file for offline lookups). Windows
+  system fonts do NOT render flag emoji (regional-indicator chars show as
+  letters), so the greeting must NOT start with a flag emoji when the platform
+  is Windows - use the country/device language in plain text instead. ALL other
+  emoji (weather, sun, moon, temperature) still work on Windows.
+- The collected visitor data is stored on the chat State as `visitor_context`
+  and re-injected into EVERY chat request afterwards (via `_system_message`),
+  so the assistant keeps personalizing follow-up answers (geo, language, locale,
+  time, weather incl. pressure/warnings, sun times), not just the greeting.
 - Greeting gotchas (learned the hard way):
   - Behind the Tailscale Funnel the socket IP is `127.0.0.1`, and a visitor on
     the tailnet shows up as a CGNAT `100.x` address that ip-api.com cannot

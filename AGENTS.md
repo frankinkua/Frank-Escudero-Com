@@ -90,7 +90,12 @@ Never `reflex run` from a shell — that leaks children and leaves `:8000` half-
 - Never put the raw timezone string in a prompt handed to the LLM — the model repeats it as a
   location ("Europe/Berlin" -> "you are in Berlin"). Pass only the resolved local time-of-day.
 - Windows browsers can't render flag emoji; when `platform` contains `Win`, the greeting omits
-  the flag and names the country/language in plain text instead.
+  the flag and names the country/language in plain text instead. ONLY the flag emoji is blocked
+  on Windows — weather/sun/moon emoji must still be used there.
+- The visitor's collected data (geo, language, locale, time, weather incl. pressure/warnings,
+  sun/moon times) lives in `State.visitor_context` and is re-injected into EVERY chat request
+  via `_system_message(ctx)`. Keep the raw timezone string OUT of any LLM prompt — pass only
+  the resolved local time/time-of-day.
 
 ## The log-bomb lesson (time-saver #1)
 - Symptom: `/var/lib/tailscale/tailscaled.log1.txt` swelled to 49 GB; disk fell to 0% free; Reflex restarts failed to bind `:8000`; Funnel returned 502.

@@ -177,9 +177,32 @@ _WMO = {
     85: ("🌨️", "snow showers"),
     86: ("🌨️", "heavy snow showers"),
     95: ("⛈️", "thunderstorm"),
-    96: ("⛈️", "thunderstorm with hail"),
-    99: ("⛈️", "thunderstorm with hail"),
+     96: ("⛈️", "thunderstorm with hail"),
+     99: ("⛈️", "thunderstorm with hail"),
 }
+
+
+# WMO codes that warrant a weather-warning mention to the visitor.
+_WARNINGS = {
+    56: "freezing drizzle",
+    57: "freezing drizzle",
+    66: "freezing rain",
+    67: "freezing rain",
+    65: "heavy rain",
+    82: "heavy showers",
+    86: "heavy snow showers",
+    95: "thunderstorm",
+    96: "thunderstorm with hail",
+    99: "thunderstorm with hail",
+}
+
+
+def _weather_warning(code: object) -> str:
+    """WMO weather code -> warning string, '' when nothing alarming."""
+    try:
+        return _WARNINGS.get(int(code), "")
+    except (TypeError, ValueError):
+        return ""
 
 
 # Moon phase index -> (emoji, name). open-meteo reports 0=new .. 0.5=full .. 1=new.
@@ -217,19 +240,42 @@ async def _weather_lookup(lat: str, lon: str) -> dict[str, str]:
                 params={
                     "latitude": lat,
                     "longitude": lon,
-                    "current_weather": "true",
+                    "current": (
+                        "temperature_2m,apparent_temperature,relative_humidity_2m,"
+                        "precipitation,pressure_msl,wind_speed_10m,weather_code,is_day"
+                    ),
                     "timezone": "auto",
                 },
             )
             d = r.json()
-        cw = (d.get("current_weather") or {})
-        emoji, word = _WMO.get(cw.get("weathercode", -1), ("🌡️", "unknown"))
-        temp = cw.get("temperature")
+        cw = (d.get("current") or {})
+        emoji, word = _WMO.get(cw.get("weather_code", -1), ("🌡️", "unknown"))
+        temp = cw.get("temperature_2m")
+        feels = cw.get("apparent_temperature")
+        hum = cw.get("relative_humidity_2m")
+        precip = cw.get("precipitation")
+        press = cw.get("pressure_msl")
+        wind = cw.get("wind_speed_10m")
+
+        def _fmt(v: object, unit: str, plus: bool = False) -> str:
+            """Format a numeric value to a short string ('22°C'), '' if missing."""
+            try:
+                f = float(v)  # type: ignore[arg-type]
+            except (TypeError, ValueError):
+                return ""
+            return f"{f:+.0f}{unit}" if plus else f"{f:.0f}{unit}"
+
         out.update({
             "emoji": emoji,
             "word": word,
-            "temp": f"{temp:+.0f}°C" if isinstance(temp, (int, float)) else "",
+            "temp": _fmt(temp, "°C", plus=True),
+            "feels_like": _fmt(feels, "°C", plus=True),
+            "humidity": _fmt(hum, "%"),
+            "precip": _fmt(precip, "mm"),
+            "pressure": _fmt(press, "hPa"),
+            "wind": _fmt(wind, "km/h"),
             "is_day": bool(cw.get("is_day", 1)),
+            "warning": _weather_warning(cw.get("weather_code")),
         })
     except Exception:  # noqa: BLE001
         pass
@@ -553,10 +599,61 @@ def chat_scroll_js() -> str:
     )
 
 
-def _system_message() -> dict[str, str]:
+def _visitor_context_text(ctx: dict[str, str]) -> str:
+    """Format the collected visitor context into an LLM-readable block."""
+    if not ctx:
+        return ""
+    lines = [
+        "\n\nVISITOR CONTEXT (everything known about the current visitor; use it to "
+        "personalise answers):"
+    ]
+    if ctx.get("lang"):
+        lines.append(f"- language: {ctx['lang']}")
+    if ctx.get("locale"):
+        lines.append(f"- locale: {ctx['locale']}")
+    if ctx.get("platform"):
+        lines.append(f"- platform: {ctx['platform']}")
+    if ctx.get("is_windows"):
+        lines.append("- Windows: flag emoji must NOT be used (fonts can't render them)")
+    if ctx.get("local_time"):
+        lines.append(f"- local time: {ctx['local_time']} ({ctx.get('time_of_day', '')})")
+    if ctx.get("location"):
+        lines.append(f"- location: {ctx['location']}")
+    if ctx.get("weather"):
+        parts = [f"- weather: {ctx['weather']}"]
+        if ctx.get("temp"):
+            parts.append(f"temp {ctx['temp']}")
+        if ctx.get("feels_like"):
+            parts.append(f"feels like {ctx['feels_like']}")
+        if ctx.get("humidity"):
+            parts.append(f"humidity {ctx['humidity']}")
+        if ctx.get("pressure"):
+            parts.append(f"pressure {ctx['pressure']}")
+        if ctx.get("wind"):
+            parts.append(f"wind {ctx['wind']}")
+        if ctx.get("precip"):
+            parts.append(f"precipitation {ctx['precip']}")
+        lines.append(" ".join(parts))
+    if ctx.get("sunrise") or ctx.get("sunset"):
+        lines.append(f"- sun: rise {ctx.get('sunrise', '?')} / set {ctx.get('sunset', '?')} local")
+    if ctx.get("moon"):
+        lines.append(f"- moon: {ctx['moon']} {ctx.get('moon_emoji', '')}")
+    if ctx.get("warning"):
+        lines.append(f"- weather warning: {ctx['warning']}")
+    if ctx.get("device"):
+        lines.append(f"- device: {ctx['device']}")
+    return "\n".join(lines)
+
+
+def _system_message(ctx: dict[str, str] | None = None) -> dict[str, str]:
     return {
         "role": "system",
-        "content": read_doc("prompt.md") + "\n\nKNOWLEDGE:\n" + read_doc("knowledge.md"),
+        "content": (
+            read_doc("prompt.md")
+            + "\n\nKNOWLEDGE:\n"
+            + read_doc("knowledge.md")
+            + _visitor_context_text(ctx or {})
+        ),
     }
 
 
@@ -598,6 +695,7 @@ class State(rx.State):
     messages: list[dict[str, str]] = []
     busy: bool = False
     greeted: bool = False
+    visitor_context: dict[str, str] = {}
 
     def probe_browser(self):
         """on_load hook: ask the client for its fingerprint, feed on_browser_info."""
@@ -667,42 +765,62 @@ class State(rx.State):
         logger.info("greeting: tz=%r local_hour=%r", tz_name, local_hour)
         time_of_day = _time_of_day(local_hour) if local_hour is not None else ""
 
-        # Assemble the context we pass to the LLM. The raw timezone string is
-        # deliberately NOT included: the model would repeat it as a location
-        # (e.g. "Europe/Berlin" -> "you're in Berlin"). Only the resolved
-        # local-time-of-day is mentioned.
-        detail: list[str] = []
-        if browser.get("platform"):
-            detail.append(f"platform: {browser['platform']}")
-        if browser.get("screen"):
-            detail.append(f"screen: {browser['screen']}")
-        if browser.get("cores"):
-            detail.append(f"cpu cores: {browser['cores']}")
-        if browser.get("mem"):
-            detail.append(f"memory: {browser['mem']} GiB")
-        if browser.get("online"):
-            detail.append("device: online")
+        # --- Collect everything known about the visitor into one dict. ---
+        # Stored on State and re-injected into EVERY chat request afterwards so
+        # the assistant keeps personalising answers (not just the greeting).
+        ctx: dict[str, str] = {
+            "lang": lang,
+            "locale": browser.get("lang") or "",
+            "platform": browser.get("platform") or "",
+            "is_windows": "1" if "Win" in (browser.get("platform") or "") else "",
+            "tz": tz_name,
+            "local_time": (
+                datetime.fromtimestamp(local_epoch_s, ZoneInfo(tz_name)).strftime("%H:%M")
+                if local_epoch_s
+                else ""
+            ),
+            "time_of_day": time_of_day,
+            "device": " ".join(
+                part
+                for part in (
+                    browser.get("screen") or "",
+                    f"{browser.get('cores')} cores" if browser.get("cores") else "",
+                    f"{browser.get('mem')} GiB RAM" if browser.get("mem") else "",
+                    "online" if browser.get("online") else "offline",
+                )
+                if part
+            ),
+        }
         if geo.get("city") and geo.get("country"):
-            detail.append(f"likely region: {geo['city']}, {geo['country']} (from IP geolocation)")
+            ctx["location"] = f"{geo['city']}, {geo['country']}"
         elif geo.get("country"):
-            detail.append(f"likely country: {geo['country']} (from IP geolocation)")
-        logger.info("greeting: detail=%r", detail)
+            ctx["location"] = geo["country"]
+        logger.info("greeting: ctx=%r", ctx)
 
         # Weather for their location (best-effort, open-meteo, no key).
         weather = await _weather_lookup(geo.get("lat", ""), geo.get("lon", ""))
         logger.info("greeting: weather=%r", weather)
+        for key in (
+            "word", "temp", "feels_like", "humidity", "precip",
+            "pressure", "wind", "is_day", "warning",
+        ):
+            if weather.get(key):
+                ctx[key] = str(weather[key])
+        if weather.get("word"):
+            ctx["weather"] = f"{weather['word']} {weather.get('emoji', '')}"
+        ctx["sunrise"] = weather.get("sunrise", "")
+        ctx["sunset"] = weather.get("sunset", "")
+        ctx["moon"] = weather.get("moon", "")
+        ctx["moon_emoji"] = weather.get("moon_emoji", "")
+        self.visitor_context = ctx
 
         # Flags: prefer country flag (precise, from the IP geo), fall back to
         # the device-language flag.
         country_flag = _country_flag(geo.get("country_code", ""))
         lang_flag = _language_flag(lang)
         flag = country_flag or lang_flag
-        is_windows = bool(browser.get("platform") and "Win" in browser["platform"])
-        location = ""
-        if geo.get("city") and geo.get("country"):
-            location = f"{geo['city']}, {geo['country']}"
-        elif geo.get("country"):
-            location = geo["country"]
+        is_windows = bool(ctx["is_windows"])
+        location = ctx.get("location", "")
         logger.info("greeting: flag=%r country_flag=%r lang_flag=%r location=%r windows=%r", flag, country_flag, lang_flag, location, is_windows)
 
         self.messages.append({"role": "assistant", "content": ""})
@@ -713,6 +831,7 @@ class State(rx.State):
                 read_doc("prompt.md"),
                 "\n\nKNOWLEDGE:\n",
                 read_doc("knowledge.md"),
+                _visitor_context_text(ctx),
                 "\n\nNow: you just detected a new visitor. Write a short ",
                 f"personal greeting for them in {lang} (the visitor's language - ",
                 f"EVERY word you write must be in {lang}, no exceptions). ",
@@ -722,6 +841,22 @@ class State(rx.State):
                 parts.append(f" Their local time is {time_of_day}.")
             if weather.get("word"):
                 parts.append(f" The weather there is {weather['word']} {weather['emoji']}.")
+            if weather.get("temp"):
+                parts.append(
+                    f" Temperature: {weather['temp']}"
+                    + (f" (feels like {weather['feels_like']})." if weather.get("feels_like") else ".")
+                )
+            if weather.get("pressure"):
+                parts.append(f" Pressure: {weather['pressure']}.")
+            if weather.get("humidity"):
+                parts.append(f" Humidity: {weather['humidity']}.")
+            if weather.get("wind"):
+                parts.append(f" Wind: {weather['wind']}.")
+            if weather.get("warning"):
+                parts.append(
+                    f" There is a weather warning in effect: {weather['warning']}. "
+                    "Mention it in a natural, non-alarmist way."
+                )
             if weather.get("sunrise") and weather.get("sunset"):
                 parts.append(
                     f" The sun there rises at {weather['sunrise']} and sets at "
@@ -735,22 +870,25 @@ class State(rx.State):
                 parts.append(f" They are in {location}.")
             if flag and not is_windows:
                 parts.append(f" Their country flag is {flag}. Put that flag at the START of the greeting.")
-            elif location:
+            elif is_windows:
                 parts.append(
-                    " Do NOT use flag emoji. Mention their country/region by name in "
-                    "plain text (Windows fonts cannot render flag emoji)."
+                    " They are on Windows. ONLY the country/flag emoji must be avoided "
+                    "(Windows fonts cannot render regional-indicator flag emoji). Other "
+                    "emoji - weather, sun, moon, temperature - are FINE and welcome. "
+                    "Mention their country/region by name in plain text."
                 )
             parts.append(
-                " Craft the greeting around their local time, the sun cycle and the moon "
-                "when available (e.g. a rainy evening gets a rain emoji and a 'cozy' note; "
-                "at night, talk about the moon and when the sun will rise; during the day, "
-                "mention sunset). Never say the sun is out at night or vice versa. It must "
+                " Craft the greeting around their local time, the sun cycle, the moon "
+                "and the weather when available (e.g. a rainy evening gets a rain emoji "
+                "and a 'cozy' note; at night, talk about the moon and when the sun will "
+                "rise; during the day, mention sunset). Mention the pressure or other "
+                "meteorological detail only if it makes the greeting feel natural. Never "
+                "say the sun is out at night or vice versa. It must "
                 "be 1-3 sentences, feel natural, and END by asking the visitor who they "
                 "are. Only name their city/country if the visitor details actually provide "
                 "a location. NEVER invent or guess a city from the timezone - if you are "
                 "not told where they are, greet them warmly without naming a place. Do "
-                "not mention IP addresses, tokens, or anything sensitive. "
-                f"Visitor details: {'; '.join(detail) or 'no browser details available'}."
+                "not mention IP addresses, tokens, or anything sensitive."
             )
             system_content = "".join(parts)
             stream = await client.chat.completions.create(
@@ -780,7 +918,7 @@ class State(rx.State):
             if not chunks:
                 self.messages[-1]["content"] = (
                     f"Hi! I'm Frank's assistant — welcome. I can tell you're in "
-                    f"{location or detail[0] if location or detail else 'a browser'} "
+                    f"{ctx.get('location') or ctx.get('device') or 'a browser'} "
                     f"right now. Who are you?"
                 )
         except Exception as exc:  # noqa: BLE001
@@ -801,7 +939,7 @@ class State(rx.State):
         self.messages.append({"role": "assistant", "content": ""})
         yield
         try:
-            history = [_system_message(), *self.messages[:-1][-10:]]
+            history = [_system_message(self.visitor_context), *self.messages[:-1][-10:]]
             client = get_chat_client()
             stream = await client.chat.completions.create(
                 model=CHAT_MODEL,
