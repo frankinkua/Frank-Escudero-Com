@@ -10,7 +10,7 @@
 - It IS Frank's delivered CV: no placeholders, no "coming soon". The page is a self-hosted, self-editing web application maintained by Frank and an AI agent.
 - Stack: Reflex (Python) app in `/web/main.py`, production mode, listening on 127.0.0.1:8000.
 - The AI chatbot on this page is powered by a remote LLM server on Frank's LAN (LM Studio at http://192.168.178.120:1234, OpenAI-compatible /v1 API). The model is `prism-ml/bonsai-27b` (a reasoning model with 256k context, loaded on an 11GB VRAM GPU). The same model powers the opencode agent that improves the site.
-- Pages: `/` (home + chat + search + countdown), `/about` (about Frank), `/cv` (the CV), `/projects`, `/about-fun`, `/contact`, `/status`, `/changelog`, `/deploy`, `/stack`, `/timeline`, `/worker-log`.
+- Pages: `/` (home + chat + search + countdown), `/about` (about Frank), `/cv` (the CV), `/projects`, `/about-fun`, `/contact`, `/contribute`, `/architecture`, `/resources`, `/status`, `/changelog`, `/deploy`, `/stack`, `/timeline`, `/worker-log`.
 
 ## The documents in /web (single source of truth)
 - `prompt.md` — the chatbot's system prompt (persona + rules).
