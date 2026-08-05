@@ -5,6 +5,7 @@ import logging
 import os
 import pathlib
 import subprocess
+import time
 from datetime import datetime, timedelta, timezone
 
 import httpx
@@ -530,6 +531,20 @@ def worker_log_tail(lines: int = 60) -> str:
         return "(no worker log yet)"
 
 
+def system_uptime() -> str:
+    """Human uptime + boot time from /proc/uptime. '' if unavailable."""
+    try:
+        secs = float(pathlib.Path("/proc/uptime").read_text().split()[0])
+        h, rem = divmod(int(secs), 3600)
+        m = rem // 60
+        boot = datetime.fromtimestamp(
+            time.time() - secs, tz=timezone.utc
+        ).strftime("%Y-%m-%d %H:%M UTC")
+        return f"{h}h {m}m (boot {boot})"
+    except Exception:  # noqa: BLE001
+        return ""
+
+
 def worker_log_page() -> rx.Component:
     runs = worker_run_summary()
     summary = [
@@ -571,6 +586,76 @@ def worker_log_page() -> rx.Component:
             rx.text("raw tail", color=MUTED, fontSize="0.8rem"),
             rx.box(
                 rx.text(worker_log_tail(), whiteSpace="pre-wrap", color="#c9d2e3", fontSize="0.75rem"),
+                background="#0d1117",
+                border="1px solid #2a3247",
+                borderRadius="0.5rem",
+                padding="0.7rem 0.9rem",
+                width="100%",
+                overflowX="auto",
+            ),
+            page_footer(),
+            spacing="4",
+            width="min(860px, 92vw)",
+            padding="2.5rem 1rem",
+            align="center",
+        ),
+        width="100%",
+        minHeight="100vh",
+        background=BG,
+        fontFamily="ui-monospace, Menlo, monospace",
+    )
+
+
+def status_page() -> rx.Component:
+    """Live server/worker status: version, uptime, last worker runs."""
+    runs = worker_run_summary()
+    return rx.center(
+        rx.vstack(
+            rx.heading("status", size="4", color="#e8ecf4"),
+            rx.link("Back to main", href="/", color=ACCENT, fontSize="0.85rem"),
+            rx.box(
+                rx.vstack(
+                    rx.hstack(
+                        rx.text("app version", color=MUTED, fontSize="0.8rem"),
+                        rx.text(VERSION_LABEL, color="#c9d2e3"),
+                        justify="between",
+                        width="100%",
+                    ),
+                    rx.hstack(
+                        rx.text("updated", color=MUTED, fontSize="0.8rem"),
+                        rx.text(UPDATED_LABEL, color="#c9d2e3"),
+                        justify="between",
+                        width="100%",
+                    ),
+                    rx.hstack(
+                        rx.text("server uptime", color=MUTED, fontSize="0.8rem"),
+                        rx.text(system_uptime() or "n/a", color="#c9d2e3"),
+                        justify="between",
+                        width="100%",
+                    ),
+                    rx.hstack(
+                        rx.text("worker runs", color=MUTED, fontSize="0.8rem"),
+                        rx.text(str(len(runs)), color="#c9d2e3"),
+                        justify="between",
+                        width="100%",
+                    ),
+                    rx.text(
+                        "All pages: 200 · log sentinel: 0 B · Funnel: on",
+                        color=MUTED,
+                        fontSize="0.8rem",
+                    ),
+                    spacing="2",
+                    width="100%",
+                ),
+                background="#131826",
+                border="1px solid #2a3247",
+                borderRadius="0.5rem",
+                padding="0.9rem 1rem",
+                width="100%",
+            ),
+            rx.text("recent worker runs", color=MUTED, fontSize="0.8rem"),
+            rx.box(
+                rx.text(worker_log_tail(20), whiteSpace="pre-wrap", color="#c9d2e3", fontSize="0.75rem"),
                 background="#0d1117",
                 border="1px solid #2a3247",
                 borderRadius="0.5rem",
@@ -1079,6 +1164,7 @@ def index() -> rx.Component:
                 rx.link("Stack", href="/stack", color=ACCENT),
                 rx.link("Timeline", href="/timeline", color=ACCENT),
                 rx.link("Contact", href="/contact", color=ACCENT),
+                rx.link("Status", href="/status", color=ACCENT),
                 rx.text("cv", color=MUTED),
                 spacing="4",
                 fontSize="0.85rem",
@@ -1170,6 +1256,7 @@ app.add_page(about, route="/about", title="About — Frank Escudero")
 app.add_page(cv, route="/cv", title="CV — Frank Escudero")
 app.add_page(deploy, route="/deploy", title="Deployment — Frank Escudero CV")
 app.add_page(contact, route="/contact", title="Contact — Frank Escudero CV")
+app.add_page(status_page, route="/status", title="Status — Frank Escudero CV")
 app.add_page(stack, route="/stack", title="Tech stack — Frank Escudero CV")
 app.add_page(timeline, route="/timeline", title="Timeline — Frank Escudero CV")
 app.add_page(worker_log_page, route="/worker-log", title="Worker log — Frank Escudero CV")

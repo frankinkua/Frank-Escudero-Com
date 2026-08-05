@@ -19,7 +19,7 @@
 ### Nice-to-have
 - Add a dark/light theme toggle using CSS variables + `rx.cond`.
 - Add RSS feed (`application/rss+xml`) from `/about/` + `/cv/` content for a blog-like presence.
-- Add a `/status/` page mirroring the worker-log summary, with a live uptime counter since last boot.
+- Add a `/status/` page mirroring the worker-log summary, with a live uptime counter since last boot. (done 2026-08-05)
 
 ### Nice-to-have (later)
 - Add a "contribution guide" — how to suggest changes via email or tailnet DM.
