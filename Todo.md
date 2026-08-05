@@ -28,7 +28,7 @@
 
 ### Nice-to-have (even later)
 - Add a "changelog" that auto-generates from `git log --oneline` and appends to `/web/changelog.md`. (done 2026-08-05 — served live from git at `/changelog/`)
-- Add an "about the site's tech stack in depth" page with architecture diagrams (ASCII art).
+- Add an "about the site's tech stack in depth" page with architecture diagrams (ASCII art). (done 2026-08-05 — `/architecture/`)
 - Add a /sponsors/ or /donations/ page if community support is desired.
 
 ---
