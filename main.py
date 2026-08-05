@@ -355,6 +355,34 @@ def changelog_markdown() -> str:
     return "# Changelog\n\n" + "\n".join(lines)
 
 
+def changelog_entries() -> list[tuple[str, str, str]]:
+    """[(sha, iso-date, subject)] newest first, for the RSS feed."""
+    log = _git(["git", "log", "--pretty=format:%h|%ci|%s", "-20"])
+    out: list[tuple[str, str, str]] = []
+    for row in (log or "").splitlines():
+        sha, ci, subj = (row.split("|", 2) + ["", ""])[:3]
+        out.append((sha, ci, subj))
+    return out
+
+
+def rss_xml() -> str:
+    """Atom-ish RSS feed of the git changelog (site updates)."""
+    items = "\n".join(
+        f"<item><title>{sha} — {subj}</title>"
+        f"<link>https://cv.story-tegu.ts.net/changelog/</link>"
+        f"<guid>{sha}</guid><pubDate>{ci}</pubDate></item>"
+        for sha, ci, subj in changelog_entries()
+    )
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<rss version="2.0"><channel>'
+        "<title>Frank Escudero CV — changelog</title>"
+        "<link>https://cv.story-tegu.ts.net/</link>"
+        "<description>Site updates for the self-hosted AI CV.</description>"
+        f"{items}</channel></rss>\n"
+    )
+
+
 def app_updated() -> str:
     """Human-readable date the source last changed (git commit date, fallback file mtime)."""
     ci = _git(["git", "log", "-1", "--format=%ci"])
@@ -1398,3 +1426,14 @@ app.add_page(changelog, route="/changelog", title="Changelog — Frank Escudero 
 app.add_page(stack, route="/stack", title="Tech stack — Frank Escudero CV")
 app.add_page(timeline, route="/timeline", title="Timeline — Frank Escudero CV")
 app.add_page(worker_log_page, route="/worker-log", title="Worker log — Frank Escudero CV")
+
+
+async def _rss(request):
+    from starlette.responses import Response
+    return Response(rss_xml(), media_type="application/rss+xml; charset=utf-8")
+
+
+try:
+    app._api.add_route("/rss", _rss)
+except Exception:  # noqa: BLE001
+    logger.warning("could not mount /rss route", exc_info=True)
