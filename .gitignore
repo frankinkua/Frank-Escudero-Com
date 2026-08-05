@@ -8,3 +8,4 @@ __pycache__/
 *.pyc
 .web/
 .last_build_failed
+data/

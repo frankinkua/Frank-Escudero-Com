@@ -4,14 +4,19 @@ import json
 import logging
 import os
 import pathlib
+import secrets
 import subprocess
+import threading
 import time
 from datetime import datetime, timedelta, timezone
 
+import asyncio
 import httpx
 import reflex as rx
 from openai import AsyncOpenAI
 from zoneinfo import ZoneInfo
+
+import site_store
 
 logger = logging.getLogger("web")
 logger.setLevel(logging.INFO)
@@ -120,6 +125,50 @@ async def _geo_lookup(ip: str) -> dict[str, str]:
     except Exception:  # noqa: BLE001
         pass
     return {}
+
+
+# In-memory geo cache so repeat visits (and analytics) don't re-hit ip-api.com.
+_GEO_CACHE: dict[str, dict[str, str] | None] = {}
+_GEO_LOCK = threading.Lock()
+
+
+async def _geo_for(ip: str) -> dict[str, str]:
+    """Cached async geo lookup. Empty IPs and failures are cached too."""
+    if not ip:
+        return {}
+    with _GEO_LOCK:
+        if ip in _GEO_CACHE:
+            return _GEO_CACHE[ip] or {}
+    geo = await _geo_lookup(ip)
+    with _GEO_LOCK:
+        _GEO_CACHE[ip] = geo or None
+    return geo
+
+
+async def _enrich_visit(ip: str) -> None:
+    """Background geo lookup for a just-recorded visit, then backfill older rows."""
+    try:
+        geo = await _geo_for(ip)
+        site_store.backfill_geo(ip, geo)
+    except Exception:  # noqa: BLE001
+        logger.exception("visit geo enrichment failed")
+
+
+def _real_client_ip(router) -> str:
+    """Real visitor IP, honouring the Tailscale Funnel x-forwarded-for."""
+    headers = router.headers
+    raw = getattr(headers, "raw_headers", None) or {}
+    forwarded = raw.get("x-forwarded-for") or raw.get("X-Forwarded-For") or ""
+    return forwarded.partition(",")[0].strip() or router.session.client_ip or ""
+
+
+def server_log_tail(lines: int = 40) -> str:
+    try:
+        return "\n".join(
+            pathlib.Path("/var/log/websiteserver.log").read_text(errors="replace").splitlines()[-lines:]
+        )
+    except OSError:
+        return "(no server log yet)"
 
 
 def _country_flag(country_code: str) -> str:
@@ -342,19 +391,6 @@ def app_version() -> str:
     return f"0.1.0 ({sha})" if sha else "0.1.0"
 
 
-def changelog_markdown() -> str:
-    """Full git history rendered as markdown, newest first."""
-    log = _git(["git", "log", "--pretty=format:%h|%ci|%s", "-50"])
-    if not log:
-        return "_No git history available._"
-    lines = []
-    for row in log.splitlines():
-        sha, ci, subj = (row.split("|", 2) + ["", ""])[:3]
-        date = ci[:10]
-        lines.append(f"- `{sha}` **{date}** — {subj}")
-    return "# Changelog\n\n" + "\n".join(lines)
-
-
 def changelog_entries() -> list[tuple[str, str, str]]:
     """[(sha, iso-date, subject)] newest first, for the RSS feed."""
     log = _git(["git", "log", "--pretty=format:%h|%ci|%s", "-20"])
@@ -375,7 +411,7 @@ def rss_xml() -> str:
 
     changelog_items = "\n".join(
         f"<item><title>update {sha} — {subj}</title>"
-        f"<link>https://cv.story-tegu.ts.net/changelog/</link>"
+        f"<link>https://cv.story-tegu.ts.net/</link>"
         f"<guid>{sha}</guid><pubDate>{ci}</pubDate>"
         f"<description>Site update {sha}</description></item>"
         for sha, ci, subj in changelog_entries()
@@ -389,7 +425,6 @@ def rss_xml() -> str:
             ("About Frank Escudero", "about", "about", read_doc("knowledge.md")),
             ("CV — Frank Escudero", "cv", "cv", read_doc("cv.md")),
             ("Projects — Frank Escudero", "projects", "projects", read_doc("projects.md")),
-            ("About-fun", "about-fun", "about-fun", read_doc("about-fun.md")),
         )
     )
     return (
@@ -406,9 +441,7 @@ def sitemap_xml() -> str:
     """Basic XML sitemap of all public pages, for crawlers."""
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     urls = [
-        "", "/about", "/cv", "/projects", "/about-fun", "/contact",
-        "/contribute", "/architecture", "/resources", "/status",
-        "/changelog", "/deploy", "/stack", "/timeline", "/worker-log",
+        "", "/about", "/cv", "/projects", "/contact",
     ]
     entries = "\n".join(
         f"<url><loc>https://cv.story-tegu.ts.net{u}/</loc>"
@@ -457,12 +490,16 @@ def page_footer() -> rx.Component:
             color="#64748b",
             fontFamily="ui-monospace, Menlo, monospace",
         ),
-        rx.link(
-            "worker log",
-            href="/worker-log",
-            fontSize="0.75rem",
-            color="#64748b",
-            fontFamily="ui-monospace, Menlo, monospace",
+        rx.cond(
+            State.is_admin,
+            rx.link(
+                "admin",
+                href="/admin",
+                fontSize="0.75rem",
+                color="#64748b",
+                fontFamily="ui-monospace, Menlo, monospace",
+            ),
+            rx.text("", fontSize="0.75rem"),
         ),
         justify="center",
         width="100%",
@@ -530,6 +567,7 @@ def markdown_page(title: str, doc: str, body: str) -> rx.Component:
     """Shared layout for content pages: heading + markdown body + footer nav."""
     return rx.center(
         rx.vstack(
+            auth_menu(),
             rx.heading(title, size="4", color="#e8ecf4"),
             rx.link("Back to main", href="/", color=ACCENT, fontSize="0.85rem"),
             rx.markdown(body, color="#c9d2e3"),
@@ -633,13 +671,6 @@ def worker_run_summary() -> list[dict[str, str]]:
     return [runs[n] for n in reversed(order)]
 
 
-def worker_log_tail(lines: int = 60) -> str:
-    try:
-        return "\n".join(WORKER_LOG.read_text(errors="replace").splitlines()[-lines:])
-    except OSError:
-        return "(no worker log yet)"
-
-
 def system_uptime() -> str:
     """Human uptime + boot time from /proc/uptime. '' if unavailable."""
     try:
@@ -652,170 +683,6 @@ def system_uptime() -> str:
         return f"{h}h {m}m (boot {boot})"
     except Exception:  # noqa: BLE001
         return ""
-
-
-def uptime_seconds() -> int:
-    """Uptime in whole seconds (seed for the live client-side ticker)."""
-    try:
-        return int(float(pathlib.Path("/proc/uptime").read_text().split()[0]))
-    except Exception:  # noqa: BLE001
-        return 0
-
-
-def uptime_ticker_js() -> str:
-    """JS that ticks a live uptime clock (#cd-uptime) once per second."""
-    return (
-        "if (!window.uptimeStarted) {"
-        "  window.uptimeStarted = true;"
-        "  var start=" + str(int(time.time())) + "-" + str(uptime_seconds()) + ";"
-        "  function fmt(s){var d=Math.floor(s/86400),h=Math.floor(s%86400/3600),"
-        "  m=Math.floor(s%3600/60),sec=s%60;"
-        "  var out='';"
-        "  if(d)out+=d+'d ';"
-        "  out+=('0'+h).slice(-2)+':'+('0'+m).slice(-2)+':'+('0'+sec).slice(-2);"
-        "  return out;}"
-        "  setInterval(function(){"
-        "    var el=document.getElementById('cd-uptime');"
-        "    if(el) el.textContent=fmt(Math.floor(Date.now()/1000)-start);"
-        "  },1000);"
-        "}"
-    )
-
-
-def worker_log_page() -> rx.Component:
-    runs = worker_run_summary()
-    summary = [
-        rx.text("No worker runs logged yet.", color=MUTED)
-        if not runs
-        else rx.vstack(
-            *[
-                rx.box(
-                    rx.hstack(
-                        rx.text(f"run {d['run']}", color=ACCENT, fontWeight="600"),
-                        rx.text(d["ts"], color=MUTED, fontSize="0.8rem"),
-                        justify="between",
-                        width="100%",
-                    ),
-                    rx.text(d.get("start", ""), color="#c9d2e3", fontSize="0.85rem"),
-                    rx.text(
-                        f"{d.get('end', '-')}  {d.get('status', '')}",
-                        color=MUTED,
-                        fontSize="0.8rem",
-                    ),
-                    background="#131826",
-                    border="1px solid #2a3247",
-                    borderRadius="0.5rem",
-                    padding="0.7rem 0.9rem",
-                    width="100%",
-                )
-                for d in runs
-            ],
-            spacing="2",
-            width="100%",
-        ),
-    ]
-    return rx.center(
-        rx.vstack(
-            rx.heading("worker log", size="4", color="#e8ecf4"),
-            rx.link("Back to main", href="/", color=ACCENT, fontSize="0.85rem"),
-            rx.text("per-run summary (most recent first)", color=MUTED, fontSize="0.8rem"),
-            *summary,
-            rx.text("raw tail", color=MUTED, fontSize="0.8rem"),
-            rx.box(
-                rx.text(worker_log_tail(), whiteSpace="pre-wrap", color="#c9d2e3", fontSize="0.75rem"),
-                background="#0d1117",
-                border="1px solid #2a3247",
-                borderRadius="0.5rem",
-                padding="0.7rem 0.9rem",
-                width="100%",
-                overflowX="auto",
-            ),
-            page_footer(),
-            spacing="4",
-            width="min(860px, 92vw)",
-            padding="2.5rem 1rem",
-            align="center",
-        ),
-        width="100%",
-        minHeight="100vh",
-        background=BG,
-        fontFamily="ui-monospace, Menlo, monospace",
-    )
-
-
-def status_page() -> rx.Component:
-    """Live server/worker status: version, uptime, last worker runs."""
-    runs = worker_run_summary()
-    return rx.center(
-        rx.vstack(
-            rx.heading("status", size="4", color="#e8ecf4"),
-            rx.link("Back to main", href="/", color=ACCENT, fontSize="0.85rem"),
-            rx.box(
-                rx.vstack(
-                    rx.hstack(
-                        rx.text("app version", color=MUTED, fontSize="0.8rem"),
-                        rx.text(VERSION_LABEL, color="#c9d2e3"),
-                        justify="between",
-                        width="100%",
-                    ),
-                    rx.hstack(
-                        rx.text("updated", color=MUTED, fontSize="0.8rem"),
-                        rx.text(UPDATED_LABEL, color="#c9d2e3"),
-                        justify="between",
-                        width="100%",
-                    ),
-                    rx.hstack(
-                        rx.text("server uptime", color=MUTED, fontSize="0.8rem"),
-                        rx.text(
-                            system_uptime() or "n/a",
-                            color="#c9d2e3",
-                            id="cd-uptime",
-                        ),
-                        justify="between",
-                        width="100%",
-                    ),
-                    rx.hstack(
-                        rx.text("worker runs", color=MUTED, fontSize="0.8rem"),
-                        rx.text(str(len(runs)), color="#c9d2e3"),
-                        justify="between",
-                        width="100%",
-                    ),
-                    rx.text(
-                        "All pages: 200 · log sentinel: 0 B · Funnel: on",
-                        color=MUTED,
-                        fontSize="0.8rem",
-                    ),
-                    spacing="2",
-                    width="100%",
-                ),
-                background="#131826",
-                border="1px solid #2a3247",
-                borderRadius="0.5rem",
-                padding="0.9rem 1rem",
-                width="100%",
-            ),
-            rx.script(uptime_ticker_js()),
-            rx.text("recent worker runs", color=MUTED, fontSize="0.8rem"),
-            rx.box(
-                rx.text(worker_log_tail(20), whiteSpace="pre-wrap", color="#c9d2e3", fontSize="0.75rem"),
-                background="#0d1117",
-                border="1px solid #2a3247",
-                borderRadius="0.5rem",
-                padding="0.7rem 0.9rem",
-                width="100%",
-                overflowX="auto",
-            ),
-            page_footer(),
-            spacing="4",
-            width="min(860px, 92vw)",
-            padding="2.5rem 1rem",
-            align="center",
-        ),
-        width="100%",
-        minHeight="100vh",
-        background=BG,
-        fontFamily="ui-monospace, Menlo, monospace",
-    )
 
 
 def chat_scroll_js() -> str:
@@ -926,15 +793,162 @@ class State(rx.State):
     search_results: list[dict[str, str]] = []
     searched: bool = False
 
+    # Auth session: the cookie holds an opaque token; identity is re-verified
+    # against site_store.sessions.json on every page load, never trusted from
+    # the client alone.
+    session_token: str = rx.Cookie("", name="cv_sess", max_age=30 * 86400, same_site="lax", secure=False)
+    user_email: str = ""
+    user_name: str = ""
+    user_role: str = ""
+    is_admin: bool = False
+    auth_error: str = ""
+
+    # Per-session analytics/transcript identifiers.
+    conv_id: str = ""
+    visitor_ip: str = ""
+    visitor_geo: dict[str, str] = {}
+
+    # Admin dashboard payload (populated only by load_admin after token check).
+    admin_stats: dict[str, int] = {}
+    admin_locations: list[dict[str, object]] = []
+    admin_pages: list[dict[str, object]] = []
+    admin_visits: list[dict[str, object]] = []
+    admin_convs: list[dict[str, str]] = []
+    admin_log: str = ""
+
+    @rx.var
+    def is_logged_in(self) -> bool:
+        return bool(self.user_email)
+
+    def _restore_session(self) -> None:
+        """Re-derive identity from the cookie token (runs on every page load)."""
+        token = self.session_token or ""
+        sess = site_store.validate_session(token)
+        if sess is None:
+            if token:
+                self.session_token = ""
+            self.user_email = ""
+            self.user_name = ""
+            self.user_role = ""
+            self.is_admin = False
+            return
+        self.user_email = sess["email"]
+        self.user_name = sess.get("name", "") or sess["email"].split("@")[0]
+        self.user_role = sess["role"]
+        self.is_admin = sess["role"] == "admin"
+
+    async def _record_visit(self) -> None:
+        """Log a page view into the analytics store (skips the admin's own views).
+
+        Never blocks page load on a geo lookup: writes immediately with any
+        cached geo and lets a background task enrich + backfill the row.
+        """
+        try:
+            if self.user_role == "admin":
+                return
+            router = self.router
+            headers = router.headers
+            raw = getattr(headers, "raw_headers", None) or {}
+            ip = _real_client_ip(router)
+            path = getattr(router.url, "path", None) or "/"
+            if path in ("", "/index"):
+                path = "/"
+            ua = raw.get("user-agent") or raw.get("User-Agent") or ""
+            ref = raw.get("referer") or raw.get("Referer") or ""
+            lang = headers.accept_language or ""
+            geo: dict[str, str] = {}
+            with _GEO_LOCK:
+                cached = _GEO_CACHE.get(ip)
+                if cached:
+                    geo = dict(cached)
+            site_store.log_visit(path=path, ip=ip, geo=geo, lang=lang, ua=ua, ref=ref)
+            if cached is None and ip:
+                asyncio.get_running_loop().create_task(_enrich_visit(ip))
+        except Exception:  # noqa: BLE001
+            logger.exception("visit recording failed")
+
+    async def load_home(self):
+        """on_load for `/`: restore session, log the visit, probe the browser."""
+        self._restore_session()
+        await self._record_visit()
+        return rx.call_script(BROWSER_INFO_JS, callback=State.on_browser_info)
+
+    async def load_public(self) -> None:
+        """on_load for public content pages: restore session + log the visit."""
+        self._restore_session()
+        await self._record_visit()
+
+    def load_profile(self) -> None:
+        self._restore_session()
+
+    async def load_admin(self):
+        """on_load for `/admin`: guard, then pull the analytics payload."""
+        self._restore_session()
+        if not self.is_admin:
+            return rx.redirect("/")
+        data = site_store.admin_data()
+        self.admin_stats = {
+            "total": data["total"],
+            "unique": data["unique"],
+            "convs": data["convs"],
+            "messages": data["messages"],
+        }
+        self.admin_locations = data["locations"]
+        self.admin_pages = data["pages"]
+        self.admin_visits = data["recent"]
+        self.admin_convs = data["convs_list"]
+        self.admin_log = server_log_tail(40)
+
+    async def do_login(self, form_data: dict):
+        email = str(form_data.get("email") or "").strip().lower()
+        password = str(form_data.get("password") or "")
+        ok, msg, user = site_store.authenticate(email, password)
+        if not ok:
+            self.auth_error = msg
+            return
+        self.auth_error = ""
+        self.user_email = email
+        self.user_name = user.get("name", "") or email.split("@")[0]
+        self.user_role = user["role"]
+        self.is_admin = user["role"] == "admin"
+        self.session_token = site_store.create_session(email, user["role"], self.user_name)
+        return rx.redirect("/")
+
+    async def do_signup(self, form_data: dict):
+        name = str(form_data.get("name") or "").strip()
+        email = str(form_data.get("email") or "").strip().lower()
+        password = str(form_data.get("password") or "")
+        confirm = str(form_data.get("confirm") or "")
+        if password != confirm:
+            self.auth_error = "Passwords do not match."
+            return
+        ok, msg = site_store.create_user(name, email, password)
+        if not ok:
+            self.auth_error = msg
+            return
+        self.auth_error = ""
+        self.user_email = email
+        self.user_name = name or email.split("@")[0]
+        self.user_role = "user"
+        self.is_admin = False
+        self.session_token = site_store.create_session(email, "user", self.user_name)
+        return rx.redirect("/")
+
+    async def do_signout(self):
+        if self.session_token:
+            site_store.destroy_session(self.session_token)
+        self.session_token = ""
+        self.user_email = ""
+        self.user_name = ""
+        self.user_role = ""
+        self.is_admin = False
+        return rx.redirect("/")
+
     def do_search(self, form_data: dict):
         """Full-text search over the markdown docs (instant, server-side)."""
         q = str(form_data.get("search") or "").strip()
         self.searched = True
         self.search_results = search_docs(q)
-
-    def probe_browser(self):
-        """on_load hook: ask the client for its fingerprint, feed on_browser_info."""
-        return rx.call_script(BROWSER_INFO_JS, callback=State.on_browser_info)
 
     async def on_browser_info(self, info: str):
         """First event: browser fingerprint from the client -> personal greeting.
@@ -971,8 +985,12 @@ class State(rx.State):
         forwarded = raw.get("x-forwarded-for") or raw.get("X-Forwarded-For") or ""
         real_ip = forwarded.partition(",")[0].strip() or ip
         logger.info("greeting: ip=%r forwarded=%r -> real_ip=%r", ip, forwarded, real_ip)
-        geo = await _geo_lookup(real_ip)
+        geo = await _geo_for(real_ip)
         logger.info("greeting: geo=%r", geo)
+        self.visitor_ip = real_ip
+        self.visitor_geo = geo
+        if not self.conv_id:
+            self.conv_id = "c_" + secrets.token_hex(6)
 
         # Language: prefer the browser's reported language, then the header.
         prefs = (
@@ -1164,6 +1182,11 @@ class State(rx.State):
             self.messages[-1]["content"] = (
                 "Hi! I'm Frank's assistant. Ask me anything about Frank's CV. Who are you?"
             )
+        site_store.log_conv_message(
+            self.conv_id, "assistant", self.messages[-1]["content"],
+            self.visitor_ip, self.visitor_geo,
+        )
+        site_store.backfill_geo(self.visitor_ip, self.visitor_geo)
 
     async def handle_submit(self, form_data: dict):
         # Read straight from the DOM's FormData at submit time (the input is
@@ -1172,7 +1195,10 @@ class State(rx.State):
         q = str(form_data.get("question") or "").strip()
         if not q or self.busy:
             return
+        if not self.conv_id:
+            self.conv_id = "c_" + secrets.token_hex(6)
         self.messages.append({"role": "user", "content": q})
+        site_store.log_conv_message(self.conv_id, "user", q, self.visitor_ip, self.visitor_geo)
         self.busy = True
         self.messages.append({"role": "assistant", "content": ""})
         yield
@@ -1207,6 +1233,10 @@ class State(rx.State):
             self.messages[-1]["content"] = (
                 f"(chat backend error: {exc.__class__.__name__})"
             )
+        site_store.log_conv_message(
+            self.conv_id, "assistant", self.messages[-1]["content"],
+            self.visitor_ip, self.visitor_geo,
+        )
         self.busy = False
         yield rx.call_script(chat_scroll_js())
 
@@ -1373,7 +1403,7 @@ def index() -> rx.Component:
         rx.vstack(
             rx.hstack(
                 rx.heading("Agentic Generated Self-Hosted AI Webserver", size="5", color="#e8ecf4"),
-                rx.link("timeline", href="/timeline", color=MUTED, fontSize="0.8rem"),
+                auth_menu(),
                 width="min(720px, 92vw)",
                 justify="between",
                 alignItems="center",
@@ -1384,20 +1414,10 @@ def index() -> rx.Component:
             chat_panel(),
             search_panel(),
             rx.hstack(
-                rx.link("About me", href="/about", color=ACCENT),
+                rx.link("About", href="/about", color=ACCENT),
                 rx.link("CV", href="/cv", color=ACCENT),
-                rx.link("Deployment", href="/deploy", color=ACCENT),
-                rx.link("Stack", href="/stack", color=ACCENT),
-                rx.link("Timeline", href="/timeline", color=ACCENT),
                 rx.link("Projects", href="/projects", color=ACCENT),
-                rx.link("About-fun", href="/about-fun", color=ACCENT),
                 rx.link("Contact", href="/contact", color=ACCENT),
-                rx.link("Contribute", href="/contribute", color=ACCENT),
-                rx.link("Architecture", href="/architecture", color=ACCENT),
-                rx.link("Resources", href="/resources", color=ACCENT),
-                rx.link("Status", href="/status", color=ACCENT),
-                rx.link("Changelog", href="/changelog", color=ACCENT),
-                rx.text("cv", color=MUTED),
                 spacing="4",
                 fontSize="0.85rem",
                 width="min(720px, 92vw)",
@@ -1430,6 +1450,7 @@ def about() -> rx.Component:
     body = read_doc("knowledge.md")
     return rx.center(
         rx.vstack(
+            auth_menu(),
             rx.heading("About me", size="4", color="#e8ecf4"),
             rx.link("Back to main", href="/", color=ACCENT, fontSize="0.85rem"),
             rx.markdown(body, color="#c9d2e3"),
@@ -1450,15 +1471,11 @@ def cv() -> rx.Component:
     return markdown_page("Frank Escudero — CV", "cv.md", read_doc("cv.md"))
 
 
-def deploy() -> rx.Component:
-    body = read_doc("deploy.md") + "\n\n" + countdown_label()
-    return markdown_page("Deployment", "deploy.md", body)
-
-
 def contact() -> rx.Component:
     body = read_doc("contact.md")
     return rx.center(
         rx.vstack(
+            auth_menu(),
             rx.heading("Contact", size="4", color="#e8ecf4"),
             rx.link("Back to main", href="/", color=ACCENT, fontSize="0.85rem"),
             rx.markdown(body, color="#c9d2e3"),
@@ -1479,35 +1496,401 @@ def projects() -> rx.Component:
     return markdown_page("Projects — Frank Escudero", "projects.md", read_doc("projects.md"))
 
 
-def changelog() -> rx.Component:
-    return markdown_page("Changelog — Frank Escudero CV", "changelog.md", changelog_markdown())
-
-
-def about_fun() -> rx.Component:
-    return markdown_page("About-fun — Frank Escudero", "about-fun.md", read_doc("about-fun.md"))
-
-
-def contribute() -> rx.Component:
-    return markdown_page("Contributing — Frank Escudero CV", "contribute.md", read_doc("contribute.md"))
-
-
-def architecture() -> rx.Component:
-    return markdown_page("Architecture — Frank Escudero CV", "architecture.md", read_doc("architecture.md"))
-
-
-def resources() -> rx.Component:
-    return markdown_page("Resources — Frank Escudero", "resources.md", read_doc("resources.md"))
-def stack() -> rx.Component:
-    return markdown_page("Tech stack", "stack.md", read_doc("stack.md"))
-
-
-def timeline() -> rx.Component:
-    return markdown_page(
-        "Timeline",
-        "timeline.md",
-        "# Timeline\n\n" + read_doc("timeline.md"),
+# --------------------------------------------------------------------------- #
+# Auth + analytics pages
+# --------------------------------------------------------------------------- #
+def auth_menu() -> rx.Component:
+    """Small profile menu: sign-in links when anonymous, dropdown when signed in."""
+    return rx.hstack(
+        rx.cond(
+            State.is_logged_in,
+            rx.menu.root(
+                rx.menu.trigger(
+                    rx.button(
+                        f"Hi {State.user_name} ▾",
+                        size="1",
+                        variant="outline",
+                        background="transparent",
+                        color=ACCENT,
+                        borderColor="#2a3247",
+                    ),
+                ),
+                rx.menu.content(
+                    rx.menu.item("Profile", on_click=rx.redirect("/profile")),
+                    rx.cond(
+                        State.is_admin,
+                        rx.menu.item("Admin dashboard", on_click=rx.redirect("/admin")),
+                    ),
+                    rx.menu.item("Sign out", on_click=State.do_signout),
+                    background="#131826",
+                    color="#e8ecf4",
+                ),
+            ),
+            rx.hstack(
+                rx.link("Sign in", href="/login", color=MUTED, fontSize="0.85rem"),
+                rx.link("Sign up", href="/signup", color=ACCENT, fontSize="0.85rem"),
+                spacing="3",
+            ),
+        ),
+        align="center",
     )
 
+
+def auth_error_box() -> rx.Component:
+    return rx.cond(
+        State.auth_error != "",
+        rx.box(
+            State.auth_error,
+            color="#fca5a5",
+            background="#3f1214",
+            border="1px solid #7f1d1d",
+            borderRadius="0.5rem",
+            padding="0.5rem 0.8rem",
+            width="100%",
+            fontSize="0.85rem",
+        ),
+    )
+
+
+def _auth_input(name: str, placeholder: str, type_: str = "text") -> rx.Component:
+    return rx.el.input(
+        name=name,
+        placeholder=placeholder,
+        type=type_,
+        required=True,
+        auto_complete="on",
+        style={
+            "width": "100%",
+            "background": "#0d1117",
+            "color": "#e8ecf4",
+            "border": "1px solid #2a3247",
+            "borderRadius": "0.5rem",
+            "padding": "0.6rem 0.8rem",
+            "fontFamily": "inherit",
+        },
+    )
+
+
+def login_page() -> rx.Component:
+    return rx.center(
+        rx.vstack(
+            auth_menu(),
+            rx.heading("Sign in", size="4", color="#e8ecf4"),
+            rx.text("Sign in to get updates from this site.", color=MUTED, fontSize="0.85rem"),
+            rx.el.form(
+                rx.vstack(
+                    _auth_input("email", "email", "email"),
+                    _auth_input("password", "password", "password"),
+                    rx.button("Sign in", type="submit", background=ACCENT, color="#0b0e14", fontWeight="600"),
+                    spacing="3",
+                    width="100%",
+                ),
+                on_submit=State.do_login,
+                width="100%",
+            ),
+            auth_error_box(),
+            rx.hstack(
+                rx.link("Create an account", href="/signup", color=ACCENT, fontSize="0.85rem"),
+                rx.link("Back to main", href="/", color=MUTED, fontSize="0.85rem"),
+                spacing="4",
+            ),
+            page_footer(),
+            spacing="4",
+            width="min(420px, 92vw)",
+            padding="2.5rem 1rem",
+            align="center",
+        ),
+        width="100%",
+        minHeight="100vh",
+        background=BG,
+        fontFamily="ui-monospace, Menlo, monospace",
+    )
+
+
+def signup_page() -> rx.Component:
+    return rx.center(
+        rx.vstack(
+            auth_menu(),
+            rx.heading("Create account", size="4", color="#e8ecf4"),
+            rx.text("Signing up subscribes you to updates from this site.", color=MUTED, fontSize="0.85rem"),
+            rx.el.form(
+                rx.vstack(
+                    _auth_input("name", "name (optional)"),
+                    _auth_input("email", "email", "email"),
+                    _auth_input("password", "password (min 8 chars)", "password"),
+                    _auth_input("confirm", "confirm password", "password"),
+                    rx.button("Sign up", type="submit", background=ACCENT, color="#0b0e14", fontWeight="600"),
+                    spacing="3",
+                    width="100%",
+                ),
+                on_submit=State.do_signup,
+                width="100%",
+            ),
+            auth_error_box(),
+            rx.hstack(
+                rx.link("Already have an account? Sign in", href="/login", color=ACCENT, fontSize="0.85rem"),
+                rx.link("Back to main", href="/", color=MUTED, fontSize="0.85rem"),
+                spacing="4",
+            ),
+            page_footer(),
+            spacing="4",
+            width="min(420px, 92vw)",
+            padding="2.5rem 1rem",
+            align="center",
+        ),
+        width="100%",
+        minHeight="100vh",
+        background=BG,
+        fontFamily="ui-monospace, Menlo, monospace",
+    )
+
+
+def profile_page() -> rx.Component:
+    return rx.center(
+        rx.vstack(
+            auth_menu(),
+            rx.heading("Profile", size="4", color="#e8ecf4"),
+            rx.cond(
+                State.is_logged_in,
+                rx.vstack(
+                    rx.box(
+                        rx.vstack(
+                            rx.hstack(
+                                rx.text("name", color=MUTED, fontSize="0.8rem"),
+                                rx.text(State.user_name, color="#c9d2e3"),
+                                justify="between",
+                                width="100%",
+                            ),
+                            rx.hstack(
+                                rx.text("email", color=MUTED, fontSize="0.8rem"),
+                                rx.text(State.user_email, color="#c9d2e3"),
+                                justify="between",
+                                width="100%",
+                            ),
+                            rx.hstack(
+                                rx.text("role", color=MUTED, fontSize="0.8rem"),
+                                rx.text(State.user_role, color="#c9d2e3"),
+                                justify="between",
+                                width="100%",
+                            ),
+                            rx.hstack(
+                                rx.text("updates", color=MUTED, fontSize="0.8rem"),
+                                rx.text("on", color=ACCENT),
+                                justify="between",
+                                width="100%",
+                            ),
+                            spacing="2",
+                            width="100%",
+                        ),
+                        background="#131826",
+                        border="1px solid #2a3247",
+                        borderRadius="0.5rem",
+                        padding="0.9rem 1rem",
+                        width="100%",
+                    ),
+                    rx.cond(
+                        State.is_admin,
+                        rx.link("Open admin dashboard", href="/admin", color=ACCENT, fontSize="0.85rem"),
+                    ),
+                    rx.button("Sign out", on_click=State.do_signout, background="#3b82f6", color="#0b0e14", fontWeight="600"),
+                    spacing="4",
+                    width="100%",
+                ),
+                rx.vstack(
+                    rx.text("You are not signed in.", color="#c9d2e3"),
+                    rx.link("Sign in", href="/login", color=ACCENT, fontSize="0.85rem"),
+                    rx.link("Back to main", href="/", color=MUTED, fontSize="0.85rem"),
+                    spacing="3",
+                ),
+            ),
+            page_footer(),
+            spacing="4",
+            width="min(520px, 92vw)",
+            padding="2.5rem 1rem",
+            align="center",
+        ),
+        width="100%",
+        minHeight="100vh",
+        background=BG,
+        fontFamily="ui-monospace, Menlo, monospace",
+    )
+
+
+def admin_table(rows, key_col: str, val_col: str, empty_text: str) -> rx.Component:
+    return rx.cond(
+        rows.length() == 0,
+        rx.text(empty_text, color=MUTED, fontSize="0.8rem"),
+        rx.vstack(
+            rx.foreach(
+                rows,
+                lambda row: rx.hstack(
+                    rx.text(row[key_col], color="#c9d2e3", fontSize="0.85rem", flex="1"),
+                    rx.text(row[val_col], color=ACCENT, fontSize="0.85rem", fontWeight="600"),
+                    justify="between",
+                    width="100%",
+                    background="#131826",
+                    border="1px solid #2a3247",
+                    borderRadius="0.5rem",
+                    padding="0.5rem 0.9rem",
+                ),
+            ),
+            spacing="2",
+            width="100%",
+        ),
+    )
+
+
+def admin_visit_list() -> rx.Component:
+    return rx.cond(
+        State.admin_visits.length() == 0,
+        rx.text("No visits recorded yet.", color=MUTED, fontSize="0.8rem"),
+        rx.vstack(
+            rx.foreach(
+                State.admin_visits,
+                lambda v: rx.hstack(
+                    rx.text(v["ts"], color=MUTED, fontSize="0.75rem", flex="1"),
+                    rx.text(v["path"], color="#c9d2e3", fontSize="0.8rem"),
+                    rx.text(v["where"], color=ACCENT, fontSize="0.8rem"),
+                    rx.text(v["ip"], color=MUTED, fontSize="0.75rem"),
+                    justify="between",
+                    width="100%",
+                    background="#131826",
+                    border="1px solid #2a3247",
+                    borderRadius="0.5rem",
+                    padding="0.45rem 0.9rem",
+                    flexWrap="wrap",
+                ),
+            ),
+            spacing="2",
+            width="100%",
+        ),
+    )
+
+
+def admin_conversations() -> rx.Component:
+    return rx.cond(
+        State.admin_convs.length() == 0,
+        rx.text("No conversations recorded yet.", color=MUTED, fontSize="0.8rem"),
+        rx.vstack(
+            rx.foreach(
+                State.admin_convs,
+                lambda r: rx.cond(
+                    r["kind"] == "header",
+                    rx.box(
+                        rx.hstack(
+                            rx.text(f"#{r['id']}", color=ACCENT, fontSize="0.8rem", fontWeight="600"),
+                            rx.text(r["created"], color=MUTED, fontSize="0.75rem"),
+                            rx.text(r["location"], color=MUTED, fontSize="0.75rem"),
+                            justify="between",
+                            width="100%",
+                        ),
+                        background="#131826",
+                        border="1px solid #2a3247",
+                        borderRadius="0.5rem",
+                        padding="0.5rem 0.9rem",
+                        width="100%",
+                    ),
+                    rx.box(
+                        rx.text(r["content"], whiteSpace="pre-wrap", color="#c9d2e3", fontSize="0.85rem"),
+                        background=rx.cond(r["role"] == "user", "#1f2937", "#182032"),
+                        border="1px solid #2f3b52",
+                        borderRadius="0.6rem",
+                        padding="0.5rem 0.8rem",
+                        width="100%",
+                    ),
+                ),
+            ),
+            spacing="2",
+            width="100%",
+        ),
+    )
+
+
+def admin_page() -> rx.Component:
+    return rx.center(
+        rx.vstack(
+            auth_menu(),
+            rx.heading("Admin dashboard", size="4", color="#e8ecf4"),
+            rx.cond(
+                State.is_admin,
+                rx.vstack(
+                    rx.hstack(
+                        *[
+                            rx.box(
+                                rx.vstack(
+                                    rx.text(label, color=MUTED, fontSize="0.75rem"),
+                                    rx.text(State.admin_stats[key], color="#e8ecf4", fontSize="1.4rem", fontWeight="700"),
+                                    spacing="1",
+                                ),
+                                background="#131826",
+                                border="1px solid #2a3247",
+                                borderRadius="0.5rem",
+                                padding="1rem",
+                                flex="1",
+                                width="100%",
+                            )
+                            for label, key in [
+                                ("visits", "total"),
+                                ("visitors", "unique"),
+                                ("conversations", "convs"),
+                                ("messages", "messages"),
+                            ]
+                        ],
+                        spacing="3",
+                        width="100%",
+                        flexWrap="wrap",
+                    ),
+                    rx.heading("Visitor locations", size="2", color="#e8ecf4", marginTop="1rem"),
+                    admin_table(State.admin_locations, "location", "count", "No visits yet."),
+                    rx.heading("Pages", size="2", color="#e8ecf4", marginTop="1rem"),
+                    admin_table(State.admin_pages, "path", "count", "No visits yet."),
+                    rx.heading("Recent visits", size="2", color="#e8ecf4", marginTop="1rem"),
+                    admin_visit_list(),
+                    rx.heading("Conversations", size="2", color="#e8ecf4", marginTop="1rem"),
+                    admin_conversations(),
+                    rx.heading("Server log", size="2", color="#e8ecf4", marginTop="1rem"),
+                    rx.box(
+                        rx.text(State.admin_log, whiteSpace="pre-wrap", color="#c9d2e3", fontSize="0.75rem"),
+                        background="#0d1117",
+                        border="1px solid #2a3247",
+                        borderRadius="0.5rem",
+                        padding="0.7rem 0.9rem",
+                        width="100%",
+                        overflowX="auto",
+                    ),
+                    rx.text(f"server uptime: {system_uptime()} · worker runs: {len(worker_run_summary())}",
+                            color=MUTED, fontSize="0.8rem"),
+                    rx.button("Sign out", on_click=State.do_signout, background="#3b82f6", color="#0b0e14", fontWeight="600"),
+                    spacing="3",
+                    width="100%",
+                ),
+                rx.vstack(
+                    rx.text("This area is restricted to the admin.", color="#c9d2e3"),
+                    rx.link("Sign in", href="/login", color=ACCENT, fontSize="0.85rem"),
+                    rx.link("Back to main", href="/", color=MUTED, fontSize="0.85rem"),
+                    spacing="3",
+                ),
+            ),
+            page_footer(),
+            spacing="4",
+            width="min(920px, 94vw)",
+            padding="2.5rem 1rem",
+            align="center",
+        ),
+        width="100%",
+        minHeight="100vh",
+        background=BG,
+        fontFamily="ui-monospace, Menlo, monospace",
+    )
+
+
+try:
+    _boot = site_store.ensure_admin()
+    if _boot:
+        logger.warning("ADMIN BOOTSTRAP: email=%s password=%s (also in /web/data/.admin-bootstrap)",
+                       site_store.ADMIN_EMAIL, _boot)
+except Exception:  # noqa: BLE001
+    logger.exception("admin bootstrap failed")
 
 app = rx.App(
     head_components=[
@@ -1524,21 +1907,15 @@ app = rx.App(
         rx.el.meta(name="twitter:description", content="Frank Escudero CV - zero-trust, self-hosted, AI-updated virtual employee."),
     ],
 )
-app.add_page(index, route="/", title="Frank Escudero — virtual-employee CV", on_load=State.probe_browser)
-app.add_page(about, route="/about", title="About — Frank Escudero")
-app.add_page(cv, route="/cv", title="CV — Frank Escudero")
-app.add_page(deploy, route="/deploy", title="Deployment — Frank Escudero CV")
-app.add_page(contact, route="/contact", title="Contact — Frank Escudero CV")
-app.add_page(status_page, route="/status", title="Status — Frank Escudero CV")
-app.add_page(projects, route="/projects", title="Projects — Frank Escudero CV")
-app.add_page(changelog, route="/changelog", title="Changelog — Frank Escudero CV")
-app.add_page(about_fun, route="/about-fun", title="About-fun — Frank Escudero")
-app.add_page(contribute, route="/contribute", title="Contributing — Frank Escudero CV")
-app.add_page(architecture, route="/architecture", title="Architecture — Frank Escudero CV")
-app.add_page(resources, route="/resources", title="Resources — Frank Escudero")
-app.add_page(stack, route="/stack", title="Tech stack — Frank Escudero CV")
-app.add_page(timeline, route="/timeline", title="Timeline — Frank Escudero CV")
-app.add_page(worker_log_page, route="/worker-log", title="Worker log — Frank Escudero CV")
+app.add_page(index, route="/", title="Frank Escudero — virtual-employee CV", on_load=State.load_home)
+app.add_page(about, route="/about", title="About — Frank Escudero", on_load=State.load_public)
+app.add_page(cv, route="/cv", title="CV — Frank Escudero", on_load=State.load_public)
+app.add_page(contact, route="/contact", title="Contact — Frank Escudero CV", on_load=State.load_public)
+app.add_page(projects, route="/projects", title="Projects — Frank Escudero CV", on_load=State.load_public)
+app.add_page(login_page, route="/login", title="Sign in — Frank Escudero CV", on_load=State.load_public)
+app.add_page(signup_page, route="/signup", title="Sign up — Frank Escudero CV", on_load=State.load_public)
+app.add_page(profile_page, route="/profile", title="Profile — Frank Escudero CV", on_load=State.load_profile)
+app.add_page(admin_page, route="/admin", title="Admin — Frank Escudero CV", on_load=State.load_admin)
 
 
 async def _rss(request):

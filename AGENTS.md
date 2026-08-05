@@ -41,9 +41,9 @@
 ### A. Syntax + import (instant, offline)
 ```bash
 cd /web
-/web/.venv/bin/python -m py_compile main.py rxconfig.py               # all page comps live in main.py; there is NO app/ package
-/web/.venv/bin/python - <<'PY'                                        # imports OK?
-import main; print("routes:", sorted([r.rule for r in main.app.api.routes]) if hasattr(main.app,"api") else "ok")
+/web/.venv/bin/python -m py_compile main.py site_store.py rxconfig.py    # all page comps live in main.py; there is NO app/ package
+/web/.venv/bin/python - <<'PY'                                           # imports OK? (bootstraps admin on first run)
+import main; print("routes:", sorted(r.path for r in main.app._api.routes if hasattr(r,"path")))
 PY
 ```
 ### B. Restart + HTTP contract (after `/etc/init.d/websiteserver restart`, sleep 9)
@@ -55,12 +55,16 @@ assert "Agentic Generated Self-Hosted AI Webserver" in h, "big title missing"
 assert h.lower().count("work in progress") == 1, "WIP text duplicated (case-insensitive)"
 assert re.search(r"v0\.1\.0 \([a-f0-9]{7}\)", h), "footer version missing/odd"
 assert "Built with Reflex" not in h, "reflex badge leaked"
+assert "Sign in" in h and "Sign up" in h, "auth menu missing on home"
 print("contract OK:", re.findall(r"Deployment in \d\d:\d\d:\d\d", h)[0])
 PY
 echo "/ -> $(curl -sS -m6 -o /dev/null -w %{http_code} http://127.0.0.1:8000/)"
-for r in /about/ /cv/ /deploy/ /stack/ /timeline/; do
+for r in /about/ /cv/ /projects/ /contact/ /login/ /signup/ /profile/ /admin/; do
   printf "%-9s " "$r"; curl -sS -m5 -o /dev/null -w "%{http_code}\n" "http://127.0.0.1:8000$r"
 done
+# admin SSR must NOT leak data to anonymous curl
+curl -fsS -m6 http://127.0.0.1:8000/admin/ | grep -q "This area is restricted to the admin." \
+  && echo "admin SSR safe" || echo "ADMIN SSR LEAK - fix before commit"
 ```
 ### C. Tailscale funnel (external) — check after B passes
 ```bash
