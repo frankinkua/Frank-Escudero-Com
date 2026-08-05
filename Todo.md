@@ -1,11 +1,11 @@
 # TODO — cv.story-tegu.ts.net (Frank Escudero CV)
 
-## Status (2026-08-05, ~07:40 UTC)
+## Status (2026-08-05, ~12:00 UTC)
 - Build: ✅ green (compiles clean, no deprecation warnings)
 - Funnel: ✅ `https://cv.story-tegu.ts.net` → 200 (tailnet `cv` @ 100.115.209.119)
 - WIP banner count: ✅ exactly 1 on `/`
 - Footer version present: ✅ `v{VERSION_LABEL}` with git SHA
-- Routes: ✅ 15 pages + `/rss` all 200
+- Routes: ✅ 15 pages + `/rss` + `/sitemap.xml` + `/robots.txt` all 200
 - Log sentinel: ✅ `tailscaled.log1.txt` = 0 B, `--no-logs-no-support` flag present
 - Worker: ⛔ intentionally OFF (do not enable)
 
