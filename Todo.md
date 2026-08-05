@@ -22,7 +22,7 @@
 - Add a `/status/` page mirroring the worker-log summary, with a live uptime counter since last boot. (done 2026-08-05)
 
 ### Nice-to-have (later)
-- Add a "contribution guide" — how to suggest changes via email or tailnet DM.
+- Add a "contribution guide" — how to suggest changes via email or tailnet DM. (done 2026-08-05 — `/contribute/`)
 - Add a `/resources/` page: tools I use daily, reading list, open-source contributions.
 - Add social / profile links section on the footer nav. (done 2026-08-05 — LinkedIn `frankeee`, GitHub `frankinkua` on `/`)
 
