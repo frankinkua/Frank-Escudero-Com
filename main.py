@@ -1318,6 +1318,7 @@ def index() -> rx.Component:
                 rx.link("Stack", href="/stack", color=ACCENT),
                 rx.link("Timeline", href="/timeline", color=ACCENT),
                 rx.link("Projects", href="/projects", color=ACCENT),
+                rx.link("About-fun", href="/about-fun", color=ACCENT),
                 rx.link("Contact", href="/contact", color=ACCENT),
                 rx.link("Status", href="/status", color=ACCENT),
                 rx.link("Changelog", href="/changelog", color=ACCENT),
@@ -1405,6 +1406,10 @@ def projects() -> rx.Component:
 
 def changelog() -> rx.Component:
     return markdown_page("Changelog — Frank Escudero CV", "changelog.md", changelog_markdown())
+
+
+def about_fun() -> rx.Component:
+    return markdown_page("About-fun — Frank Escudero", "about-fun.md", read_doc("about-fun.md"))
 def stack() -> rx.Component:
     return markdown_page("Tech stack", "stack.md", read_doc("stack.md"))
 
@@ -1432,6 +1437,7 @@ app.add_page(contact, route="/contact", title="Contact — Frank Escudero CV")
 app.add_page(status_page, route="/status", title="Status — Frank Escudero CV")
 app.add_page(projects, route="/projects", title="Projects — Frank Escudero CV")
 app.add_page(changelog, route="/changelog", title="Changelog — Frank Escudero CV")
+app.add_page(about_fun, route="/about-fun", title="About-fun — Frank Escudero")
 app.add_page(stack, route="/stack", title="Tech stack — Frank Escudero CV")
 app.add_page(timeline, route="/timeline", title="Timeline — Frank Escudero CV")
 app.add_page(worker_log_page, route="/worker-log", title="Worker log — Frank Escudero CV")

@@ -13,7 +13,7 @@
 - Wire NVIDIA GPU passthrough so Ollama can run models on GPU for faster, richer chat completions.
 - Add a `/contact/` page (email / tailnet handle) and `/projects/` page with detailed project descriptions and repos. (both shipped 2026-08-05; `/projects/` has descriptions, repos TBD)
 - Expand `cv.md` with sections: Education, Projects, Languages, Certifications, GitHub links. (done 2026-08-05)
-- Add a `/about-fun/` or `/blog/` page for informal posts, learnings, and "day in the life" entries.
+- Add a `/about-fun/` or `/blog/` page for informal posts, learnings, and "day in the life" entries. (done 2026-08-05 — `/about-fun/` from verified fun-facts data)
 - Implement search across all markdown pages (e.g., via a simple full-text index). (done 2026-08-05 — instant server-side `search_docs()` over all markdown, search box on `/`)
 
 ### Nice-to-have
