@@ -342,6 +342,19 @@ def app_version() -> str:
     return f"0.1.0 ({sha})" if sha else "0.1.0"
 
 
+def changelog_markdown() -> str:
+    """Full git history rendered as markdown, newest first."""
+    log = _git(["git", "log", "--pretty=format:%h|%ci|%s", "-50"])
+    if not log:
+        return "_No git history available._"
+    lines = []
+    for row in log.splitlines():
+        sha, ci, subj = (row.split("|", 2) + ["", ""])[:3]
+        date = ci[:10]
+        lines.append(f"- `{sha}` **{date}** — {subj}")
+    return "# Changelog\n\n" + "\n".join(lines)
+
+
 def app_updated() -> str:
     """Human-readable date the source last changed (git commit date, fallback file mtime)."""
     ci = _git(["git", "log", "-1", "--format=%ci"])
@@ -1166,6 +1179,7 @@ def index() -> rx.Component:
                 rx.link("Projects", href="/projects", color=ACCENT),
                 rx.link("Contact", href="/contact", color=ACCENT),
                 rx.link("Status", href="/status", color=ACCENT),
+                rx.link("Changelog", href="/changelog", color=ACCENT),
                 rx.text("cv", color=MUTED),
                 spacing="4",
                 fontSize="0.85rem",
@@ -1237,6 +1251,10 @@ def contact() -> rx.Component:
 
 def projects() -> rx.Component:
     return markdown_page("Projects — Frank Escudero", "projects.md", read_doc("projects.md"))
+
+
+def changelog() -> rx.Component:
+    return markdown_page("Changelog — Frank Escudero CV", "changelog.md", changelog_markdown())
 def stack() -> rx.Component:
     return markdown_page("Tech stack", "stack.md", read_doc("stack.md"))
 
@@ -1263,6 +1281,7 @@ app.add_page(deploy, route="/deploy", title="Deployment — Frank Escudero CV")
 app.add_page(contact, route="/contact", title="Contact — Frank Escudero CV")
 app.add_page(status_page, route="/status", title="Status — Frank Escudero CV")
 app.add_page(projects, route="/projects", title="Projects — Frank Escudero CV")
+app.add_page(changelog, route="/changelog", title="Changelog — Frank Escudero CV")
 app.add_page(stack, route="/stack", title="Tech stack — Frank Escudero CV")
 app.add_page(timeline, route="/timeline", title="Timeline — Frank Escudero CV")
 app.add_page(worker_log_page, route="/worker-log", title="Worker log — Frank Escudero CV")
