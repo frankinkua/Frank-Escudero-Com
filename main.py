@@ -383,6 +383,26 @@ def rss_xml() -> str:
     )
 
 
+def sitemap_xml() -> str:
+    """Basic XML sitemap of all public pages, for crawlers."""
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    urls = [
+        "", "/about", "/cv", "/projects", "/about-fun", "/contact",
+        "/contribute", "/architecture", "/resources", "/status",
+        "/changelog", "/deploy", "/stack", "/timeline", "/worker-log",
+    ]
+    entries = "\n".join(
+        f"<url><loc>https://cv.story-tegu.ts.net{u}/</loc>"
+        f"<lastmod>{now}</lastmod><changefreq>weekly</changefreq></url>"
+        for u in urls
+    )
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"{entries}\n</urlset>\n"
+    )
+
+
 def app_updated() -> str:
     """Human-readable date the source last changed (git commit date, fallback file mtime)."""
     ci = _git(["git", "log", "-1", "--format=%ci"])
@@ -615,6 +635,34 @@ def system_uptime() -> str:
         return ""
 
 
+def uptime_seconds() -> int:
+    """Uptime in whole seconds (seed for the live client-side ticker)."""
+    try:
+        return int(float(pathlib.Path("/proc/uptime").read_text().split()[0]))
+    except Exception:  # noqa: BLE001
+        return 0
+
+
+def uptime_ticker_js() -> str:
+    """JS that ticks a live uptime clock (#cd-uptime) once per second."""
+    return (
+        "if (!window.uptimeStarted) {"
+        "  window.uptimeStarted = true;"
+        "  var start=" + str(int(time.time())) + "-" + str(uptime_seconds()) + ";"
+        "  function fmt(s){var d=Math.floor(s/86400),h=Math.floor(s%86400/3600),"
+        "  m=Math.floor(s%3600/60),sec=s%60;"
+        "  var out='';"
+        "  if(d)out+=d+'d ';"
+        "  out+=('0'+h).slice(-2)+':'+('0'+m).slice(-2)+':'+('0'+sec).slice(-2);"
+        "  return out;}"
+        "  setInterval(function(){"
+        "    var el=document.getElementById('cd-uptime');"
+        "    if(el) el.textContent=fmt(Math.floor(Date.now()/1000)-start);"
+        "  },1000);"
+        "}"
+    )
+
+
 def worker_log_page() -> rx.Component:
     runs = worker_run_summary()
     summary = [
@@ -699,7 +747,11 @@ def status_page() -> rx.Component:
                     ),
                     rx.hstack(
                         rx.text("server uptime", color=MUTED, fontSize="0.8rem"),
-                        rx.text(system_uptime() or "n/a", color="#c9d2e3"),
+                        rx.text(
+                            system_uptime() or "n/a",
+                            color="#c9d2e3",
+                            id="cd-uptime",
+                        ),
                         justify="between",
                         width="100%",
                     ),
@@ -723,6 +775,7 @@ def status_page() -> rx.Component:
                 padding="0.9rem 1rem",
                 width="100%",
             ),
+            rx.script(uptime_ticker_js()),
             rx.text("recent worker runs", color=MUTED, fontSize="0.8rem"),
             rx.box(
                 rx.text(worker_log_tail(20), whiteSpace="pre-wrap", color="#c9d2e3", fontSize="0.75rem"),
@@ -1466,7 +1519,13 @@ async def _rss(request):
     return Response(rss_xml(), media_type="application/rss+xml; charset=utf-8")
 
 
+async def _sitemap(request):
+    from starlette.responses import Response
+    return Response(sitemap_xml(), media_type="application/xml; charset=utf-8")
+
+
 try:
     app._api.add_route("/rss", _rss)
+    app._api.add_route("/sitemap.xml", _sitemap)
 except Exception:  # noqa: BLE001
-    logger.warning("could not mount /rss route", exc_info=True)
+    logger.warning("could not mount /rss or /sitemap.xml route", exc_info=True)
