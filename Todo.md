@@ -5,7 +5,7 @@
 - Funnel: ✅ `https://cv.story-tegu.ts.net` → 200 (tailnet `cv` @ 100.115.209.119)
 - WIP banner count: ✅ exactly 1 on `/`
 - Footer version present: ✅ `v{VERSION_LABEL}` with git SHA
-- Routes: ✅ 5 public pages + auth (`/login` `/signup` `/profile`) + `/admin` + `/rss` + `/sitemap.xml` + `/robots.txt` all 200
+- Routes: ✅ 5 public pages + `/appointments` (302 → Google Calendar booking) + auth (`/login` `/signup` `/profile`) + `/admin` + `/rss` + `/sitemap.xml` + `/robots.txt` all 200
 - Bloat: ✅ 10 routes removed (`/deploy /stack /timeline /about-fun /contribute /architecture /resources /changelog /status /worker-log` → 404)
 - Admin: ✅ bootstrap user `frank@inkua.eu` (one-time password in `/web/data/.admin-bootstrap`, mode 600)
 - Analytics store: ✅ `/web/data/` (users/sessions/visits/conversations JSON, gitignored, single-process + lock-safe)
@@ -13,7 +13,8 @@
 - Worker: ⛔ intentionally OFF (do not enable)
 
 ## Shipped this session (2026-08-05)
-- [x] **Page de-bloat**: kept only `/` `/about` `/cv` `/projects` `/contact` public; removed 10 routes + nav links; `/status` + `/worker-log` content folded into the admin dashboard. Updated sitemap (5 URLs), RSS (removed dead-page links), footer (gated `admin` link).
+- [x] **Page de-bloat**: kept only `/` `/about` `/cv` `/projects` `/contact` public; removed 10 routes + nav links; `/status` + `/worker-log` content folded into the admin dashboard. Updated sitemap, RSS (removed dead-page links), footer (gated `admin` link).
+- [x] **`/appointments`**: short URL that 302-redirects to Frank's Google Calendar booking page (`APPOINTMENTS_URL`); linked from the home nav ("Appointments") and `contact.md`; added to sitemap.
 - [x] **Auth**: JSON-file account store (`/web/site_store.py`) with pbkdf2-sha256 password hashing; opaque 30-day session tokens in a `cv_sess` cookie; `_restore_session()` re-verifies the token on every page load (never trusts the client).
 - [x] **Sign-in for updates**: `/login`, `/signup` (auto-login), `/profile` (shows account + updates:on + sign out); small profile dropdown menu (`auth_menu`) on every page — "Sign in / Sign up" links when anonymous, "Hi <name>" menu with Profile / Admin dashboard / Sign out when logged in.
 - [x] **Analytics**: every page load logs a visit (path, IP, geo, language, referrer) to `visits.json`; geo is cached in-memory and enriched in the background (never blocks page load); admin's own views are excluded.

@@ -454,7 +454,7 @@ def sitemap_xml() -> str:
     """Basic XML sitemap of all public pages, for crawlers."""
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     urls = [
-        "", "/about", "/cv", "/projects", "/contact",
+        "", "/about", "/cv", "/projects", "/contact", "/appointments",
     ]
     entries = "\n".join(
         f"<url><loc>https://cv.story-tegu.ts.net{u}/</loc>"
@@ -524,6 +524,9 @@ def page_footer() -> rx.Component:
 
 # 48h target the countdown counts down to (UTC).
 COUNTDOWN_TARGET = datetime(2026, 8, 5, 16, 0, 0, tzinfo=timezone.utc)
+
+# Where /appointments redirects (Google Calendar booking page).
+APPOINTMENTS_URL = "https://calendar.google.com/calendar/u/0/appointments/AcZssZ0Cqg2mYA8lqoAsURaLim0pjczGu3fErFCYI20="
 
 
 def countdown_label() -> str:
@@ -1374,6 +1377,7 @@ def index() -> rx.Component:
                 rx.link("CV", href="/cv", color=ACCENT),
                 rx.link("Projects", href="/projects", color=ACCENT),
                 rx.link("Contact", href="/contact", color=ACCENT),
+                rx.link("Appointments", href="/appointments", color=ACCENT),
                 spacing="4",
                 fontSize="0.85rem",
                 width="min(720px, 92vw)",
@@ -1905,9 +1909,15 @@ async def _robots(request):
     )
 
 
+async def _appointments(request):
+    from starlette.responses import RedirectResponse
+    return RedirectResponse(url=APPOINTMENTS_URL, status_code=302)
+
+
 try:
     app._api.add_route("/rss", _rss)
     app._api.add_route("/sitemap.xml", _sitemap)
     app._api.add_route("/robots.txt", _robots)
+    app._api.add_route("/appointments", _appointments)
 except Exception:  # noqa: BLE001
-    logger.warning("could not mount /rss, /sitemap.xml or /robots.txt route", exc_info=True)
+    logger.warning("could not mount /rss, /sitemap.xml, /robots.txt or /appointments route", exc_info=True)
