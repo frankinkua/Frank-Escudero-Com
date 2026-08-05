@@ -1110,8 +1110,7 @@ class State(rx.State):
                 "\n\nNow: you just detected a new visitor. Write a short ",
                 f"personal greeting for them in {lang} (the visitor's language - ",
                 f"EVERY word you write must be in {lang}, no exceptions). ",
-                "Make it warm and relevant. In one short natural line, offer that they ",
-                "can book a call with Frank at /appointments.",
+                "Make it warm and relevant.",
             ]
             if time_of_day:
                 parts.append(f" Their local time is {time_of_day}.")

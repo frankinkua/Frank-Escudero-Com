@@ -25,6 +25,7 @@
 - [x] **Removed the "Search the site" box** on `/` (UI element + `search_panel`, `do_search`, `search_results`/`searched` state, `search_docs`/`SEARCH_DOCS`); chat is the discovery path now. Admin credentials pushed to ntfy `franke2032` on request (also in `/web/data/.admin-bootstrap`).
 - [x] **Full visitor data in notifications**: the **new-visitor** ping includes the complete fingerprint (IP, geo country/region/city/lat-lon/timezone, language/locale, platform/device, local time, weather incl. pressure/humidity/wind/precip/warnings, sun/moon) via `_visitor_notify_text`; the **visitor-message** ping was trimmed to just location + IP + question (per Frank) to identify the conversation.
 - [x] **Assistant is an eager booking agent**: bot proactively offers to set up an appointment and sends `[book a slot](/appointments)` in chat (greeting + system prompt). Never mentions the domain/URL anymore — all visible `cv.story-tegu.ts.net` references removed from the visitor pages (bot prompt, knowledge.md, cv.md, projects.md, contact.md); only non-visible `og:url` meta remains.
+  - Tuned (Frank): booking is now **not** aggressive — the bot only suggests a call *after* it knows who the visitor is and only when relevant (recruiter/hiring manager/client); no booking offer in the greeting, none for casual visitors, never repeated after a decline.
 
 ## Remaining open
 ### Next (feasible in this LXC)
