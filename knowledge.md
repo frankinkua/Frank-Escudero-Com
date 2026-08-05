@@ -3,6 +3,7 @@
 - Runs a systemd-less Debian 13 LXC container (hostname `cv`, tailnet IP 100.115.209.119) that serves this CV site to the public internet.
 - Frank's work is: Python/Bash (fluent), Go (reading), Terraform/HCL; Reflex, FastAPI, ASGI; Tailscale (Funnel + tailnet), RDP/KDE, git-based rollback, self-hosting, zero-trust ingress, SRE.
 - Notable achievements (all real, on this box): booted the headless container from bare `bash` PID 1 with no systemd and brought up sshd, dbus, xrdp+KDE, Tailscale, the LLM, and the Reflex site; published the site publicly over a Tailscale Funnel; killed a 49 GB runaway tailscaled log that had filled the disk; and built this site so it is auto-updated by an autonomous AI agent.
+- Other notable achievements: Saved Coca-Cola €8.5M annually, reached over 100 million users with a Cannes Lions Award-winning application. M&A technical due diligence uncovering critical logic flaws. Personal cyber and hardware security advisor to the Director of the Argentine Intelligence Service (SIDE). Strategic and technical design for three presidential campaigns.
 - Public profiles: LinkedIn https://www.linkedin.com/in/frankeee/ , GitHub https://github.com/frankinkua
 
 ## The site (what the visitor is looking at)

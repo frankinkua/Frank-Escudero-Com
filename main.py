@@ -1298,12 +1298,29 @@ def chat_message(item: dict[str, str]) -> rx.Component:
     is_user = item["role"] == "user"
     return rx.box(
         rx.text(item["content"]),
+        rx.cond(
+            ~is_user,
+            rx.icon_button(
+                rx.icon("copy", size=14),
+                on_click=rx.set_clipboard(item["content"]),
+                variant="ghost",
+                size="1",
+                color="#c9d2e3",
+                position="absolute",
+                bottom="0",
+                right="0",
+                margin="0.4rem",
+                _hover={"color": "#fff", "background": "rgba(255, 255, 255, 0.1)"}
+            )
+        ),
+        position="relative",
         alignSelf=rx.cond(is_user, "flex-end", "flex-start"),
         background=rx.cond(is_user, "#1f2937", "#182032"),
         color="#e8ecf4",
         border="1px solid #2f3b52",
         borderRadius="0.8rem",
         padding="0.6rem 0.9rem",
+        paddingBottom=rx.cond(~is_user, "1.8rem", "0.6rem"), # Make space for button
         maxWidth="85%",
         whiteSpace="pre-wrap",
     )
@@ -1371,7 +1388,7 @@ def index() -> rx.Component:
                 alignItems="center",
             ),
             work_in_progress_banner(),
-            rx.text("a zero-trust CV site built and maintained by Frank.", color=ACCENT),
+            rx.text("Full stack app that auto-updates itself via an autonomous AI agent.", color=ACCENT),
             banner(),
             chat_panel(),
             rx.hstack(
@@ -1869,15 +1886,15 @@ app = rx.App(
     head_components=[
         rx.el.link(rel="icon", type="image/svg+xml", href=FAVICON_SVG),
         rx.el.link(rel="apple-touch-icon", href=FAVICON_SVG),
-        rx.el.meta(name="description", content="Frank Escudero CV - zero-trust, self-hosted, AI-updated virtual employee."),
+        rx.el.meta(name="description", content="Frank Escudero CV - Bridging deep-tech execution with strategic business growth. AI-updated virtual employee."),
         rx.el.meta(property="og:site_name", content="Frank Escudero CV"),
         rx.el.meta(property="og:title", content="Frank Escudero — virtual-employee CV"),
-        rx.el.meta(property="og:description", content="Frank Escudero CV - zero-trust, self-hosted, AI-updated virtual employee."),
+        rx.el.meta(property="og:description", content="Frank Escudero CV - Bridging deep-tech execution with strategic business growth. AI-updated virtual employee."),
         rx.el.meta(property="og:type", content="website"),
         rx.el.meta(property="og:url", content="https://cv.story-tegu.ts.net/"),
         rx.el.meta(name="twitter:card", content="summary"),
         rx.el.meta(name="twitter:title", content="Frank Escudero — virtual-employee CV"),
-        rx.el.meta(name="twitter:description", content="Frank Escudero CV - zero-trust, self-hosted, AI-updated virtual employee."),
+        rx.el.meta(name="twitter:description", content="Frank Escudero CV - Bridging deep-tech execution with strategic business growth. AI-updated virtual employee."),
     ],
 )
 app.add_page(index, route="/", title="Frank Escudero — virtual-employee CV", on_load=State.load_home)
