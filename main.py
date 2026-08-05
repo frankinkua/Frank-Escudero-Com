@@ -1514,6 +1514,14 @@ app = rx.App(
         rx.el.link(rel="icon", type="image/svg+xml", href=FAVICON_SVG),
         rx.el.link(rel="apple-touch-icon", href=FAVICON_SVG),
         rx.el.meta(name="description", content="Frank Escudero CV - zero-trust, self-hosted, AI-updated virtual employee."),
+        rx.el.meta(property="og:site_name", content="Frank Escudero CV"),
+        rx.el.meta(property="og:title", content="Frank Escudero — virtual-employee CV"),
+        rx.el.meta(property="og:description", content="Frank Escudero CV - zero-trust, self-hosted, AI-updated virtual employee."),
+        rx.el.meta(property="og:type", content="website"),
+        rx.el.meta(property="og:url", content="https://cv.story-tegu.ts.net/"),
+        rx.el.meta(name="twitter:card", content="summary"),
+        rx.el.meta(name="twitter:title", content="Frank Escudero — virtual-employee CV"),
+        rx.el.meta(name="twitter:description", content="Frank Escudero CV - zero-trust, self-hosted, AI-updated virtual employee."),
     ],
 )
 app.add_page(index, route="/", title="Frank Escudero — virtual-employee CV", on_load=State.probe_browser)
@@ -1543,8 +1551,17 @@ async def _sitemap(request):
     return Response(sitemap_xml(), media_type="application/xml; charset=utf-8")
 
 
+async def _robots(request):
+    from starlette.responses import Response
+    return Response(
+        "User-agent: *\nAllow: /\nSitemap: https://cv.story-tegu.ts.net/sitemap.xml\n",
+        media_type="text/plain; charset=utf-8",
+    )
+
+
 try:
     app._api.add_route("/rss", _rss)
     app._api.add_route("/sitemap.xml", _sitemap)
+    app._api.add_route("/robots.txt", _robots)
 except Exception:  # noqa: BLE001
-    logger.warning("could not mount /rss or /sitemap.xml route", exc_info=True)
+    logger.warning("could not mount /rss, /sitemap.xml or /robots.txt route", exc_info=True)
