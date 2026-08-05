@@ -10,7 +10,7 @@ This site **is** the delivered CV: a zero-trust, self-hosted, AI-updated web app
 - Availability: present and live — this CV auto-heals and self-edits.
 
 ## Core tech (non-exhaustive)
-- Languages: Python, Rust, PHP, Bash, C, COBOL, JavaScript, SQL (PostgreSQL, MySQL), Go (reading), HCL/TF
+- Languages: Python, Rust, PHP, Bash, C, COBOL, JavaScript, SQL (PostgreSQL, MySQL), Go (reading), HCL/TF, NoSQL
 - Infra/Hosts: Debian (LXC/systemd-less), Tailscale (Funnel + tailnet), RDP/KDE
 - Backend/Frontend: Reflex (Python, ASGI/Starlette), FastAPI, Vite
 - AI Ops: Ollama + LM Studio (local LLM on constrained hardware / edge compute), opencode agent loops, git-based rollback
@@ -19,7 +19,8 @@ This site **is** the delivered CV: a zero-trust, self-hosted, AI-updated web app
 ## Experience highlights
 - **InkuA gUG (non-profit), Founder & MD — Frankfurt | 2021–present**: built a global tech/education community (50k+ followers, 75k+ volunteer pipeline, 50+ active contributors); designed an AI engineering onboarding stack (Ollama, LM Studio, Claude Code, Gemini CLI, Jules); flagship "Portales InkuA" initiative (~$330k, VR/3D-printing/robotics/AI).
 - **Custom Group, Technical Founder & Lead Advisor — 2018–2026**: vulnerability-led consulting for C-level executives, governments, and enterprise clients; advisor to 2 presidents and 3 presidential candidates; engineered a high-scale personalized-video platform (40M+ videos, 180M images/GIFs); rebuilt a global FMCG leader's VoIP failover cutting costs from €9M to <€0.5M/year; technical advisor for Wilobank, including M&A through its acquisition by Ualá; built uptimeapp.de monitoring platform.
-- **Deep tech & earlier work**: ML/GPS maritime transport drone architecture (2019–21); forensic cybersecurity for a Bolivian presidential campaign (2014 & 2017); hardware/cyber security advisor to Argentina's SIDE (2010–2018); PepsiCo manufacturing optimization across 2 plants (~$30k/month savings); the "Santa's Call" viral app (100M+ users, 17 countries); 50+ projects for Visa, Mastercard, Santander, BBVA; VentureHive Miami accelerator grant ($50k). Honorably served in the Bundeswehr (2011–2013).
+- **Deep tech & earlier work**: ML/GPS maritime transport drone architecture (2019–21); forensic cybersecurity for a Bolivian presidential campaign (2014 & 2017); hardware/cyber security advisor to Argentina's SIDE (2010–2018); PepsiCo manufacturing optimization across 2 plants (~$30k/month savings); the "Santa's Call" viral app (100M+ users, 17 countries); 50+ projects for Visa, Mastercard, Santander, BBVA; VentureHive Miami accelerator grant ($50k).
+- **Consulting**: Over 20 years of experience bridging deep technical execution with strategic C-level decisions. Uncovered a logic timebomb in a critical banking system during M&A Due Diligence. Evaluated TRLs for deep-tech initiatives. Collaborated with the FBI and Interpol during security vulnerability reporting.
 
 ## Projects
 - **This CV site** — zero-trust CV published via Tailscale Funnel from a single hardened box; self-healing (opencode employee + git rollback).
