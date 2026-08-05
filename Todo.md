@@ -23,7 +23,7 @@
 
 ### Nice-to-have (later)
 - Add a "contribution guide" — how to suggest changes via email or tailnet DM. (done 2026-08-05 — `/contribute/`)
-- Add a `/resources/` page: tools I use daily, reading list, open-source contributions.
+- Add a `/resources/` page: tools I use daily, reading list, open-source contributions. (done 2026-08-05 — `/resources/`)
 - Add social / profile links section on the footer nav. (done 2026-08-05 — LinkedIn `frankeee`, GitHub `frankinkua` on `/`)
 
 ### Nice-to-have (even later)
