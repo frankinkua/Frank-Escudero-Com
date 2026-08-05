@@ -1163,6 +1163,7 @@ def index() -> rx.Component:
                 rx.link("Deployment", href="/deploy", color=ACCENT),
                 rx.link("Stack", href="/stack", color=ACCENT),
                 rx.link("Timeline", href="/timeline", color=ACCENT),
+                rx.link("Projects", href="/projects", color=ACCENT),
                 rx.link("Contact", href="/contact", color=ACCENT),
                 rx.link("Status", href="/status", color=ACCENT),
                 rx.text("cv", color=MUTED),
@@ -1232,6 +1233,10 @@ def contact() -> rx.Component:
         background=BG,
         fontFamily="ui-monospace, Menlo, monospace",
     )
+
+
+def projects() -> rx.Component:
+    return markdown_page("Projects — Frank Escudero", "projects.md", read_doc("projects.md"))
 def stack() -> rx.Component:
     return markdown_page("Tech stack", "stack.md", read_doc("stack.md"))
 
@@ -1257,6 +1262,7 @@ app.add_page(cv, route="/cv", title="CV — Frank Escudero")
 app.add_page(deploy, route="/deploy", title="Deployment — Frank Escudero CV")
 app.add_page(contact, route="/contact", title="Contact — Frank Escudero CV")
 app.add_page(status_page, route="/status", title="Status — Frank Escudero CV")
+app.add_page(projects, route="/projects", title="Projects — Frank Escudero CV")
 app.add_page(stack, route="/stack", title="Tech stack — Frank Escudero CV")
 app.add_page(timeline, route="/timeline", title="Timeline — Frank Escudero CV")
 app.add_page(worker_log_page, route="/worker-log", title="Worker log — Frank Escudero CV")
