@@ -114,6 +114,8 @@ Red lines (stop, fix, then commit): non-200 on `/`, "work in progress" count != 
 11. **Never feed the raw timezone to the LLM.** Passed `timezone: Europe/Berlin` to a greeting prompt, and the model answered "you are in Berlin". Resolve the local time-of-day server-side and pass that instead; the model must not be handed a timezone string it can turn into a location.
 12. **Funnel visitors on the tailnet have no usable geo IP.** Socket shows `127.0.0.1`; tailnet clients come in as CGNAT `100.x` (can't be geolocated). Only public-IP visitors resolve to a city. The greeting degrades gracefully (`geo={}`) — that is by design.
 13. **The `updated` footer line = git commit date of `/web` HEAD** (via `app_updated()`), so it doubles as a "am I running the latest build?" check. It bumps only on a new commit, not on restart.
+14. **Windows blocks ONLY flag emoji, not all emoji.** Regional-indicator flags render as letter pairs on Windows; weather/sun/moon emoji are fine. The greeting prompt must say "avoid only the flag" on Windows or the model over-generalizes and drops every emoji.
+15. **Visitor data is re-injected into every chat turn.** `State.visitor_context` (geo, language, locale, local time, weather incl. pressure/humidity/wind/precip and a derived warning for severe codes, sun/moon times, platform) is collected once on first load and merged into `_system_message()` for every subsequent chat request, so the assistant keeps personalizing beyond the initial greeting. open-meteo's `current=` field set (`temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,pressure_msl,wind_speed_10m,weather_code,is_day`) is richer than the legacy `current_weather=true` block.
 
 ---
 

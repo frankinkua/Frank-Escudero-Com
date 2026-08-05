@@ -774,11 +774,7 @@ class State(rx.State):
             "platform": browser.get("platform") or "",
             "is_windows": "1" if "Win" in (browser.get("platform") or "") else "",
             "tz": tz_name,
-            "local_time": (
-                datetime.fromtimestamp(local_epoch_s, ZoneInfo(tz_name)).strftime("%H:%M")
-                if local_epoch_s
-                else ""
-            ),
+            "local_time": "",
             "time_of_day": time_of_day,
             "device": " ".join(
                 part
@@ -791,6 +787,13 @@ class State(rx.State):
                 if part
             ),
         }
+        if local_epoch_s:
+            try:
+                ctx["local_time"] = datetime.fromtimestamp(
+                    local_epoch_s, ZoneInfo(tz_name)
+                ).strftime("%H:%M")
+            except Exception:  # noqa: BLE001
+                ctx["local_time"] = ""
         if geo.get("city") and geo.get("country"):
             ctx["location"] = f"{geo['city']}, {geo['country']}"
         elif geo.get("country"):
