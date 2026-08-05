@@ -22,7 +22,7 @@
 
 ## Remaining open
 ### Next (feasible in this LXC)
-- Add GitHub repo links to `/projects/` (needs Frank's repo URLs).
+- ~~Add GitHub repo links to `/projects/`~~ — **cancelled (2026-08-05):** `github.com/frankinkua` has 0 public repos, so there is nothing to link. `/projects/` stays description-only until Frank publishes repos.
 - Reset admin password via `/web/data/users.json` or a re-bootstrap if the one-time password is lost.
 - Optional: paginate conversations / add a "location" map view on `/admin`.
 
