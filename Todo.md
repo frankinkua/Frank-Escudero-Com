@@ -11,8 +11,8 @@
 ### Next (toward the 48h launch mark)
 - Re-enable the AI employee (`opencode-worker`) to keep regenerating content from GitHub issues / opencode sessions.
 - Wire NVIDIA GPU passthrough so Ollama can run models on GPU for faster, richer chat completions.
-- Add a `/contact/` page (email / tailnet handle) and `/projects/` page with detailed project descriptions and repos.
-- Expand `cv.md` with sections: Education, Projects, Languages, Certifications, GitHub links.
+- Add a `/contact/` page (email / tailnet handle) and `/projects/` page with detailed project descriptions and repos. (`/contact/` shipped 2026-08-05; `/projects/` still open)
+- Expand `cv.md` with sections: Education, Projects, Languages, Certifications, GitHub links. (done 2026-08-05)
 - Add a `/about-fun/` or `/blog/` page for informal posts, learnings, and "day in the life" entries.
 - Implement search across all markdown pages (e.g., via a simple full-text index).
 

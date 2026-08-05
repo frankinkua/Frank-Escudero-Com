@@ -1078,6 +1078,7 @@ def index() -> rx.Component:
                 rx.link("Deployment", href="/deploy", color=ACCENT),
                 rx.link("Stack", href="/stack", color=ACCENT),
                 rx.link("Timeline", href="/timeline", color=ACCENT),
+                rx.link("Contact", href="/contact", color=ACCENT),
                 rx.text("cv", color=MUTED),
                 spacing="4",
                 fontSize="0.85rem",
@@ -1127,6 +1128,24 @@ def deploy() -> rx.Component:
     return markdown_page("Deployment", "deploy.md", body)
 
 
+def contact() -> rx.Component:
+    body = read_doc("contact.md")
+    return rx.center(
+        rx.vstack(
+            rx.heading("Contact", size="4", color="#e8ecf4"),
+            rx.link("Back to main", href="/", color=ACCENT, fontSize="0.85rem"),
+            rx.markdown(body, color="#c9d2e3"),
+            page_footer(),
+            spacing="4",
+            width="min(860px, 92vw)",
+            padding="2.5rem 1rem",
+            align="center",
+        ),
+        width="100%",
+        minHeight="100vh",
+        background=BG,
+        fontFamily="ui-monospace, Menlo, monospace",
+    )
 def stack() -> rx.Component:
     return markdown_page("Tech stack", "stack.md", read_doc("stack.md"))
 
@@ -1150,6 +1169,7 @@ app.add_page(index, route="/", title="Frank Escudero — virtual-employee CV", o
 app.add_page(about, route="/about", title="About — Frank Escudero")
 app.add_page(cv, route="/cv", title="CV — Frank Escudero")
 app.add_page(deploy, route="/deploy", title="Deployment — Frank Escudero CV")
+app.add_page(contact, route="/contact", title="Contact — Frank Escudero CV")
 app.add_page(stack, route="/stack", title="Tech stack — Frank Escudero CV")
 app.add_page(timeline, route="/timeline", title="Timeline — Frank Escudero CV")
 app.add_page(worker_log_page, route="/worker-log", title="Worker log — Frank Escudero CV")
