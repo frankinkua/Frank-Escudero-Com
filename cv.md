@@ -41,3 +41,5 @@ This site **is** the delivered CV: a zero-trust, self-hosted, AI-updated web app
 - On tailnet: `cv` @ `100.115.209.119`, `https://cv.story-tegu.ts.net`
 - SSH: `ssh frank@cv.story-tegu.ts.net`
 - Email: `frank@inkua.eu`
+- LinkedIn: https://www.linkedin.com/in/frankeee/
+- GitHub: https://github.com/frankinkua

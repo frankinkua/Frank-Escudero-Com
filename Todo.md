@@ -24,7 +24,7 @@
 ### Nice-to-have (later)
 - Add a "contribution guide" — how to suggest changes via email or tailnet DM.
 - Add a `/resources/` page: tools I use daily, reading list, open-source contributions.
-- Add social / profile links section on the footer nav (`github.com/franke2032`, `twitter/...`, etc.).
+- Add social / profile links section on the footer nav. (done 2026-08-05 — LinkedIn `frankeee`, GitHub `frankinkua` on `/`)
 
 ### Nice-to-have (even later)
 - Add a "changelog" that auto-generates from `git log --oneline` and appends to `/web/changelog.md`. (done 2026-08-05 — served live from git at `/changelog/`)
