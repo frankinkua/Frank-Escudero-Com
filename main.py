@@ -366,20 +366,39 @@ def changelog_entries() -> list[tuple[str, str, str]]:
 
 
 def rss_xml() -> str:
-    """Atom-ish RSS feed of the git changelog (site updates)."""
-    items = "\n".join(
-        f"<item><title>{sha} — {subj}</title>"
+    """Atom-ish RSS feed: site about/cv content (static) + git changelog (live)."""
+    now = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+
+    def _slug(text: str, n: int = 200) -> str:
+        flat = " ".join(text.split())
+        return flat[:n] + ("…" if len(flat) > n else "")
+
+    changelog_items = "\n".join(
+        f"<item><title>update {sha} — {subj}</title>"
         f"<link>https://cv.story-tegu.ts.net/changelog/</link>"
-        f"<guid>{sha}</guid><pubDate>{ci}</pubDate></item>"
+        f"<guid>{sha}</guid><pubDate>{ci}</pubDate>"
+        f"<description>Site update {sha}</description></item>"
         for sha, ci, subj in changelog_entries()
+    )
+    static_items = "\n".join(
+        f"<item><title>{title}</title>"
+        f"<link>https://cv.story-tegu.ts.net/{link}</link>"
+        f"<guid>{guid}</guid><pubDate>{now}</pubDate>"
+        f"<description>{_slug(body)}</description></item>"
+        for title, link, guid, body in (
+            ("About Frank Escudero", "about", "about", read_doc("knowledge.md")),
+            ("CV — Frank Escudero", "cv", "cv", read_doc("cv.md")),
+            ("Projects — Frank Escudero", "projects", "projects", read_doc("projects.md")),
+            ("About-fun", "about-fun", "about-fun", read_doc("about-fun.md")),
+        )
     )
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<rss version="2.0"><channel>'
-        "<title>Frank Escudero CV — changelog</title>"
+        "<title>Frank Escudero CV</title>"
         "<link>https://cv.story-tegu.ts.net/</link>"
-        "<description>Site updates for the self-hosted AI CV.</description>"
-        f"{items}</channel></rss>\n"
+        "<description>Frank Escudero's self-hosted AI CV — content and site updates.</description>"
+        f"{changelog_items}{static_items}</channel></rss>\n"
     )
 
 

@@ -29,7 +29,7 @@
 ### Next (feasible in this LXC, do not require host work)
 - [x] Live-ticking uptime counter on `/status/` (client-side JS, `uptime_ticker_js`, ticks `#cd-uptime` every second).
 - [x] `/sitemap.xml` (Starlette route, lists all 15 public pages).
-- Enrich `/rss` with `/about/` + `/cv/` content as originally specified (currently only the git changelog).
+- [x] Enriched `/rss` with `/about/` + `/cv/` + `/projects/` + `/about-fun/` content (alongside the git changelog).
 - Add GitHub repo links to `/projects/` (currently descriptions only; needs Frank's repo URLs).
 
 ### Deferred — do NOT attempt without host access / Frank's go-ahead
