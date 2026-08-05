@@ -7,8 +7,7 @@ Frank Escudero — full-stack engineer / infrastructure developer, based in Fran
 - **GitHub:** <https://github.com/frankinkua>
 - **Tailnet:** `cv` @ `100.115.209.119`
 - **SSH:** `ssh frank@cv.story-tegu.ts.net`
-- **Online CV:** <https://cv.story-tegu.ts.net>
-- **Appointments:** book a slot directly at <https://cv.story-tegu.ts.net/appointments>
+- **Appointments:** book a slot directly at [/appointments](/appointments)
 
 The site itself is the most reliable channel — it is a live, self-maintaining web
 application, so the fastest way to reach Frank is to ask it anything about him

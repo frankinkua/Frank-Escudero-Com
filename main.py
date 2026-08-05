@@ -1110,7 +1110,8 @@ class State(rx.State):
                 "\n\nNow: you just detected a new visitor. Write a short ",
                 f"personal greeting for them in {lang} (the visitor's language - ",
                 f"EVERY word you write must be in {lang}, no exceptions). ",
-                "Make it warm and relevant.",
+                "Make it warm and relevant. In one short natural line, offer that they ",
+                "can book a call with Frank at /appointments.",
             ]
             if time_of_day:
                 parts.append(f" Their local time is {time_of_day}.")
@@ -1227,10 +1228,12 @@ class State(rx.State):
         site_store.log_conv_message(self.conv_id, "user", q, self.visitor_ip, self.visitor_geo)
         if self.conv_id not in _NOTIFIED_CONVS:
             _NOTIFIED_CONVS.add(self.conv_id)
+            ip = self.visitor_ip or "unknown"
+            loc = self.visitor_geo.get("city") or self.visitor_geo.get("country") or ""
+            loc = loc or self.visitor_context.get("location") or "unknown location"
             _notify(
                 "Visitor message",
-                _visitor_notify_text(self.visitor_context, self.visitor_ip, self.visitor_geo)
-                + f"\n\nQuestion: {q[:140]}",
+                f"{loc}\nIP: {ip}\nQuestion: {q[:140]}",
                 ["speech_balloon"],
             )
         self.busy = True

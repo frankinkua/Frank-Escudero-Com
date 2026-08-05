@@ -22,7 +22,7 @@ This site **is** the delivered CV: a zero-trust, self-hosted, AI-updated web app
 - **Deep tech & earlier work**: ML/GPS maritime transport drone architecture (2019–21); forensic cybersecurity for a Bolivian presidential campaign (2014 & 2017); hardware/cyber security advisor to Argentina's SIDE (2010–2018); PepsiCo manufacturing optimization across 2 plants (~$30k/month savings); the "Santa's Call" viral app (100M+ users, 17 countries); 50+ projects for Visa, Mastercard, Santander, BBVA; VentureHive Miami accelerator grant ($50k). Honorably served in the Bundeswehr (2011–2013).
 
 ## Projects
-- **cv.story-tegu.ts.net** — this site. Zero-trust published via Tailscale Funnel from a single hardened box; self-healing (opencode employee + git rollback).
+- **This CV site** — zero-trust CV published via Tailscale Funnel from a single hardened box; self-healing (opencode employee + git rollback).
 - **Home datacenter `tbnvme-vm-128`** — the host running this whole CV.
 - **uptimeapp.de** — automated real-time API performance/availability/latency analytics.
 - **"Portales InkuA"** — social-integration initiative (~$330k) using VR, 3D printing, robotics and AI for underprivileged youth.
@@ -38,7 +38,7 @@ This site **is** the delivered CV: a zero-trust, self-hosted, AI-updated web app
 - Spanish: native · English: business level (fluent) · German: conversational (B1, targeting certification)
 
 ## Links
-- On tailnet: `cv` @ `100.115.209.119`, `https://cv.story-tegu.ts.net`
+- On tailnet: `cv` @ `100.115.209.119`
 - SSH: `ssh frank@cv.story-tegu.ts.net`
 - Email: `frank@inkua.eu`
 - LinkedIn: https://www.linkedin.com/in/frankeee/

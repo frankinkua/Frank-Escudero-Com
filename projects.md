@@ -1,9 +1,9 @@
 # Projects
 
-## cv.story-tegu.ts.net — this CV site
+## This CV site
 Zero-trust CV published via Tailscale Funnel from a single hardened home-datacenter box.
 Self-healing: an opencode agent loop ("AI employee") regenerates content, verifies the site,
-and rolls back on failure via git. Live at <https://cv.story-tegu.ts.net>.
+and rolls back on failure via git.
 
 ## Home datacenter `tbnvme-vm-128`
 The host running this whole CV and the `story-tegu.ts.net` tailnet — Debian, LXC,
