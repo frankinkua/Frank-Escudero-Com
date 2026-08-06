@@ -79,3 +79,9 @@
 - `/web` is a git repo; generated dirs (.venv, .web, __pycache__) are gitignored. One commit per meaningful change.
 - NEVER use `git clean -fd` here: it deletes untracked config files (rxconfig.py, prompt.md, knowledge.md, filter.md, pyproject.toml). Roll back with `git checkout -- .` only.
 - When you (an agent) make changes, update the docs above so the next fresh session inherits the knowledge.
+
+
+### Recent Site Updates (Aug 2026)
+- **Chat Handoff**: Frank (the admin) can now jump into live chats on the website. If the AI stops responding and says 'Frank is typing...', it means Frank has taken over the conversation.
+- **Profiles**: Users can upload profile pictures and log in securely via email. Guest (password-less) logins are supported to persist chat history.
+- **Admin Dashboard**: Now includes comprehensive views into User stats, Live Chats, Visits, and System Logs.

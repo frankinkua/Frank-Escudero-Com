@@ -131,9 +131,51 @@ def authenticate(email: str, password: str) -> tuple[bool, str, dict]:
     email = (email or "").strip().lower()
     users = _read("users.json", {})
     user = users.get(email)
-    if not user or not _verify_password(password or "", user.get("salt", ""), user.get("password_hash", "")):
-        return False, "Incorrect email or password.", {}
+
+    # Implicit Guest Login: If the user doesn't exist, create a guest account on the fly.
+    if not user:
+        with _LOCK:
+            # Re-read inside lock
+            users = _read("users.json", {})
+            if email not in users:
+                users[email] = {
+                    "name": email.split("@")[0],
+                    "role": "guest",
+                    "salt": "",
+                    "password_hash": "",
+                    "created_at": _iso(),
+                    "subscribed": False,
+                    "guest": True,
+                }
+                _write("users.json", users)
+            user = users[email]
+
+    # If the user has a password set (not a guest), verify it
+    if user.get("password_hash"):
+        if not _verify_password(password or "", user.get("salt", ""), user.get("password_hash", "")):
+            return False, "Incorrect email or password.", {}
+
     return True, "", user
+
+
+def get_user(email: str) -> dict:
+    if not email:
+        return {}
+    users = _read("users.json", {})
+    return users.get(email, {})
+
+
+def update_user_profile(email: str, updates: dict) -> bool:
+    if not email:
+        return False
+    with _LOCK:
+        users = _read("users.json", {})
+        if email not in users:
+            return False
+        users[email].update(updates)
+        _write("users.json", users)
+    return True
+
 
 
 # --------------------------------------------------------------------------- #
@@ -243,6 +285,7 @@ def log_conv_message(conv_id: str, role: str, content: str, ip: str = "", geo: d
                 "location": ", ".join(
                     x for x in ((geo or {}).get("city", ""), (geo or {}).get("country", "")) if x
                 ) or "unknown",
+                "ai_paused": False,
                 "messages": [],
             }
             convs.append(conv)
@@ -252,14 +295,56 @@ def log_conv_message(conv_id: str, role: str, content: str, ip: str = "", geo: d
         _write("conversations.json", convs)
 
 
+def toggle_ai_for_conv(conv_id: str, paused: bool) -> bool:
+    with _LOCK:
+        convs = _read("conversations.json", [])
+        for c in convs:
+            if c.get("id") == conv_id:
+                c["ai_paused"] = paused
+                _write("conversations.json", convs)
+                return True
+    return False
+
+def get_full_conversations() -> list[dict]:
+    with _LOCK:
+        return _read("conversations.json", [])
+
+
+def toggle_ai_pause(conv_id: str, pause: bool) -> None:
+    with _LOCK:
+        convs = _read("conversations.json", [])
+        for c in convs:
+            if c.get("id") == conv_id:
+                c["ai_paused"] = pause
+                break
+        _write("conversations.json", convs)
+
+def is_ai_paused(conv_id: str) -> bool:
+    convs = _read("conversations.json", [])
+    for c in convs:
+        if c.get("id") == conv_id:
+            return c.get("ai_paused", False)
+    return False
+
+
 def admin_data() -> dict:
     """Aggregate everything the dashboard needs in one lock-protected pass."""
     with _LOCK:
         visits = _read("visits.json", [])
         convs = _read("conversations.json", [])
+        users_db = _read("users.json", {})
+
     total = len(visits)
     unique = len({v.get("ip") for v in visits if v.get("ip")})
     msg_count = sum(len(c.get("messages", [])) for c in convs)
+    users_list = []
+    for email, udata in users_db.items():
+        users_list.append({
+            "email": email,
+            "name": udata.get("name", ""),
+            "role": udata.get("role", "guest"),
+            "created_at": udata.get("created_at", "")
+        })
 
     locations: dict[str, int] = {}
     pages: dict[str, int] = {}
@@ -293,6 +378,7 @@ def admin_data() -> dict:
                 "location": c.get("location", "") or "unknown",
                 "role": "",
                 "content": "",
+                "ai_paused": str(c.get("ai_paused", False)),
             }
         )
         for m in c.get("messages", []):
@@ -304,6 +390,7 @@ def admin_data() -> dict:
                     "location": "",
                     "role": m.get("role", ""),
                     "content": m.get("content", ""),
+                    "ai_paused": "False",
                 }
             )
     return {
