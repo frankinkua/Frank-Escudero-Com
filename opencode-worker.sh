@@ -64,6 +64,32 @@ elif [ "$RC" -ne 0 ]; then
     exit 1
 fi
 
+# Text-only guard: revert EVERY non-markdown change the agent made. Even with
+# YOLO_MODE=1 the worker physically cannot ship/commit code or config edits.
+if [ "${TEXT_ONLY_GUARD:-1}" = "1" ]; then
+    reverted=0
+    while IFS= read -r line; do
+        [ -n "$line" ] || continue
+        path="${line#?? }"
+        [ "$path" = "$line" ] && path="${line#??}"   # defensive strip
+        case "$path" in
+            *.md) : ;;                                # keep markdown text
+            *)
+                if git -C "$WORKDIR" checkout -- "$path" 2>>"$LOG_FILE"; then
+                    log "guard: reverted tracked change: $path"
+                else
+                    rm -f -- "$WORKDIR/$path" 2>>"$LOG_FILE"
+                    log "guard: removed untracked file: $path"
+                fi
+                reverted=1
+                ;;
+        esac
+    done < <(git -C "$WORKDIR" status --porcelain 2>>"$LOG_FILE")
+    if [ "$reverted" = "0" ]; then
+        log "guard: no non-markdown changes found"
+    fi
+fi
+
 if [ "${OPENCODE_WORKER_NOVERIFY:-0}" = "1" ]; then
     echo "RESULT=ok-noverify elapsed=${elapsed}s rc=${RC}"
     log "run ok (verify skipped)"

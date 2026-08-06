@@ -4,10 +4,12 @@ import json
 import logging
 import os
 import pathlib
+import random
 import secrets
 import subprocess
 import threading
 import time
+import urllib.parse
 from datetime import datetime, timedelta, timezone
 
 import asyncio
@@ -47,6 +49,22 @@ FALLBACK = (
     "The site is still a work in progress - ask again later."
 )
 
+# Example questions shown as clickable chips above the chat input. Two are
+# picked at random per page load (see load_home). All are answerable from
+# knowledge.md.
+SUGGESTIONS = [
+    "What does Frank do for a living?",
+    "What tech stack does Frank use?",
+    "How is this website hosted?",
+    "What are Frank's most notable achievements?",
+    "Who built and maintains this site?",
+    "How can I contact Frank?",
+    "How can I book a call with Frank?",
+    "What's on Frank's CV?",
+    "What is this site built with?",
+    "Is this site secure?",
+]
+
 BG = "radial-gradient(ellipse at top, #1c2333, #0b0e14)"
 CARD = {
     "padding": "2rem",
@@ -57,6 +75,235 @@ CARD = {
 }
 ACCENT = "#4ade80"
 MUTED = "#66708a"
+
+# --------------------------------------------------------------------------- #
+# cv-light "girly" theme. Injected as a <style> + <script> in <head> for every
+# page; every rule is gated behind `body.cv-light` so the default dark theme is
+# untouched. The toggle (theme_toggle) flips that class (plus a `cv-light-page`
+# marker on the page container) via client-side JS. No /web/assets writes.
+# --------------------------------------------------------------------------- #
+_WAND_SVG = (
+    "<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'>"
+    "<path d='M4 25 L16 13 l3 3 L7 28 Z' fill='%238b5a2b'/>"
+    "<path d='M16 13 l3 3 4 -2 -4 1 -1 -4 Z' fill='%23c56cf0'/>"
+    "<path d='M20 4 l1.1 2.7 2.7 1.1 -2.7 1.1 -1.1 2.7 -1.1 -2.7 -2.7 -1.1 2.7 -1.1 Z' fill='%23ffd166'/>"
+    "<path d='M10 6 l0.8 1.9 1.9 0.8 -1.9 0.8 -0.8 1.9 -0.8 -1.9 -1.9 -0.8 1.9 -0.8 Z' fill='%23ff9ff3'/>"
+    "</svg>"
+)
+WAND_URI = "data:image/svg+xml;utf8," + urllib.parse.quote(_WAND_SVG, safe="%")
+
+GIRLY_CSS = """/* cv-light girly theme: active only while <body> carries class cv-light */
+body.cv-light{background:linear-gradient(180deg,#ffd9ec 0%,#ffeaf5 32%,#fff7ea 62%,#eaf9ff 100%) fixed}
+body.cv-light .rt-Heading,
+body.cv-light h1,
+body.cv-light h2,
+body.cv-light h3,
+body.cv-light h4{color:#e0338c !important;animation:cvShimmer 3s ease-in-out infinite;-webkit-animation:cvShimmer 3s ease-in-out infinite}
+body.cv-light .rt-Text{color:#7c2d62 !important}
+body.cv-light .rt-Link,
+body.cv-light a{color:#d63384 !important}
+body.cv-light .radix-themes,
+body.cv-light div.rt-Flex{background:transparent !important;border-color:rgba(255,105,180,.4) !important;box-shadow:none !important}
+body.cv-light .rt-Box{background:rgba(255,255,255,.74) !important;border-color:#f5a9c9 !important;box-shadow:0 8px 26px rgba(255,105,180,.25) !important}
+body.cv-light input,
+body.cv-light textarea{background:#fff !important;color:#7c2d62 !important;border-color:#f5a9c9 !important}
+body.cv-light .rt-BaseButton{background:linear-gradient(90deg,#ff9ff3,#ff6b81,#ffd166) !important;color:#fff !important;border-color:#f5a9c9 !important;text-shadow:0 1px 2px rgba(120,30,80,.3)}
+body.cv-light .rt-BaseButton:hover{animation:cvWiggle .4s ease-in-out infinite;-webkit-animation:cvWiggle .4s ease-in-out infinite}
+body.cv-light .rt-MenuContent .rt-Text{color:#e8ecf4 !important}
+body.cv-light,body.cv-light *{cursor:url("@@WAND@@") 16 12,auto !important}
+.cv-ic-light{display:none}
+body.cv-light .cv-ic-dark{display:none}
+body.cv-light .cv-ic-light{display:inline}
+@keyframes cvShimmer{0%,100%{text-shadow:0 0 10px rgba(255,105,180,.6),0 0 22px rgba(255,209,102,.4)}50%{text-shadow:0 0 6px rgba(255,105,180,.35),0 0 14px rgba(255,209,102,.2)}}
+@keyframes cvWiggle{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+@keyframes cvSlide{to{background-position:200% 0}}
+@keyframes cvWash{0%{filter:hue-rotate(0)}100%{filter:hue-rotate(360deg)}}
+@keyframes cvSway{0%,100%{transform:rotate(-8deg) translateY(0)}50%{transform:rotate(10deg) translateY(-8px)}}
+@keyframes cvTwinkle{0%,100%{opacity:.35}50%{opacity:1}}
+@keyframes cvFloat{0%{transform:translateY(0) translateX(0) rotate(0);opacity:0}8%{opacity:.95}100%{transform:translateY(-115vh) translateX(6vw) rotate(28deg);opacity:0}}
+@keyframes cvRain{0%{transform:translateY(0) translateX(0) rotate(0);opacity:0}6%{opacity:.95}90%{opacity:.85}100%{transform:translateY(115vh) translateX(var(--cv-drift,0)) rotate(30deg);opacity:0}}
+#cv-rain-layer{position:fixed;top:0;left:0;width:100%;height:100vh;z-index:9999;pointer-events:none;overflow:hidden}
+@keyframes cvPop{0%{transform:scale(.2);opacity:1}70%{transform:scale(1.3);opacity:.8}100%{transform:scale(.4) translateY(14px);opacity:0}}
+#cv-fun-overlay{position:fixed;inset:0;z-index:9998;pointer-events:none;overflow:hidden}
+#cv-fun-overlay .cv-rainbow{position:absolute;top:0;left:0;right:0;height:14px;background:linear-gradient(90deg,#ff4d6d,#ffb703,#8ac926,#2dc6d6,#7b2ff7,#f72585,#ff4d6d);background-size:200% 100%;animation:cvSlide 4s linear infinite;-webkit-animation:cvSlide 4s linear infinite;box-shadow:0 0 18px rgba(255,105,180,.8)}
+#cv-fun-overlay .cv-wash{position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,0,110,.10),rgba(255,170,0,.12),rgba(120,255,120,.10),rgba(0,200,255,.12),rgba(180,0,255,.12));animation:cvWash 12s linear infinite;-webkit-animation:cvWash 12s linear infinite}
+#cv-fun-overlay .cv-flowers span{position:absolute;font-size:26px;opacity:.85;animation:cvSway 5s ease-in-out infinite;-webkit-animation:cvSway 5s ease-in-out infinite;filter:drop-shadow(0 2px 6px rgba(255,105,180,.5))}
+#cv-fun-overlay .cv-sparkles{position:absolute;inset:0;background:radial-gradient(2px 2px at 12% 22%,#fff,transparent),radial-gradient(3px 3px at 34% 68%,#ffd166,transparent),radial-gradient(2px 2px at 58% 12%,#ff9ff3,transparent),radial-gradient(3px 3px at 78% 44%,#54a0ff,transparent),radial-gradient(2px 2px at 90% 82%,#ff6b81,transparent),radial-gradient(2px 2px at 24% 90%,#fff,transparent),radial-gradient(3px 3px at 66% 30%,#c56cf0,transparent),radial-gradient(2px 2px at 46% 54%,#f6e58d,transparent);animation:cvTwinkle 3s ease-in-out infinite;-webkit-animation:cvTwinkle 3s ease-in-out infinite}
+.cv-bubble{position:absolute;top:-10vh;left:0;z-index:1;pointer-events:none;animation:cvRain linear forwards;-webkit-animation:cvRain linear forwards;filter:drop-shadow(0 3px 8px rgba(255,105,180,.5))}
+.cv-glitter{position:fixed;border-radius:50%;z-index:9999;pointer-events:none;animation:cvPop ease-out forwards;-webkit-animation:cvPop ease-out forwards}
+@media print{#cv-fun-overlay{display:none !important}}
+""".replace("@@WAND@@", WAND_URI)
+
+THEME_JS = """(function () {
+  if (typeof document === 'undefined') return;
+  var L = 'cv-light';
+  var EMOS = ['\\ud83c\\udf38','\\ud83d\\udc96','\\ud83e\\udd84','\\ud83c\\udf1f','\\ud83c\\udf08','\\ud83d\\udc9c','\\u2728','\\ud83d\\udc30','\\ud83c\\udf6d','\\ud83c\\udf80','\\ud83d\\udcab','\\ud83e\\uddc1','\\ud83d\\udc9d','\\u2601\\ufe0f'];
+  var GCOL = ['#ff9ff3','#ffd166','#54a0ff','#ff6b81','#f6e58d','#c56cf0'];
+  var bubbleTimer = null, glitterTimer = null, mx = null, my = null;
+  var sensorOn = false, shakeAt = 0;
+  var rainLayerEl = null, shakePeak = 0, shakeN = 0;
+  function rainLayer() {
+    if (rainLayerEl && document.body.contains(rainLayerEl)) return rainLayerEl;
+    rainLayerEl = document.createElement('div');
+    rainLayerEl.id = 'cv-rain-layer';
+    document.body.appendChild(rainLayerEl);
+    return rainLayerEl;
+  }
+  function buildOverlay() {
+    var ov = document.getElementById('cv-fun-overlay');
+    if (ov) return ov;
+    ov = document.createElement('div');
+    ov.id = 'cv-fun-overlay';
+    var flowers = ['\\ud83c\\udf38','\\ud83c\\udf3a','\\ud83c\\udf3c','\\ud83d\\udcae','\\ud83c\\udf3f\\ufe0f','\\ud83c\\udf37','\\ud83c\\udf38','\\ud83c\\udf3a'];
+    var spots = [[6,12],[88,16],[12,60],[90,68],[45,5],[4,86],[94,38],[70,92]];
+    var fl = '', i;
+    for (i = 0; i < flowers.length; i++) {
+      fl += '<span style="left:' + spots[i][0] + '%;top:' + spots[i][1] + '%;animation-delay:' + (i * 0.6) + 's;-webkit-animation-delay:' + (i * 0.6) + 's">' + flowers[i] + '</span>';
+    }
+    ov.innerHTML = '<div class="cv-rainbow"></div><div class="cv-wash"></div><div class="cv-flowers">' + fl + '</div><div class="cv-sparkles"></div>';
+    document.body.appendChild(ov);
+    return ov;
+  }
+  function apply(mode) {
+    var light = (mode === 'light');
+    var b = document.body;
+    if (!b) return;
+    b.classList.toggle(L, light);
+    if (light) {
+      buildOverlay();
+      startBubbles();
+      startGlitter();
+    } else {
+      var ov = document.getElementById('cv-fun-overlay');
+      if (ov) ov.remove();
+      stopBubbles();
+      stopGlitter();
+    }
+    try { localStorage.setItem('cv_theme', light ? 'light' : 'dark'); } catch (e) {}
+  }
+  window.cvToggleTheme = function () {
+    apply(document.body.classList.contains(L) ? 'dark' : 'light');
+  };
+  window.cvSetTheme = function (m) { apply(m); };
+  function spawnBubble() {
+    if (document.querySelectorAll('.cv-bubble').length > 60) return;
+    var s = document.createElement('span');
+    s.className = 'cv-bubble';
+    s.textContent = EMOS[(Math.random() * EMOS.length) | 0];
+    s.style.left = (2 + Math.random() * 96) + '%';
+    s.style.fontSize = (16 + Math.random() * 24) + 'px';
+    s.style.setProperty('--cv-drift', (Math.random() * 12 - 6) + 'vw');
+    s.style.animationDuration = (3 + Math.random() * 4) + 's';
+    s.addEventListener('animationend', function () { s.remove(); });
+    rainLayer().appendChild(s);
+  }
+  function startBubbles() {
+    if (bubbleTimer) return;
+    rainLayer();
+    var i;
+    for (i = 0; i < 12; i++) {
+      (function (d) { setTimeout(spawnBubble, d); })(i * 110);
+    }
+    bubbleTimer = setInterval(spawnBubble, 130);
+  }
+  function stopBubbles() {
+    if (bubbleTimer) { clearInterval(bubbleTimer); bubbleTimer = null; }
+    var a = document.querySelectorAll('.cv-bubble'), i;
+    for (i = 0; i < a.length; i++) a[i].remove();
+    if (rainLayerEl && rainLayerEl.parentNode) rainLayerEl.parentNode.removeChild(rainLayerEl);
+    rainLayerEl = null;
+  }
+  function onDeviceMotion(e) {
+    var a = e.acceleration;
+    if (!a) return;
+    var mag = Math.abs(a.x || 0) + Math.abs(a.y || 0) + Math.abs(a.z || 0);
+    shakePeak = Math.max(shakePeak, mag);
+    shakeN++;
+    if (shakeN > 2 && shakePeak > 17 && Date.now() - shakeAt > 1000 && document.body.classList.contains(L)) {
+      shakeAt = Date.now();
+      shakeN = 0; shakePeak = 0;
+      if (navigator.vibrate) { try { navigator.vibrate([90, 40, 140, 40, 90]); } catch (err) {} }
+      playWhimsy();
+      var i;
+      for (i = 0; i < 70; i++) {
+        (function (d) {
+          setTimeout(function () {
+            var s = document.createElement('span');
+            s.className = 'cv-bubble';
+            s.textContent = EMOS[(Math.random() * EMOS.length) | 0];
+            s.style.left = (Math.random() * 100) + '%';
+            s.style.fontSize = (14 + Math.random() * 34) + 'px';
+            s.style.setProperty('--cv-drift', (Math.random() * 22 - 11) + 'vw');
+            s.style.animationDuration = (1.6 + Math.random() * 2.6) + 's';
+            s.addEventListener('animationend', function () { s.remove(); });
+            rainLayer().appendChild(s);
+          }, d);
+        })(i * 12);
+      }
+    }
+    if (shakeN >= 5) { shakeN = 0; shakePeak = 0; }
+  }
+  var whimsy = null;
+  function playWhimsy() {
+    try {
+      if (!whimsy) { whimsy = new Audio('/media/whimsy.wav'); whimsy.volume = 0.8; }
+      whimsy.currentTime = 0;
+      var p = whimsy.play();
+      if (p && p.catch) { p.catch(function () {}); }
+    } catch (err) {}
+  }
+  function enableSensors() {
+    if (sensorOn) return;
+    if (!('ontouchstart' in window) && !(navigator.maxTouchPoints > 0)) { sensorOn = true; return; }
+    try { whimsy = new Audio('/media/whimsy.wav'); whimsy.volume = 0.8; whimsy.load(); } catch (err) {}
+    var attach = function () {
+      if (sensorOn) return;
+      window.addEventListener('devicemotion', onDeviceMotion, true);
+      sensorOn = true;
+    };
+    if (window.DeviceMotionEvent && DeviceMotionEvent.requestPermission) {
+      DeviceMotionEvent.requestPermission().then(attach).catch(attach);
+    } else {
+      attach();
+    }
+  }
+  window.addEventListener('touchstart', enableSensors, { passive: true });
+  window.addEventListener('pointerdown', enableSensors, { passive: true });
+  window.addEventListener('mousemove', function (e) { mx = e.clientX; my = e.clientY; }, { passive: true });
+  function startGlitter() {
+    if (glitterTimer) return;
+    glitterTimer = setInterval(function () {
+      if (mx == null) return;
+      if (document.querySelectorAll('.cv-glitter').length > 60) return;
+      var s = document.createElement('span');
+      s.className = 'cv-glitter';
+      var sz = 5 + Math.random() * 7;
+      s.style.width = sz + 'px'; s.style.height = sz + 'px';
+      s.style.left = (mx + (Math.random() * 30 - 15)) + 'px';
+      s.style.top = (my + (Math.random() * 18 - 9)) + 'px';
+      s.style.background = GCOL[(Math.random() * GCOL.length) | 0];
+      s.style.animationDuration = (0.6 + Math.random() * 0.7) + 's';
+      s.addEventListener('animationend', function () { s.remove(); });
+      document.body.appendChild(s);
+    }, 50);
+  }
+  function stopGlitter() {
+    if (glitterTimer) { clearInterval(glitterTimer); glitterTimer = null; }
+    var a = document.querySelectorAll('.cv-glitter'), i;
+    for (i = 0; i < a.length; i++) a[i].remove();
+  }
+  function init() {
+    var saved = 'dark';
+    try { saved = localStorage.getItem('cv_theme') || 'dark'; } catch (e) {}
+    apply(saved);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+"""
 
 # Client-side probe: run once per page load, JSON-encodes what the browser
 # tells us so the server can personalise the greeting. Fires via rx.call_script.
@@ -522,50 +769,43 @@ def page_footer() -> rx.Component:
     )
 
 
-# 48h target the countdown counts down to (UTC).
-COUNTDOWN_TARGET = datetime(2026, 8, 5, 16, 0, 0, tzinfo=timezone.utc)
-
 # Where /appointments redirects (Google Calendar booking page).
 APPOINTMENTS_URL = "https://calendar.google.com/calendar/u/0/appointments/AcZssZ0Cqg2mYA8lqoAsURaLim0pjczGu3fErFCYI20="
 
-
-def countdown_label() -> str:
-    """Server-side seed (seconds until target) — the browser ticks from here."""
-    total = max(0, int((COUNTDOWN_TARGET - datetime.now(timezone.utc)).total_seconds()))
-    h, rem = divmod(total, 3600)
-    m, s = divmod(rem, 60)
-    return f"{h:02d}:{m:02d}:{s:02d}"
+# The only picture in the repo — Frank with his horse. Served read-only via
+# the /media/frank.png backend route (no /web/assets writes).
+FRANK_PHOTO = pathlib.Path("/web/frank-escudero-raw-data/pictures/frank/cv-image-frank-with-his-horse.png")
 
 
 def work_in_progress_banner() -> rx.Component:
-    """Big 'work in progress' banner with a simple client-side 48h countdown."""
-    js = (
-        "if (!window.countdownStarted) {"
-        "  window.countdownStarted = true;"
-        "  var end=new Date('" + COUNTDOWN_TARGET.isoformat() + "').getTime();"
-        "  function fmt(ms){var n=Math.max(0,Math.floor(ms/1000));"
-        "  var h=Math.floor(n/3600),m=Math.floor(n%3600/60),s=Math.floor(n%60);"
-        "  return (n<=0?'00:00:00':h+'h '+('0'+m).slice(-2)+'m '+('0'+s).slice(-2)+'s');}"
-        "  setInterval(function(){"
-        "    var el=document.getElementById('cd-countdown');"
-        "    if(el) el.textContent=fmt(end-Date.now());"
-        "  },1000);"
-        "}"
-    )
-    return rx.hstack(
+    """Big 'work in progress' banner with Frank's photo below the text."""
+    return rx.vstack(
         rx.text("WORK IN PROGRESS", color="#fca5a5", fontWeight="700", fontSize="1.1rem"),
-        rx.spacer(),
-        rx.html(
-            f'<span id="cd-countdown" style="color:#4ade80;font-size:2rem;font-weight:700;'
-            f'font-family:ui-monospace,Menlo,monospace;">Deployment in {countdown_label()}</span>'
+        rx.image(
+            src="/media/frank.png",
+            alt="Frank Escudero with his horse",
+            width="min(300px, 80vw)",
+            height="auto",
+            borderRadius="0.6rem",
+            border="1px solid #2a3247",
         ),
-        rx.script(js),
+        rx.text(
+            "Oh my God, the code is horrible! It's like reading a framework written on LSD. "
+            "I'm not touching this during a heatwave. To be clear, some of the information "
+            "about me is straight up made up. — Frank",
+            color=MUTED,
+            fontSize="0.85rem",
+            textAlign="center",
+            fontStyle="italic",
+        ),
         width="100%",
         background="#0f141f",
         border="1px solid #2a3247",
         borderRadius="0.6rem",
         padding="0.7rem 1rem",
         marginBottom="1.2rem",
+        spacing="3",
+        align="center",
     )
 
 
@@ -814,6 +1054,7 @@ class State(rx.State):
     busy: bool = False
     greeted: bool = False
     visitor_context: dict[str, str] = {}
+    suggestions: list[str] = []
 
     # Auth session: the cookie holds an opaque token; identity is re-verified
     # against site_store.sessions.json on every page load, never trusted from
@@ -841,6 +1082,15 @@ class State(rx.State):
     @rx.var
     def is_logged_in(self) -> bool:
         return bool(self.user_email)
+
+    @rx.var
+    def show_suggestions(self) -> bool:
+        """Show example chips until the visitor sends their first question.
+
+        The greeting is an assistant message, so it must not count — only a
+        user message hides the chips.
+        """
+        return not any(m.get("role") == "user" for m in self.messages)
 
     def _restore_session(self) -> None:
         """Re-derive identity from the cookie token (runs on every page load)."""
@@ -893,6 +1143,7 @@ class State(rx.State):
         """on_load for `/`: restore session, log the visit, probe the browser."""
         self._restore_session()
         await self._record_visit()
+        self.suggestions = random.sample(SUGGESTIONS, 2)
         return rx.call_script(BROWSER_INFO_JS, callback=State.on_browser_info)
 
     async def load_public(self) -> None:
@@ -1143,6 +1394,22 @@ class State(rx.State):
                 )
             if location:
                 parts.append(f" They are in {location}.")
+            if ctx.get("device"):
+                parts.append(
+                    f" Their browser reports the device as: {ctx['device']}. If their setup "
+                    "is noteworthy (e.g. a small phone screen, an enormous display, unusually "
+                    "many cores/RAM, or being offline), you may mention it once, lightly. "
+                    "Do not read a screen resolution out loud like a spec sheet."
+                )
+            if lang and location:
+                parts.append(
+                    f" Their browser language is {lang} and they are browsing from "
+                    f"{location}. If that pairing tells an interesting story - e.g. a "
+                    "Spanish speaker in France is probably on holiday, someone browsing "
+                    "from their own country in their native language is likely at home - "
+                    "weave ONE such smart observation into the greeting, naturally and "
+                    "briefly. Never force it if nothing stands out."
+                )
             if flag and not is_windows:
                 parts.append(f" Their country flag is {flag}. Put that flag at the START of the greeting.")
             elif is_windows:
@@ -1219,6 +1486,11 @@ class State(rx.State):
         # uncontrolled) so Android GBoard autocomplete can't double characters
         # by racing a server round-trip on every keystroke.
         q = str(form_data.get("question") or "").strip()
+        async for event in self.ask(q):
+            yield event
+
+    async def ask(self, q: str):
+        """Run the full ask flow: append the question, notify, stream the answer."""
         if not q or self.busy:
             return
         if not self.conv_id:
@@ -1297,7 +1569,11 @@ def banner() -> rx.Component | None:
 def chat_message(item: dict[str, str]) -> rx.Component:
     is_user = item["role"] == "user"
     return rx.box(
-        rx.text(item["content"]),
+        rx.cond(
+            is_user,
+            rx.text(item["content"], whiteSpace="pre-wrap"),
+            rx.markdown(item["content"]),
+        ),
         rx.cond(
             ~is_user,
             rx.icon_button(
@@ -1322,7 +1598,27 @@ def chat_message(item: dict[str, str]) -> rx.Component:
         padding="0.6rem 0.9rem",
         paddingBottom=rx.cond(~is_user, "1.8rem", "0.6rem"), # Make space for button
         maxWidth="85%",
-        whiteSpace="pre-wrap",
+    )
+
+
+def suggestion_chip(q: str) -> rx.Component:
+    """One clickable example-question chip (asks the question on click)."""
+    return rx.el.button(
+        q,
+        type="button",
+        disabled=State.busy,
+        on_click=State.ask(q),
+        style={
+            "background": "transparent",
+            "color": MUTED,
+            "border": "1px solid #2a3247",
+            "borderRadius": "1rem",
+            "padding": "0.45rem 0.85rem",
+            "fontFamily": "inherit",
+            "fontSize": "0.8rem",
+            "cursor": "pointer",
+            "textAlign": "left",
+        },
     )
 
 
@@ -1336,6 +1632,15 @@ def chat_panel() -> rx.Component:
             width="100%",
             overflowY="auto",
             maxHeight="45vh",
+        ),
+        rx.cond(
+            State.show_suggestions,
+            rx.hstack(
+                rx.foreach(State.suggestions, suggestion_chip),
+                spacing="2",
+                marginTop="0.75rem",
+                style={"flexWrap": "wrap"},
+            ),
         ),
         rx.el.form(
             rx.hstack(
@@ -1478,9 +1783,27 @@ def projects() -> rx.Component:
 # --------------------------------------------------------------------------- #
 # Auth + analytics pages
 # --------------------------------------------------------------------------- #
+def theme_toggle() -> rx.Component:
+    """Dark / girly-light toggle. Pure client-side: flips body.cv-light, and the
+    sun/moon icon swap is done in GIRLY_CSS so no Reflex state is needed."""
+    return rx.button(
+        rx.el.span("🌙", class_name="cv-ic-dark"),
+        rx.el.span("☀️", class_name="cv-ic-light"),
+        on_click=rx.call_script("window.cvToggleTheme()"),
+        size="1",
+        variant="outline",
+        background="transparent",
+        color=ACCENT,
+        borderColor="#2a3247",
+        aria_label="Toggle theme",
+        title="Toggle light/dark theme",
+    )
+
+
 def auth_menu() -> rx.Component:
     """Small profile menu: sign-in links when anonymous, dropdown when signed in."""
     return rx.hstack(
+        theme_toggle(),
         rx.cond(
             State.is_logged_in,
             rx.menu.root(
@@ -1886,6 +2209,8 @@ app = rx.App(
     head_components=[
         rx.el.link(rel="icon", type="image/svg+xml", href=FAVICON_SVG),
         rx.el.link(rel="apple-touch-icon", href=FAVICON_SVG),
+        rx.el.style(GIRLY_CSS),
+        rx.el.script(THEME_JS),
         rx.el.meta(name="description", content="Frank Escudero CV - Bridging deep-tech execution with strategic business growth. AI-updated virtual employee."),
         rx.el.meta(property="og:site_name", content="Frank Escudero CV"),
         rx.el.meta(property="og:title", content="Frank Escudero — virtual-employee CV"),
@@ -1933,10 +2258,85 @@ async def _appointments(request):
     return RedirectResponse(url=APPOINTMENTS_URL, status_code=302)
 
 
+def _make_whimsy_wav() -> bytes:
+    """Generate a short 'music box / celesta' arpeggio WAV at import time.
+
+    Ascending C-E-G-C with a high sparkle, each note a plucky decaying sine
+    with bell overtones. No external assets, no /web/assets writes.
+    """
+    import io
+    import math
+    import struct
+    import wave
+
+    rate = 44100
+    notes = [
+        (523.25, 0.00, 0.24),   # C5
+        (659.25, 0.12, 0.24),   # E5
+        (783.99, 0.24, 0.26),   # G5
+        (1046.50, 0.36, 0.30),  # C6
+        (1318.51, 0.52, 0.60),  # E6 sparkle
+    ]
+    total = 1.08
+    n = int(total * rate)
+    buf = bytearray(n * 2)
+
+    def add(note: tuple[float, float, float]) -> None:
+        freq, start, dur = note
+        s0 = int(start * rate)
+        s1 = min(n, s0 + int(dur * rate))
+        for i in range(s0, s1):
+            t = (i - s0) / rate
+            env = math.exp(-5.5 * t) * (1.0 - t / dur)
+            w = 2 * math.pi * freq * (i / rate)
+            v = (
+                math.sin(w)
+                + 0.35 * math.sin(2 * w)
+                + 0.12 * math.sin(3 * w)
+                + 0.08 * math.sin(4 * w)
+            )
+            cur = struct.unpack_from("<h", buf, i * 2)[0]
+            cur = max(-32767, min(32767, int(cur + env * v * 0.55 * 32767)))
+            struct.pack_into("<h", buf, i * 2, cur)
+
+    for note in notes:
+        add(note)
+    out = io.BytesIO()
+    with wave.open(out, "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes(bytes(buf))
+    return out.getvalue()
+
+
+_WHIMSY_WAV = _make_whimsy_wav()
+
+
+async def _whimsy_audio(request):
+    from starlette.responses import Response
+    return Response(
+        _WHIMSY_WAV,
+        media_type="audio/wav",
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
+
+
+async def _frank_picture(request):
+    from starlette.responses import Response
+    return Response(
+        FRANK_PHOTO.read_bytes(),
+        media_type="image/png",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
+
+
 try:
     app._api.add_route("/rss", _rss)
     app._api.add_route("/sitemap.xml", _sitemap)
     app._api.add_route("/robots.txt", _robots)
     app._api.add_route("/appointments", _appointments)
+    app._api.add_route("/media/frank.png", _frank_picture)
+    app._api.add_route("/media/whimsy.wav", _whimsy_audio)
 except Exception:  # noqa: BLE001
     logger.warning("could not mount /rss, /sitemap.xml, /robots.txt or /appointments route", exc_info=True)

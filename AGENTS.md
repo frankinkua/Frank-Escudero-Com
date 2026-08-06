@@ -19,7 +19,7 @@
 - Stack: Reflex 0.9.7, Python 3.13, `uv`, `--env prod`, `backend_port=8000`, `frontend_port=8000`.
 - Host: systemd-less Debian 13 LXC (`cv`), PID 1 = `bash`; **boot = `/root/.bashrc`**.
 - Chat + cron worker both use **LM Studio** on frank's LAN: `CHAT_URL="http://192.168.178.120:1234/v1"`, `CHAT_MODEL="prism-ml/bonsai-27b"` (a reasoning model, 256k ctx, loaded in the box's VRAM). This is a remote endpoint — do not rewrite it to local ollama, and never touch `/dev/nvidia*` here (no GPU passthrough in this LXC).
-- Release target is **2026-08-05 16:00 UTC** (a fixed deployment date). The countdown is **client-side JS seeded from `COUNTDOWN_TARGET`** in `main.py` — do not "fix" it to match server time; the target itself is correct as a fixed milestone.
+- Release target is **2026-08-05 16:00 UTC** (a fixed deployment date). The client-side countdown that displayed it was **removed** (the banner is now text-only) — do not resurrect it as a "server time" widget.
 - "work in progress" text appears **exactly once** on `/` (the banner). That is an invariant.
 
 ## Reflex dev rules (the ones that save time)
@@ -56,7 +56,7 @@ assert h.lower().count("work in progress") == 1, "WIP text duplicated (case-inse
 assert re.search(r"v0\.1\.0 \([a-f0-9]{7}\)", h), "footer version missing/odd"
 assert "Built with Reflex" not in h, "reflex badge leaked"
 assert "Sign in" in h and "Sign up" in h, "auth menu missing on home"
-print("contract OK:", re.findall(r"Deployment in \d\d:\d\d:\d\d", h)[0])
+print("contract OK: countdown absent =", "Deployment in" not in h)
 PY
 echo "/ -> $(curl -sS -m6 -o /dev/null -w %{http_code} http://127.0.0.1:8000/)"
 for r in /about/ /cv/ /projects/ /contact/ /login/ /signup/ /profile/ /admin/; do
@@ -110,4 +110,4 @@ Never `reflex run` from a shell — that leaks children and leaves `:8000` half-
 ## Boot survival (so you don't break it)
 - `/root/.bashrc` -> `start-rdp-server.sh` brings up sshd -> dbus -> xrdp+Plasma -> tailscaled -> ollama-as-frank -> websiteserver.
 - Worker (`/etc/init.d/opencode-worker`) and cron are OFF by design. Do not enable either.
-- On reboot, Funnel + `/` → 200 + the live countdown all recover automatically. After any reboot: `curl https://cv.story-tegu.ts.net/` must be 200 within ~12s; if `:8000` won't bind, run `lsof -iTCP:8000 -sTCP:LISTEN` and restart websiteserver.
+- On reboot, Funnel + `/` → 200 all recover automatically. After any reboot: `curl https://cv.story-tegu.ts.net/` must be 200 within ~12s; if `:8000` won't bind, run `lsof -iTCP:8000 -sTCP:LISTEN` and restart websiteserver.
