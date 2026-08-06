@@ -136,6 +136,14 @@ Red lines (stop, fix, then commit): non-200 on `/`, "work in progress" count != 
 
 ---
 
+
+## Chat System & Admin Capabilities
+The site heavily revolves around an integrated chat system:
+- **WhatsApp-Style UI**: The chat interface resembles WhatsApp, including styling and background.
+- **Guest Logins**: Users can now log in via email without needing a password. This allows the system to link their session history anonymously over time.
+- **Live Handoff (Admin)**: In the Admin Dashboard (`/admin`), Frank can view all live active chats, pause the AI to prevent autonomous responses, and manually step into the chat to speak with the user directly as the assistant.
+- **Profile Updates**: Users can upload a tiny 80x80 profile avatar and edit their name in their profile page (`/profile`).
+
 ## Chat (Ask the site)
 - Backend: **remote** LM Studio `http://192.168.178.120:1234/v1`, model `prism-ml/bonsai-27b` (reasoning, kept loaded in VRAM). Same endpoint the cron worker uses.
 - SDK: `openai` (`AsyncOpenAI`). Streaming into the assistant message.

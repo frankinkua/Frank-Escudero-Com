@@ -307,6 +307,35 @@ THEME_JS = """(function () {
 
 # Client-side probe: run once per page load, JSON-encodes what the browser
 # tells us so the server can personalise the greeting. Fires via rx.call_script.
+NOTIFY_JS = """
+window.playBing = function() {
+    if (document.hidden) {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            osc.connect(ctx.destination);
+            osc.frequency.value = 880;
+            osc.start();
+            osc.stop(ctx.currentTime + 0.1);
+
+            if (!window.blinkInterval) {
+                const orig = document.title;
+                window.blinkInterval = setInterval(() => {
+                    document.title = document.title === orig ? "New Message!" : orig;
+                }, 1000);
+                const clear = () => {
+                    clearInterval(window.blinkInterval);
+                    window.blinkInterval = null;
+                    document.title = orig;
+                    document.removeEventListener('visibilitychange', clear);
+                };
+                document.addEventListener('visibilitychange', clear);
+            }
+        } catch (e) {}
+    }
+};
+"""
+
 BROWSER_INFO_JS = (
     "JSON.stringify({"
     "lang:navigator.language||'',"
@@ -957,14 +986,24 @@ def _visitor_notify_text(ctx: dict[str, str], ip: str, geo: dict[str, str]) -> s
     return "\n".join(f"{k}: {v}" for k, v in fields if v)
 
 
-def _visitor_context_text(ctx: dict[str, str]) -> str:
+def _visitor_context_text(ctx: dict[str, str], user_email: str = "", user_name: str = "") -> str:
     """Format the collected visitor context into an LLM-readable block."""
-    if not ctx:
-        return ""
     lines = [
         "\n\nVISITOR CONTEXT (everything known about the current visitor; use it to "
         "personalise answers):"
     ]
+    if user_email:
+        lines.append(f"- Identified Email: {user_email}")
+        if user_name:
+            lines.append(f"- User Name: {user_name}")
+        lines.append("- They have an account or have identified themselves.")
+    else:
+        lines.append("- Unidentified Guest (No email provided).")
+        lines.append("- You can ask for their email to remember them, and suggest setting a password for safe chat history.")
+
+    if not ctx:
+        return "\n".join(lines)
+
     if ctx.get("lang"):
         lines.append(f"- language: {ctx['lang']}")
     if ctx.get("locale"):
@@ -1003,14 +1042,14 @@ def _visitor_context_text(ctx: dict[str, str]) -> str:
     return "\n".join(lines)
 
 
-def _system_message(ctx: dict[str, str] | None = None) -> dict[str, str]:
+def _system_message(ctx: dict[str, str] | None = None, user_email: str = "", user_name: str = "") -> dict[str, str]:
     return {
         "role": "system",
         "content": (
             read_doc("prompt.md")
             + "\n\nKNOWLEDGE:\n"
             + read_doc("knowledge.md")
-            + _visitor_context_text(ctx or {})
+            + _visitor_context_text(ctx or {}, user_email, user_name)
         ),
     }
 
@@ -1055,6 +1094,19 @@ class State(rx.State):
     greeted: bool = False
     visitor_context: dict[str, str] = {}
     suggestions: list[str] = []
+    has_unread: bool = False
+
+    def clear_unread(self):
+        self.has_unread = False
+
+    @rx.var
+    def notifications_enabled(self) -> bool:
+        import notify
+        return notify.get_notifications_state()
+
+    def toggle_admin_notifications(self, state: bool):
+        import notify
+        notify.toggle_notifications(state)
 
     # Auth session: the cookie holds an opaque token; identity is re-verified
     # against site_store.sessions.json on every page load, never trusted from
@@ -1069,6 +1121,33 @@ class State(rx.State):
     # Per-session analytics/transcript identifiers.
     conv_id: str = ""
     visitor_ip: str = ""
+
+    # Profile Picture & Editing
+    user_avatar: str = ""
+    is_editing_profile: bool = False
+
+    async def handle_avatar_upload(self, files: list[rx.UploadFile]):
+        if not files or not self.user_email:
+            return
+        upload_data = await files[0].read()
+        import base64
+        b64 = base64.b64encode(upload_data).decode("utf-8")
+        mime_type = files[0].content_type or "image/png"
+        data_uri = f"data:{mime_type};base64,{b64}"
+        self.user_avatar = data_uri
+        site_store.update_user_profile(self.user_email, {"avatar": data_uri})
+
+    def save_profile_name(self, form_data: dict):
+        if not self.user_email:
+            return
+        new_name = form_data.get("name", self.user_name)
+        self.user_name = new_name
+        site_store.update_user_profile(self.user_email, {"name": new_name})
+        self.is_editing_profile = False
+
+    def toggle_edit_profile(self):
+        self.is_editing_profile = not self.is_editing_profile
+
     visitor_geo: dict[str, str] = {}
 
     # Admin dashboard payload (populated only by load_admin after token check).
@@ -1078,6 +1157,39 @@ class State(rx.State):
     admin_visits: list[dict[str, object]] = []
     admin_convs: list[dict[str, str]] = []
     admin_log: str = ""
+
+    # Live Chat State
+    live_chat_input: str = ""
+    active_live_chat_id: str = ""
+    live_chat_messages: list[dict[str, str]] = []
+
+    def set_active_live_chat(self, conv_id: str):
+        self.active_live_chat_id = conv_id
+        site_store.toggle_ai_pause(conv_id, True)
+        self.refresh_live_chat()
+
+    def refresh_live_chat(self):
+        if not self.active_live_chat_id:
+            return
+        convs = site_store._read("conversations.json", [])
+        for c in convs:
+            if c.get("id") == self.active_live_chat_id:
+                self.live_chat_messages = c.get("messages", [])
+                break
+
+    def send_live_chat_message(self, form_data: dict):
+        msg = form_data.get("message", "").strip()
+        if not msg or not self.active_live_chat_id:
+            return
+        site_store.log_conv_message(self.active_live_chat_id, "assistant", msg, "", None)
+        self.live_chat_input = ""
+        self.refresh_live_chat()
+
+    def resume_ai_chat(self):
+        if self.active_live_chat_id:
+            site_store.toggle_ai_pause(self.active_live_chat_id, False)
+            self.active_live_chat_id = ""
+
 
     @rx.var
     def is_logged_in(self) -> bool:
@@ -1108,6 +1220,20 @@ class State(rx.State):
         self.user_name = sess.get("name", "") or sess["email"].split("@")[0]
         self.user_role = sess["role"]
         self.is_admin = sess["role"] == "admin"
+
+        # Load user to check if guest
+        user = site_store.get_user(self.user_email)
+        is_guest = user.get("guest", False) if user else True
+
+        # If they are not a guest and have no messages currently loaded (or maybe just on load),
+        # we can restore their latest conversation history
+        if not is_guest and not self.messages:
+            convs = site_store.get_user_conversations(self.user_email)
+            if convs:
+                latest_conv = convs[0]
+                if len(latest_conv.get("messages", [])) > 1:
+                    self.messages = latest_conv["messages"][1:]
+                    self.conv_id = latest_conv["id"]
 
     async def _record_visit(self) -> None:
         """Log a page view into the analytics store (skips the admin's own views).
@@ -1175,18 +1301,32 @@ class State(rx.State):
     async def do_login(self, form_data: dict):
         email = str(form_data.get("email") or "").strip().lower()
         password = str(form_data.get("password") or "")
+
         ok, msg, user = site_store.authenticate(email, password)
         if not ok:
             self.auth_error = msg
             return
+
+        is_guest = user.get("guest", False)
         self.auth_error = ""
         self.user_email = email
         self.user_name = user.get("name", "") or email.split("@")[0]
         self.user_role = user["role"]
         self.is_admin = user["role"] == "admin"
         self.session_token = site_store.create_session(email, user["role"], self.user_name)
+
+        if not is_guest:
+            # Verified user with password: load their history
+            convs = site_store.get_user_conversations(email)
+            if convs:
+                latest_conv = convs[0]
+                if len(latest_conv.get("messages", [])) > 1:
+                    self.messages = latest_conv["messages"][1:]
+                    self.conv_id = latest_conv["id"]
+
         if self.is_admin:
             _notify("Admin login", f"{email} signed in to the admin dashboard.", ["lock"])
+
         return rx.redirect("/")
 
     async def do_signup(self, form_data: dict):
@@ -1357,7 +1497,7 @@ class State(rx.State):
                 read_doc("prompt.md"),
                 "\n\nKNOWLEDGE:\n",
                 read_doc("knowledge.md"),
-                _visitor_context_text(ctx),
+                _visitor_context_text(ctx, self.user_email, self.user_name),
                 "\n\nNow: you just detected a new visitor. Write a short ",
                 f"personal greeting for them in {lang} (the visitor's language - ",
                 f"EVERY word you write must be in {lang}, no exceptions). ",
@@ -1463,7 +1603,7 @@ class State(rx.State):
                     f"{ctx.get('location') or ctx.get('device') or 'a browser'} "
                     f"right now. Who are you?"
                 )
-        except Exception as exc:  # noqa: BLE001
+        except Exception:  # noqa: BLE001
             logger.exception("greeting generation failed")
             self.messages[-1]["content"] = (
                 "Hi! I'm Frank's assistant. Ask me anything about Frank's CV. Who are you?"
@@ -1511,9 +1651,17 @@ class State(rx.State):
         self.messages.append({"role": "assistant", "content": ""})
         yield
         try:
-            history = [_system_message(self.visitor_context), *self.messages[:-1][-10:]]
+            history = [_system_message(self.visitor_context, self.user_email, self.user_name), *self.messages[:-1][-10:]]
             client = get_chat_client()
+            # Check if admin has taken over
+            if site_store.is_ai_paused(self.conv_id):
+                self.messages[-1]["content"] = "(Waiting for Frank to type...)"
+                yield rx.call_script(chat_scroll_js())
+                self.busy = False
+                return
+
             stream = await client.chat.completions.create(
+
                 model=CHAT_MODEL,
                 messages=history,
                 temperature=0.4,
@@ -1805,6 +1953,10 @@ def auth_menu() -> rx.Component:
     return rx.hstack(
         theme_toggle(),
         rx.cond(
+            State.has_unread,
+            rx.icon(tag="bell", color=ACCENT, size=20, on_click=State.clear_unread, cursor="pointer"),
+        ),
+        rx.cond(
             State.is_logged_in,
             rx.menu.root(
                 rx.menu.trigger(
@@ -1957,17 +2109,73 @@ def profile_page() -> rx.Component:
                 rx.vstack(
                     rx.box(
                         rx.vstack(
-                            rx.hstack(
-                                rx.text("name", color=MUTED, fontSize="0.8rem"),
-                                rx.text(State.user_name, color="#c9d2e3"),
-                                justify="between",
+                            rx.center(
+                                rx.vstack(
+                                    rx.cond(
+                                        State.user_avatar != "",
+                                        rx.image(src=State.user_avatar, width="100px", height="100px", borderRadius="50%", border="2px solid #3b82f6", objectFit="cover"),
+                                        rx.box(
+                                            rx.icon("user", size=48, color="#94a3b8"),
+                                            width="100px", height="100px", borderRadius="50%", border="2px solid #2a3247",
+                                            display="flex", alignItems="center", justifyContent="center", background="#1e293b"
+                                        )
+                                    ),
+                                    rx.upload(
+                                        rx.button("Upload Picture", variant="outline", size="1", color=MUTED, cursor="pointer"),
+                                        id="avatar_upload",
+                                        multiple=False,
+                                        accept={
+                                            "image/png": [".png"],
+                                            "image/jpeg": [".jpg", ".jpeg"],
+                                            "image/webp": [".webp"]
+                                        },
+                                        max_files=1,
+                                        on_drop=State.handle_avatar_upload(rx.upload_files(upload_id="avatar_upload")),
+                                        padding="0.5rem"
+                                    ),
+                                    spacing="2",
+                                    align="center"
+                                ),
                                 width="100%",
+                                paddingBottom="1rem",
+                                borderBottom="1px solid #2a3247",
+                                marginBottom="1rem"
+                            ),
+                            rx.cond(
+                                State.is_editing_profile,
+                                rx.form(
+                                    rx.vstack(
+                                        rx.text("Name", color=MUTED, fontSize="0.8rem"),
+                                        rx.input(name="name", default_value=State.user_name, background="#0d1117", borderColor="#2a3247", color="#e8ecf4", width="100%"),
+                                        rx.hstack(
+                                            rx.button("Save", type="submit", size="1", background=ACCENT, color="#0b0e14"),
+                                            rx.button("Cancel", type="button", size="1", variant="outline", on_click=State.toggle_edit_profile, color=MUTED),
+                                            spacing="2",
+                                        ),
+                                        width="100%",
+                                        align_items="flex-start"
+                                    ),
+                                    on_submit=State.save_profile_name,
+                                    width="100%"
+                                ),
+                                rx.hstack(
+                                    rx.text("name", color=MUTED, fontSize="0.8rem"),
+                                    rx.hstack(
+                                        rx.text(State.user_name, color="#c9d2e3"),
+                                        rx.icon("pencil", size=14, color=MUTED, cursor="pointer", on_click=State.toggle_edit_profile),
+                                        spacing="2",
+                                        align="center"
+                                    ),
+                                    justify="between",
+                                    width="100%",
+                                )
                             ),
                             rx.hstack(
                                 rx.text("email", color=MUTED, fontSize="0.8rem"),
                                 rx.text(State.user_email, color="#c9d2e3"),
                                 justify="between",
                                 width="100%",
+                                marginTop="0.5rem"
                             ),
                             rx.hstack(
                                 rx.text("role", color=MUTED, fontSize="0.8rem"),
@@ -1987,27 +2195,26 @@ def profile_page() -> rx.Component:
                         background="#131826",
                         border="1px solid #2a3247",
                         borderRadius="0.5rem",
-                        padding="0.9rem 1rem",
+                        padding="1.5rem 1rem",
                         width="100%",
                     ),
                     rx.cond(
                         State.is_admin,
                         rx.link("Open admin dashboard", href="/admin", color=ACCENT, fontSize="0.85rem"),
                     ),
-                    rx.button("Sign out", on_click=State.do_signout, background="#3b82f6", color="#0b0e14", fontWeight="600"),
-                    spacing="4",
+                    rx.button("Sign out", on_click=State.do_signout, background="#3b82f6", color="#0b0e14", fontWeight="600", width="100%"),
+                    spacing="3",
                     width="100%",
                 ),
                 rx.vstack(
-                    rx.text("You are not signed in.", color="#c9d2e3"),
+                    rx.text("Sign in to view your profile.", color=MUTED, fontSize="0.85rem"),
                     rx.link("Sign in", href="/login", color=ACCENT, fontSize="0.85rem"),
-                    rx.link("Back to main", href="/", color=MUTED, fontSize="0.85rem"),
                     spacing="3",
                 ),
             ),
             page_footer(),
             spacing="4",
-            width="min(520px, 92vw)",
+            width="min(420px, 92vw)",
             padding="2.5rem 1rem",
             align="center",
         ),
@@ -2115,69 +2322,183 @@ def admin_page() -> rx.Component:
             rx.heading("Admin dashboard", size="4", color="#e8ecf4"),
             rx.cond(
                 State.is_admin,
-                rx.vstack(
-                    rx.hstack(
-                        *[
-                            rx.box(
+                rx.tabs.root(
+                    rx.tabs.list(
+                        rx.tabs.trigger("Summary", value="summary"),
+                        rx.tabs.trigger("Users", value="users"),
+                        rx.tabs.trigger("Visits", value="visits"),
+                        rx.tabs.trigger("Conversations", value="conversations"),
+                        rx.tabs.trigger("Live Chats", value="live_chats"),
+                        rx.tabs.trigger("System", value="system"),
+                    ),
+                    rx.tabs.content(
+                        rx.vstack(
+                            rx.hstack(
+                                *[
+                                    rx.box(
+                                        rx.vstack(
+                                            rx.text(label, color=MUTED, fontSize="0.75rem"),
+                                            rx.text(State.admin_stats[key], color="#e8ecf4", fontSize="1.4rem", fontWeight="700"),
+                                            spacing="1",
+                                        ),
+                                        background="#131826",
+                                        border="1px solid #2a3247",
+                                        borderRadius="0.5rem",
+                                        padding="1rem",
+                                        flex="1",
+                                    ) for label, key in [
+                                        ("Visits", "total"),
+                                        ("Unique Visitors", "unique"),
+                                        ("Unique Chats", "convs"),
+                                        ("Messages", "messages")
+                                    ]
+                                ],
+                                spacing="3",
+                                width="100%",
+                                flexWrap="wrap",
+                            ),
+                            rx.hstack(
                                 rx.vstack(
-                                    rx.text(label, color=MUTED, fontSize="0.75rem"),
-                                    rx.text(State.admin_stats[key], color="#e8ecf4", fontSize="1.4rem", fontWeight="700"),
-                                    spacing="1",
+                                    rx.text("Top locations", color=MUTED, fontSize="0.8rem"),
+                                    admin_table(State.admin_locations, "location", "count", "No geo data yet."),
+                                    flex="1",
+                                    width="100%",
                                 ),
-                                background="#131826",
+                                rx.vstack(
+                                    rx.text("Top pages", color=MUTED, fontSize="0.8rem"),
+                                    admin_table(State.admin_pages, "path", "count", "No visits yet."),
+                                    flex="1",
+                                    width="100%",
+                                ),
+                                spacing="4",
+                                width="100%",
+                                alignItems="flex-start",
+                                flexWrap="wrap",
+                            ),
+                            width="100%",
+                            spacing="5",
+                        ),
+                        value="summary",
+                    ),
+                    rx.tabs.content(
+                        rx.vstack(
+                            rx.text("Registered Users & Guests", color=MUTED, fontSize="0.8rem"),
+                            width="100%",
+                        ),
+                        value="users",
+                    ),
+                    rx.tabs.content(
+                        rx.vstack(
+                            rx.text("Recent visits", color=MUTED, fontSize="0.8rem"),
+                            admin_visit_list(),
+                            width="100%",
+                        ),
+                        value="visits",
+                    ),
+                    rx.tabs.content(
+                        rx.vstack(
+                            rx.text("Recent conversations", color=MUTED, fontSize="0.8rem"),
+                            admin_conversations(),
+                            width="100%",
+                        ),
+                        value="conversations",
+                    ),
+                    rx.tabs.content(
+                        rx.vstack(
+                            rx.hstack(
+                                rx.text("Active Chat Threads", color="#e8ecf4", fontSize="1rem"),
+                                rx.button("Refresh", on_click=State.refresh_live_chat, size="1", variant="outline"),
+                                justify="between", width="100%"
+                            ),
+                            rx.cond(
+                                State.active_live_chat_id == "",
+                                rx.vstack(
+                                    rx.foreach(
+                                        State.admin_convs,
+                                        lambda r: rx.cond(
+                                            r["kind"] == "header",
+                                            rx.hstack(
+                                                rx.text(f"#{r['id']}", color=ACCENT, fontSize="0.8rem", fontWeight="600"),
+                                                rx.text(r["created"], color=MUTED, fontSize="0.75rem"),
+                                                rx.button(
+                                                    "Take Over Chat",
+                                                    size="1", background="#3b82f6", color="#0b0e14",
+                                                    on_click=State.set_active_live_chat(r['id'])
+                                                ),
+                                                justify="between",
+                                                width="100%",
+                                                background="#131826",
+                                                border="1px solid #2a3247",
+                                                borderRadius="0.5rem",
+                                                padding="0.5rem 0.9rem",
+                                            ),
+                                            rx.box()
+                                        )
+                                    ),
+                                    width="100%"
+                                ),
+                                rx.vstack(
+                                    rx.hstack(
+                                        rx.text(f"Chatting in: {State.active_live_chat_id}", color=ACCENT),
+                                        rx.button("Hand back to AI", on_click=State.resume_ai_chat, size="1", variant="outline", color=MUTED),
+                                        justify="between", width="100%"
+                                    ),
+                                    rx.box(
+                                        rx.foreach(
+                                            State.live_chat_messages,
+                                            lambda m: rx.box(
+                                                rx.text(m["content"], color="#e8ecf4", fontSize="0.85rem", whiteSpace="pre-wrap"),
+                                                background=rx.cond(m["role"] == "user", "#1f2937", "#0d1117"),
+                                                border="1px solid #2a3247",
+                                                padding="0.5rem",
+                                                borderRadius="0.5rem",
+                                                marginBottom="0.5rem",
+                                                alignSelf=rx.cond(m["role"] == "user", "flex-start", "flex-end")
+                                            )
+                                        ),
+                                        width="100%", height="400px", overflowY="auto", padding="1rem", border="1px solid #2a3247", borderRadius="0.5rem", background="#131826"
+                                    ),
+                                    rx.form(
+                                        rx.hstack(
+                                            rx.input(name="message", placeholder="Type a message...", width="100%", background="#0d1117", borderColor="#2a3247", color="#e8ecf4"),
+                                            rx.button("Send", type="submit", background=ACCENT, color="#0b0e14"),
+                                            width="100%"
+                                        ),
+                                        on_submit=State.send_live_chat_message,
+                                        width="100%"
+                                    ),
+                                    width="100%"
+                                )
+                            ),
+                            width="100%",
+                        ),
+                        value="live_chats",
+                    ),
+                    rx.tabs.content(
+                        rx.vstack(
+                            rx.text("Server log", color=MUTED, fontSize="0.8rem"),
+                            rx.box(
+                                rx.text(State.admin_log, whiteSpace="pre-wrap", color="#c9d2e3", fontSize="0.75rem"),
+                                background="#0d1117",
                                 border="1px solid #2a3247",
                                 borderRadius="0.5rem",
-                                padding="1rem",
-                                flex="1",
+                                padding="0.7rem 0.9rem",
                                 width="100%",
-                            )
-                            for label, key in [
-                                ("visits", "total"),
-                                ("visitors", "unique"),
-                                ("conversations", "convs"),
-                                ("messages", "messages"),
-                            ]
-                        ],
-                        spacing="3",
-                        width="100%",
-                        flexWrap="wrap",
+                                overflowX="auto",
+                            ),
+                            width="100%",
+                        ),
+                        value="system",
                     ),
-                    rx.heading("Visitor locations", size="2", color="#e8ecf4", marginTop="1rem"),
-                    admin_table(State.admin_locations, "location", "count", "No visits yet."),
-                    rx.heading("Pages", size="2", color="#e8ecf4", marginTop="1rem"),
-                    admin_table(State.admin_pages, "path", "count", "No visits yet."),
-                    rx.heading("Recent visits", size="2", color="#e8ecf4", marginTop="1rem"),
-                    admin_visit_list(),
-                    rx.heading("Conversations", size="2", color="#e8ecf4", marginTop="1rem"),
-                    admin_conversations(),
-                    rx.heading("Server log", size="2", color="#e8ecf4", marginTop="1rem"),
-                    rx.box(
-                        rx.text(State.admin_log, whiteSpace="pre-wrap", color="#c9d2e3", fontSize="0.75rem"),
-                        background="#0d1117",
-                        border="1px solid #2a3247",
-                        borderRadius="0.5rem",
-                        padding="0.7rem 0.9rem",
-                        width="100%",
-                        overflowX="auto",
-                    ),
-                    rx.text(f"server uptime: {system_uptime()} · worker runs: {len(worker_run_summary())}",
-                            color=MUTED, fontSize="0.8rem"),
-                    rx.button("Sign out", on_click=State.do_signout, background="#3b82f6", color="#0b0e14", fontWeight="600"),
-                    spacing="3",
+                    default_value="summary",
                     width="100%",
                 ),
-                rx.vstack(
-                    rx.text("This area is restricted to the admin.", color="#c9d2e3"),
-                    rx.link("Sign in", href="/login", color=ACCENT, fontSize="0.85rem"),
-                    rx.link("Back to main", href="/", color=MUTED, fontSize="0.85rem"),
-                    spacing="3",
-                ),
+                rx.text("Restricted access.", color=MUTED),
             ),
-            page_footer(),
-            spacing="4",
-            width="min(920px, 94vw)",
-            padding="2.5rem 1rem",
-            align="center",
+            spacing="5",
+            width="min(800px, 92vw)",
+            marginTop="2rem",
+            marginBottom="4rem",
         ),
         width="100%",
         minHeight="100vh",

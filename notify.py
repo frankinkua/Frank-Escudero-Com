@@ -18,6 +18,13 @@ NTFY_URL = os.environ.get("NTFY_URL", "https://ntfy.sh/franke2032")
 ENABLED = os.environ.get("NTFY_ENABLED", "1") == "1"
 
 
+def toggle_notifications(state: bool):
+    global ENABLED
+    ENABLED = state
+
+def get_notifications_state() -> bool:
+    return ENABLED
+
 async def send(title: str, message: str, tags: list[str] | None = None) -> None:
     """Push a single notification to the ntfy topic. Never raises."""
     if not ENABLED:
