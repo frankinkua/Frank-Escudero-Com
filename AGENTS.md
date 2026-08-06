@@ -63,7 +63,7 @@ for r in /about/ /cv/ /projects/ /contact/ /login/ /signup/ /profile/ /admin/; d
   printf "%-9s " "$r"; curl -sS -m5 -o /dev/null -w "%{http_code}\n" "http://127.0.0.1:8000$r"
 done
 # admin SSR must NOT leak data to anonymous curl
-curl -fsS -m6 http://127.0.0.1:8000/admin/ | grep -q "This area is restricted to the admin." \
+curl -fsS -m6 http://127.0.0.1:8000/admin/ | grep -q "Restricted access." \
   && echo "admin SSR safe" || echo "ADMIN SSR LEAK - fix before commit"
 ```
 ### C. Tailscale funnel (external) — check after B passes

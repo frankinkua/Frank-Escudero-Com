@@ -1181,7 +1181,7 @@ class State(rx.State):
         msg = form_data.get("message", "").strip()
         if not msg or not self.active_live_chat_id:
             return
-        site_store.log_conv_message(self.active_live_chat_id, "assistant", msg, "", None)
+        site_store.log_conv_message(self.active_live_chat_id, "assistant", msg, "", None, self.user_email)
         self.live_chat_input = ""
         self.refresh_live_chat()
 
@@ -1611,7 +1611,7 @@ class State(rx.State):
             _notify("⚠ AI greeting failed", "A visitor arrived but the LLM greeting failed.", ["warning"])
         site_store.log_conv_message(
             self.conv_id, "assistant", self.messages[-1]["content"],
-            self.visitor_ip, self.visitor_geo,
+            self.visitor_ip, self.visitor_geo, self.user_email,
         )
         site_store.backfill_geo(self.visitor_ip, self.visitor_geo)
         greet = self.messages[-1]["content"].strip().splitlines()[0][:80]
@@ -1636,7 +1636,7 @@ class State(rx.State):
         if not self.conv_id:
             self.conv_id = "c_" + secrets.token_hex(6)
         self.messages.append({"role": "user", "content": q})
-        site_store.log_conv_message(self.conv_id, "user", q, self.visitor_ip, self.visitor_geo)
+        site_store.log_conv_message(self.conv_id, "user", q, self.visitor_ip, self.visitor_geo, self.user_email)
         if self.conv_id not in _NOTIFIED_CONVS:
             _NOTIFIED_CONVS.add(self.conv_id)
             ip = self.visitor_ip or "unknown"
@@ -1692,7 +1692,7 @@ class State(rx.State):
             _notify("⚠ Chat backend error", f"{exc.__class__.__name__}: {q[:80]}", ["warning"])
         site_store.log_conv_message(
             self.conv_id, "assistant", self.messages[-1]["content"],
-            self.visitor_ip, self.visitor_geo,
+            self.visitor_ip, self.visitor_geo, self.user_email,
         )
         self.busy = False
         yield rx.call_script(chat_scroll_js())

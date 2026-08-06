@@ -270,7 +270,7 @@ def backfill_geo(ip: str, geo: dict) -> None:
             _write("visits.json", visits)
 
 
-def log_conv_message(conv_id: str, role: str, content: str, ip: str = "", geo: dict | None = None) -> None:
+def log_conv_message(conv_id: str, role: str, content: str, ip: str = "", geo: dict | None = None, email: str = "") -> None:
     """Append a message to a conversation transcript (creates it on first use)."""
     if not conv_id or not content:
         return
@@ -282,6 +282,7 @@ def log_conv_message(conv_id: str, role: str, content: str, ip: str = "", geo: d
                 "id": conv_id,
                 "created": _iso(),
                 "ip": ip,
+                "email": (email or "").strip().lower(),
                 "location": ", ".join(
                     x for x in ((geo or {}).get("city", ""), (geo or {}).get("country", "")) if x
                 ) or "unknown",
@@ -293,6 +294,16 @@ def log_conv_message(conv_id: str, role: str, content: str, ip: str = "", geo: d
         if len(convs) > CONVS_CAP:
             convs = convs[-CONVS_CAP:]
         _write("conversations.json", convs)
+
+
+def get_user_conversations(email: str) -> list[dict]:
+    """Return a user's conversations, newest first, for history restore."""
+    email = (email or "").strip().lower()
+    if not email:
+        return []
+    with _LOCK:
+        convs = _read("conversations.json", [])
+        return [c for c in reversed(convs) if c.get("email") == email]
 
 
 def toggle_ai_for_conv(conv_id: str, paused: bool) -> bool:
