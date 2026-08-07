@@ -270,8 +270,13 @@ def backfill_geo(ip: str, geo: dict) -> None:
             _write("visits.json", visits)
 
 
-def log_conv_message(conv_id: str, role: str, content: str, ip: str = "", geo: dict | None = None, email: str = "", visitor_id: str = "", device: str = "") -> None:
-    """Append a message to a conversation transcript (creates it on first use)."""
+def log_conv_message(conv_id: str, role: str, content: str, ip: str = "", geo: dict | None = None, email: str = "", visitor_id: str = "", device: str = "", owner: bool = False) -> None:
+    """Append a message to a conversation transcript (creates it on first use).
+
+    `owner` marks this message as coming from the person the thread belongs to
+    (their own greeting/ask). Ownership/identity fields are updated ONLY then,
+    so an admin takeover reply (owner=False) never claims a visitor's thread.
+    """
     if not conv_id or not content:
         return
     with _LOCK:
@@ -282,8 +287,9 @@ def log_conv_message(conv_id: str, role: str, content: str, ip: str = "", geo: d
                 "id": conv_id,
                 "created": _iso(),
                 "ip": ip,
-                "email": (email or "").strip().lower(),
-                "visitor_id": (visitor_id or "").strip().lower(),
+                "email": "",
+                "owner_email": "",
+                "visitor_id": "",
                 "device": (device or ""),
                 "location": ", ".join(
                     x for x in ((geo or {}).get("city", ""), (geo or {}).get("country", "")) if x
@@ -292,14 +298,18 @@ def log_conv_message(conv_id: str, role: str, content: str, ip: str = "", geo: d
                 "messages": [],
             }
             convs.append(conv)
-        # Keep identity fields fresh on every message (a visitor may identify
-        # themselves mid-thread, or log in).
-        if email:
-            conv["email"] = (email or "").strip().lower()
-        if visitor_id:
-            conv["visitor_id"] = (visitor_id or "").strip().lower()
-        if device:
-            conv["device"] = device
+        # A visitor may identify themselves mid-thread or log in; but only the
+        # thread OWNER's own messages update the identity fields. Admin
+        # takeover replies must not stamp the visitor's thread with the
+        # admin's email (that hijacks it into the admin's history).
+        if owner:
+            if email:
+                conv["email"] = (email or "").strip().lower()
+                conv["owner_email"] = (email or "").strip().lower()
+            if visitor_id:
+                conv["visitor_id"] = (visitor_id or "").strip().lower()
+            if device:
+                conv["device"] = device
         conv.setdefault("messages", []).append({"role": role, "content": content, "ts": _iso()})
         conv["last_activity_epoch"] = time.time()
         if role == "user":
@@ -310,13 +320,17 @@ def log_conv_message(conv_id: str, role: str, content: str, ip: str = "", geo: d
 
 
 def get_user_conversations(email: str) -> list[dict]:
-    """Return a user's conversations, newest first, for history restore."""
+    """Return a user's OWN conversations, newest first, for history restore.
+
+    Matches `owner_email` (stamped only by the user's own greeting/ask), so a
+    visitor thread the admin merely replied to via takeover is never returned.
+    """
     email = (email or "").strip().lower()
     if not email:
         return []
     with _LOCK:
         convs = _read("conversations.json", [])
-        return [c for c in reversed(convs) if c.get("email") == email]
+        return [c for c in reversed(convs) if (c.get("owner_email") or "").strip().lower() == email]
 
 
 def toggle_ai_for_conv(conv_id: str, paused: bool) -> bool:

@@ -376,8 +376,10 @@ BROWSER_INFO_JS = (
     "try{"
     "  v=localStorage.getItem('cv_visitor')||'';"
     "  if(!v){"
-    "    v='v_'+'xxxxxxxx'.replace(/x/g,function(){return ((Math.random()*16)|0).toString(16);})"
-    "      +'-'+Date.now().toString(36);"
+    "    v=(window.crypto&&crypto.randomUUID)?('v_'+crypto.randomUUID())"
+    "      :('v_'+'xxxxxxxxxxxxxxxx'.replace(/x/g,function(){return ((Math.random()*16)|0).toString(16);})"
+    "         +'-'+Date.now().toString(36));"
+    "    if(v.indexOf('v_')!==0)v='v_'+v;"
     "    localStorage.setItem('cv_visitor',v);"
     "  }"
     "}catch(e){}"
@@ -1560,7 +1562,9 @@ class State(rx.State):
         msg = form_data.get("message", "").strip()
         if not msg or not self.active_live_chat_id:
             return
-        site_store.log_conv_message(self.active_live_chat_id, "assistant", msg, "", None, self.user_email)
+        # Takeover reply goes into the VISITOR's thread: do NOT stamp it with
+        # the admin's email, or it gets hijacked into the admin's own history.
+        site_store.log_conv_message(self.active_live_chat_id, "assistant", msg)
         self.live_chat_input = ""
         self.refresh_live_chat()
         await self._push_to_visitors(self.active_live_chat_id)
@@ -2087,6 +2091,7 @@ class State(rx.State):
             self.conv_id, "assistant", self.messages[-1]["content"],
             self.visitor_ip, self.visitor_geo, self.user_email,
             self.visitor_id, self.visitor_context.get("device", ""),
+            owner=True,
         )
         site_store.backfill_geo(self.visitor_ip, self.visitor_geo)
         greet = self.messages[-1]["content"].strip().splitlines()[0][:80]
@@ -2124,7 +2129,7 @@ class State(rx.State):
             self.conv_id = "c_" + secrets.token_hex(6)
         self._register_visitor()
         self.messages.append({"role": "user", "content": q})
-        site_store.log_conv_message(self.conv_id, "user", q, self.visitor_ip, self.visitor_geo, self.user_email, self.visitor_id, self.visitor_context.get("device", ""))
+        site_store.log_conv_message(self.conv_id, "user", q, self.visitor_ip, self.visitor_geo, self.user_email, self.visitor_id, self.visitor_context.get("device", ""), owner=True)
         if self.conv_id not in _NOTIFIED_CONVS:
             _NOTIFIED_CONVS.add(self.conv_id)
             ip = self.visitor_ip or "unknown"
@@ -2195,10 +2200,10 @@ class State(rx.State):
             self.conv_id, "assistant", self.messages[-1]["content"],
             self.visitor_ip, self.visitor_geo, self.user_email,
             self.visitor_id, self.visitor_context.get("device", ""),
+            owner=True,
         )
         self.busy = False
         yield rx.call_script(chat_ding_js())
-
 
 def banner() -> rx.Component | None:
     text = build_failed_marker()
