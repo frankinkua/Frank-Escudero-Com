@@ -20,6 +20,7 @@ from zoneinfo import ZoneInfo
 
 import notify
 import site_store
+from reflex_base.event import Event
 
 logger = logging.getLogger("web")
 logger.setLevel(logging.INFO)
@@ -305,6 +306,39 @@ THEME_JS = """(function () {
 })();
 """
 
+# Very soft "ding" played on the visitor's side at the end of every message.
+# A single decaying sine through WebAudio (no asset); gain kept low on purpose.
+# Autoplay policies mean the context must first be created/resumed after a user
+# gesture, so we pre-warm it on the first pointer/touch interaction.
+DING_JS = """
+window.playDing = function() {
+  try {
+    var c = window.__cvDingCtx;
+    if (!c) { c = window.__cvDingCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    if (c.state === 'suspended') { c.resume(); }
+    var t = c.currentTime;
+    var o = c.createOscillator(), g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type = 'sine';
+    o.frequency.value = 1568;  // G6 — a polite, soft bell
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.06, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.30);
+    o.start(t); o.stop(t + 0.32);
+  } catch (e) {}
+};
+function __cvPreloadDing() {
+  try {
+    if (!window.__cvDingCtx) { window.__cvDingCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    if (window.__cvDingCtx.state === 'suspended') { window.__cvDingCtx.resume(); }
+  } catch (e) {}
+  window.removeEventListener('pointerdown', __cvPreloadDing);
+  window.removeEventListener('touchstart', __cvPreloadDing);
+}
+window.addEventListener('pointerdown', __cvPreloadDing, { passive: true });
+window.addEventListener('touchstart', __cvPreloadDing, { passive: true });
+"""
+
 # Client-side probe: run once per page load, JSON-encodes what the browser
 # tells us so the server can personalise the greeting. Fires via rx.call_script.
 NOTIFY_JS = """
@@ -368,6 +402,17 @@ BROWSER_INFO_JS = (
 # schedules the next tick. Used to auto-refresh the admin dashboard.
 ADMIN_POLL_MS = 10_000
 LIVE_CHAT_POLL_MS = 4_000
+# Mirror the store transcript into the visitor's chat on `/` so admin edits and
+# takeover replies reach them even if the instant push is skipped/missed.
+VISITOR_CHAT_POLL_MS = 3_000
+
+# Admin dashboard list pagination (threads + users).
+ADMIN_PAGE_SIZE = 10
+
+# Conversation compactor: once a thread's estimated token count passes this,
+# the assistant summarises the whole thread and the summary becomes the history
+# (so the model never has to reason over a bloated 80k+ token transcript).
+COMPACT_TOKEN_THRESHOLD = 80_000
 
 
 def auto_refresh_js(ms: int) -> str:
@@ -483,6 +528,26 @@ def _notify(title: str, message: str, tags: list[str] | None = None) -> None:
 
 # Conversations we already pushed a "first message" notification for (per process).
 _NOTIFIED_CONVS: set[str] = set()
+
+# Live visitor chat sessions: conv_id -> {client_token: last_seen_epoch}. Used
+# to push admin edits / takeover replies straight to the visitor's socket (the
+# visitor-side poll is the fallback). In-memory + pruned; re-registered on each
+# poll tick and visitor chat event.
+_CONV_TOKENS: dict[str, dict[str, float]] = {}
+
+
+def _register_visitor_token(conv_id: str, token: str) -> None:
+    """Remember a visitor's live socket token so admin writes can push to them."""
+    if not conv_id or not token:
+        return
+    now = time.time()
+    entry = _CONV_TOKENS.setdefault(conv_id, {})
+    entry[token] = now
+    stale = [t for t, ts in entry.items() if now - ts > 600]
+    if len(entry) > 8:
+        stale += sorted(entry, key=entry.get)[: len(entry) - 8]
+    for t in stale:
+        entry.pop(t, None)
 
 
 def _country_flag(country_code: str) -> str:
@@ -945,9 +1010,37 @@ def system_uptime() -> str:
 
 
 def chat_scroll_js() -> str:
-    """JS that pins #chat-log to the bottom (called after message updates)."""
+    """Scroll `#chat-log` so the newest message is fully visible top-to-bottom.
+
+    If the message is taller than the viewport (can't fit), its top is aligned
+    with the top of the chat container instead. Wrapped in an IIFE because
+    Reflex evaluates `call_script` bodies with eval() — top-level `return`
+    would be an "Illegal return statement".
+    """
     return (
-        "var el=document.getElementById('chat-log');"
+        "(function(){"
+        "var log=document.getElementById('chat-log');"
+        "if(!log)return;"
+        "var kids=[].filter.call(log.children,function(c){return c.nodeType===1;}),"
+        "last=kids.length?kids[kids.length-1]:null;"
+        "if(!last){log.scrollTop=log.scrollHeight;return;}"
+        "var ch=log.clientHeight,mh=last.offsetHeight,top=last.offsetTop;"
+        "if(mh>=ch){log.scrollTop=top;return;}"
+        "var want=top+mh-ch;"
+        "if(want>log.scrollTop)log.scrollTop=want;"
+        "})()"
+    )
+
+
+def chat_ding_js() -> str:
+    """Smart-scroll the visitor chat and play the soft message-end ding."""
+    return chat_scroll_js() + ";if(window.playDing)playDing();"
+
+
+def live_chat_scroll_js() -> str:
+    """Scroll the admin's `#live-chat-log` box to the newest message."""
+    return (
+        "var el=document.getElementById('live-chat-log');"
         "if(el)el.scrollTop=el.scrollHeight;"
     )
 
@@ -1078,6 +1171,64 @@ async def _ai_call(messages: list[dict[str, str]]) -> str:
     return resp.choices[0].message.content.strip()
 
 
+def _estimate_tokens(msgs: list[dict]) -> int:
+    """Rough token estimate (≈4 chars/token) for the compactor threshold."""
+    return sum(max(1, len((m.get("content") or "")) // 4) for m in msgs)
+
+
+async def _compact_conversation(conv_id: str) -> bool:
+    """Self-assigned compaction: summarise an over-long thread into history.
+
+    If a conversation's transcript is estimated past `COMPACT_TOKEN_THRESHOLD`
+    tokens, ask the LLM to write a faithful summary; that summary then replaces
+    the thread (archived to a capped sidecar for audit). Returns True when the
+    thread was compacted.
+    """
+    msgs = site_store.get_conv_messages(conv_id)
+    if not msgs or _estimate_tokens(msgs) <= COMPACT_TOKEN_THRESHOLD:
+        return False
+    logger.info("compactor: conv %s over threshold (%d msgs, ~%d tokens) -> summarizing",
+                conv_id, len(msgs), _estimate_tokens(msgs))
+    transcript = "\n\n".join(
+        f"{m.get('role', '?').upper()}: {m.get('content', '')}" for m in msgs
+    )
+    system = (
+        "You are a conversation compactor. Summarise the chat below into one "
+        "faithful, dense history that preserves: who the visitor is (name, email, "
+        "location, anything personal they shared), every topic discussed, all "
+        "commitments/decisions, and the tone of the conversation. Keep the last "
+        "3 exchanges verbatim at the very end. Write in the same language the "
+        "visitor used. Output ONLY the summary as plain text - no preamble, no "
+        "headings like 'Summary:', no markdown."
+    )
+    try:
+        summary = await _ai_call([
+            {"role": "system", "content": system},
+            {"role": "user", "content": transcript},
+        ])
+    except Exception:  # noqa: BLE001
+        logger.exception("compactor: summarisation failed for %s", conv_id)
+        return False
+    summary = summary.strip()
+    if not summary:
+        return False
+    stamped = time.time()
+    new_history = [{
+        "role": "system",
+        "content": "Previous conversation summary:\n" + summary,
+        "ts": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "compacted": True,
+        "compacted_from": len(msgs),
+    }]
+    site_store.archive_compact(conv_id, msgs)
+    ok = site_store.set_conv_messages(
+        conv_id, new_history,
+        extra={"compacted": True, "compacted_at": stamped, "last_activity_epoch": stamped},
+    )
+    logger.info("compactor: compacted %s -> summary (%d msgs archived)", conv_id, len(msgs))
+    return ok
+
+
 async def filter_draft(question: str, draft: str) -> tuple[bool, str]:
     system = (
         "You are a strict quality filter. Apply the requirements below to the "
@@ -1103,6 +1254,9 @@ class State(rx.State):
     messages: list[dict[str, str]] = []
     busy: bool = False
     greeted: bool = False
+    # True while the personal greeting is streaming into `messages`, so the
+    # visitor-chat store mirror never wipes the half-built bubble.
+    greeting_in_progress: bool = False
     visitor_context: dict[str, str] = {}
     suggestions: list[str] = []
     has_unread: bool = False
@@ -1168,10 +1322,61 @@ class State(rx.State):
     admin_locations: list[dict[str, object]] = []
     admin_pages: list[dict[str, object]] = []
     admin_visits: list[dict[str, object]] = []
-    admin_convs: list[dict[str, str]] = []
-    admin_people: list[dict[str, object]] = []
     admin_log: str = ""
     _last_admin_msg_count: int = -1
+
+    # Threads + users lists (one card per conversation / person), paginated.
+    admin_threads: list[dict[str, str]] = []
+    admin_threads_page: list[dict[str, str]] = []
+    admin_thread_page: int = 0
+    admin_users: list[dict[str, str]] = []
+    admin_users_page: list[dict[str, str]] = []
+    admin_user_page: int = 0
+
+    @rx.var
+    def admin_thread_pages(self) -> int:
+        return max(1, (len(self.admin_threads) + ADMIN_PAGE_SIZE - 1) // ADMIN_PAGE_SIZE)
+
+    @rx.var
+    def admin_user_pages(self) -> int:
+        return max(1, (len(self.admin_users) + ADMIN_PAGE_SIZE - 1) // ADMIN_PAGE_SIZE)
+
+    def _slice_page(self, full: list, page: int) -> list:
+        start = page * ADMIN_PAGE_SIZE
+        return full[start : start + ADMIN_PAGE_SIZE]
+
+    def _repage(self) -> None:
+        """Clamp current pages and refresh the displayed slices."""
+        self.admin_thread_page = max(0, min(
+            self.admin_thread_page,
+            (len(self.admin_threads) - 1) // ADMIN_PAGE_SIZE,
+        ))
+        self.admin_user_page = max(0, min(
+            self.admin_user_page,
+            (len(self.admin_users) - 1) // ADMIN_PAGE_SIZE,
+        ))
+        self.admin_threads_page = self._slice_page(self.admin_threads, self.admin_thread_page)
+        self.admin_users_page = self._slice_page(self.admin_users, self.admin_user_page)
+
+    def admin_threads_prev(self):
+        if self.admin_thread_page > 0:
+            self.admin_thread_page -= 1
+            self.admin_threads_page = self._slice_page(self.admin_threads, self.admin_thread_page)
+
+    def admin_threads_next(self):
+        if self.admin_thread_page + 1 < self.admin_thread_pages:
+            self.admin_thread_page += 1
+            self.admin_threads_page = self._slice_page(self.admin_threads, self.admin_thread_page)
+
+    def admin_users_prev(self):
+        if self.admin_user_page > 0:
+            self.admin_user_page -= 1
+            self.admin_users_page = self._slice_page(self.admin_users, self.admin_user_page)
+
+    def admin_users_next(self):
+        if self.admin_user_page + 1 < self.admin_user_pages:
+            self.admin_user_page += 1
+            self.admin_users_page = self._slice_page(self.admin_users, self.admin_user_page)
 
     # Content editor (admin-only): the doc being edited + live preview source.
     page_doc: str = ""          # which <doc>.md is loaded on a public page
@@ -1235,10 +1440,97 @@ class State(rx.State):
         for c in convs:
             if c.get("id") == self.active_live_chat_id:
                 self.live_chat_messages = [
-                    {**m, "idx": i, "edited": "edited" if m.get("edited") else ""}
+                    {
+                        **m,
+                        "idx": i,
+                        "edited": "edited" if m.get("edited") else "",
+                        "compacted": "compacted summary" if m.get("compacted") else "",
+                    }
                     for i, m in enumerate(c.get("messages", []))
                 ]
-                break
+                return rx.call_script(live_chat_scroll_js())
+
+    # --- Visitor-side store mirror (unifies the home chat with the takeover) ---
+
+    def _register_visitor(self) -> None:
+        """Register this session's socket token for instant chat push."""
+        try:
+            token = self.router.session.client_token or ""
+        except Exception:  # noqa: BLE001
+            token = ""
+        if self.conv_id and token:
+            _register_visitor_token(self.conv_id, token)
+
+    def _sync_visitor_transcript(self) -> bool:
+        """Mirror the store transcript for this visitor into `messages`.
+
+        Identified, non-guest users skip the leading greeting (same slice the
+        session already shows); guests get the full transcript. Never runs while
+        an AI stream or the greeting is in flight, and only assigns when the
+        transcript actually changed (so an unchanged poll emits no delta).
+        """
+        if self.busy or self.greeting_in_progress:
+            return False
+        if not self.conv_id:
+            return False
+        self._register_visitor()
+        convs = site_store.get_full_conversations()
+        conv = next((c for c in convs if c.get("id") == self.conv_id), None)
+        if conv is None:
+            return False
+        transcript = conv.get("messages", [])
+        user = site_store.get_user(self.user_email)
+        is_guest = user.get("guest", False) if user else True
+        # Non-guests drop the leading greeting bubble, but NEVER a compacted
+        # summary (that IS the history and must stay visible).
+        if not is_guest and len(transcript) > 1 and not transcript[0].get("compacted"):
+            transcript = transcript[1:]
+        if transcript == self.messages:
+            return False
+        self.messages = transcript
+        return True
+
+    def refresh_visitor_chat(self):
+        """Auto-refresh tick for `/`: mirror the store into the visitor chat.
+
+        Re-arms itself until the visitor leaves the home page.
+        """
+        page_path = getattr(getattr(self.router, "url", None), "path", "") or ""
+        if page_path not in ("", "/", "/index"):
+            return
+        changed = self._sync_visitor_transcript()
+        rearm = rx.call_script(
+            auto_refresh_js(VISITOR_CHAT_POLL_MS), callback=State.refresh_visitor_chat
+        )
+        if changed:
+            return [rx.call_script(chat_ding_js()), rearm]
+        return rearm
+
+    def visitor_chat_refreshed(self):
+        """Push target: an admin edit/takeover reply just landed on this thread."""
+        if self._sync_visitor_transcript():
+            return rx.call_script(chat_ding_js())
+
+    async def _push_to_visitors(self, conv_id: str) -> None:
+        """Best-effort instant push to every live visitor on a conversation.
+
+        Enqueues a refresh event on the visitor's socket so their transcript
+        updates immediately; the visitor-side poll remains the fallback.
+        """
+        if not conv_id:
+            return
+        for token in list((_CONV_TOKENS.get(conv_id) or {}).keys()):
+            try:
+                await app.event_processor.enqueue(
+                    token,
+                    Event(
+                        name="reflex___state____state.main____state.visitor_chat_refreshed",
+                        payload={},
+                        router_data={},
+                    ),
+                )
+            except Exception:  # noqa: BLE001
+                logger.exception("chat push to visitor %s failed", token[:10])
 
     def start_edit_msg(self, idx: str):
         idx = int(idx)
@@ -1255,21 +1547,23 @@ class State(rx.State):
     def set_edit_msg_text(self, value: str):
         self.edit_msg_text = value or ""
 
-    def save_edit_msg(self):
+    async def save_edit_msg(self):
         if self.edit_msg_idx < 0 or not self.edit_msg_text.strip() or not self.active_live_chat_id:
             return
         if site_store.edit_conv_message(self.active_live_chat_id, self.edit_msg_idx, self.edit_msg_text.strip()):
             self.edit_msg_idx = -1
             self.edit_msg_text = ""
             self.refresh_live_chat()
+            await self._push_to_visitors(self.active_live_chat_id)
 
-    def send_live_chat_message(self, form_data: dict):
+    async def send_live_chat_message(self, form_data: dict):
         msg = form_data.get("message", "").strip()
         if not msg or not self.active_live_chat_id:
             return
         site_store.log_conv_message(self.active_live_chat_id, "assistant", msg, "", None, self.user_email)
         self.live_chat_input = ""
         self.refresh_live_chat()
+        await self._push_to_visitors(self.active_live_chat_id)
 
     def resume_ai_chat(self):
         if self.active_live_chat_id:
@@ -1317,8 +1611,11 @@ class State(rx.State):
             convs = site_store.get_user_conversations(self.user_email)
             if convs:
                 latest_conv = convs[0]
-                if len(latest_conv.get("messages", [])) > 1:
-                    self.messages = latest_conv["messages"][1:]
+                msgs = latest_conv.get("messages", [])
+                if len(msgs) > 1 and not msgs[0].get("compacted"):
+                    msgs = msgs[1:]
+                if msgs:
+                    self.messages = msgs
                     self.conv_id = latest_conv["id"]
 
     async def _record_visit(self) -> None:
@@ -1356,7 +1653,13 @@ class State(rx.State):
         self._restore_session()
         await self._record_visit()
         self.suggestions = random.sample(SUGGESTIONS, 2)
-        return rx.call_script(BROWSER_INFO_JS, callback=State.on_browser_info)
+        return [
+            rx.call_script(BROWSER_INFO_JS, callback=State.on_browser_info),
+            rx.call_script(
+                auto_refresh_js(VISITOR_CHAT_POLL_MS),
+                callback=State.refresh_visitor_chat,
+            ),
+        ]
 
     async def load_public(self) -> None:
         """on_load for public content pages: restore session + log the visit."""
@@ -1388,8 +1691,9 @@ class State(rx.State):
         self.admin_locations = data["locations"]
         self.admin_pages = data["pages"]
         self.admin_visits = data["recent"]
-        self.admin_convs = data["convs_list"]
-        self.admin_people = data.get("people", [])
+        self.admin_threads = data["threads"]
+        self.admin_users = data["users"]
+        self._repage()
         self.admin_log = server_log_tail(40)
         if self.active_live_chat_id:
             self.refresh_live_chat()
@@ -1438,8 +1742,11 @@ class State(rx.State):
             convs = site_store.get_user_conversations(email)
             if convs:
                 latest_conv = convs[0]
-                if len(latest_conv.get("messages", [])) > 1:
-                    self.messages = latest_conv["messages"][1:]
+                msgs = latest_conv.get("messages", [])
+                if len(msgs) > 1 and not msgs[0].get("compacted"):
+                    msgs = msgs[1:]
+                if msgs:
+                    self.messages = msgs
                     self.conv_id = latest_conv["id"]
 
         if self.is_admin:
@@ -1487,6 +1794,7 @@ class State(rx.State):
         if self.greeted:
             return
         self.greeted = True
+        self.greeting_in_progress = True
         logger.info("greeting: on_browser_info raw=%r", info)
 
         browser: dict[str, str] = {}
@@ -1761,6 +2069,7 @@ class State(rx.State):
                     )
         except Exception:  # noqa: BLE001
             logger.exception("greeting generation failed")
+            self.greeting_in_progress = False
             if is_admin_greet:
                 self.messages[-1]["content"] = (
                     "Welcome back, Frank. Everything's running — the dashboard is ready whenever you want it."
@@ -1787,6 +2096,10 @@ class State(rx.State):
                 _visitor_notify_text(ctx, self.visitor_ip, self.visitor_geo) + f"\n\nGreeting: {greet}",
                 ["wave"],
             )
+        self.greeting_in_progress = False
+        # Make this visitor reachable for instant chat push (idle readers too).
+        self._register_visitor()
+        yield rx.call_script(chat_ding_js())
 
     async def handle_submit(self, form_data: dict):
         # Read straight from the DOM's FormData at submit time (the input is
@@ -1801,6 +2114,7 @@ class State(rx.State):
         if not self.conv_id:
             self.conv_id = "c_" + secrets.token_hex(6)
         site_store.touch_typing(self.conv_id)
+        self._register_visitor()
 
     async def ask(self, q: str):
         """Run the full ask flow: append the question, notify, stream the answer."""
@@ -1808,6 +2122,7 @@ class State(rx.State):
             return
         if not self.conv_id:
             self.conv_id = "c_" + secrets.token_hex(6)
+        self._register_visitor()
         self.messages.append({"role": "user", "content": q})
         site_store.log_conv_message(self.conv_id, "user", q, self.visitor_ip, self.visitor_geo, self.user_email, self.visitor_id, self.visitor_context.get("device", ""))
         if self.conv_id not in _NOTIFIED_CONVS:
@@ -1824,7 +2139,21 @@ class State(rx.State):
         self.messages.append({"role": "assistant", "content": ""})
         yield
         try:
-            history = [_system_message(self.visitor_context, self.user_email, self.user_name, self.is_admin), *self.messages[:-1][-10:]]
+            # If the thread is past the compactor threshold, the model first
+            # summarises it and that summary becomes the new chat history.
+            if await _compact_conversation(self.conv_id):
+                logger.info("ask: history compacted for %s before answering", self.conv_id)
+            history = [_system_message(self.visitor_context, self.user_email, self.user_name, self.is_admin)]
+            # Inject any compacted summary (the pre-compaction transcript is
+            # already replaced in the store; self.messages may still hold it).
+            for m in site_store.get_conv_messages(self.conv_id) or []:
+                if m.get("compacted"):
+                    history.append({"role": "system", "content": m["content"]})
+            history += [
+                {"role": m["role"], "content": m["content"]}
+                for m in self.messages[:-1]
+                if m.get("role") in ("user", "assistant")
+            ][-10:]
             client = get_chat_client()
             # Check if admin has taken over
             if site_store.is_ai_paused(self.conv_id):
@@ -1856,7 +2185,6 @@ class State(rx.State):
             if not ok:
                 logger.warning("answer filtered out: %s", reason)
             self.messages[-1]["content"] = draft if ok else FALLBACK
-            yield rx.call_script(chat_scroll_js())
         except Exception as exc:  # noqa: BLE001
             logger.exception("chat backend failure")
             self.messages[-1]["content"] = (
@@ -1869,7 +2197,7 @@ class State(rx.State):
             self.visitor_id, self.visitor_context.get("device", ""),
         )
         self.busy = False
-        yield rx.call_script(chat_scroll_js())
+        yield rx.call_script(chat_ding_js())
 
 
 def banner() -> rx.Component | None:
@@ -1895,6 +2223,10 @@ def chat_message(item: dict[str, str]) -> rx.Component:
             is_user,
             rx.text(item["content"], whiteSpace="pre-wrap"),
             rx.markdown(item["content"]),
+        ),
+        rx.cond(
+            item["edited"],
+            rx.text("✎ edited", color="#66708a", fontSize="0.7rem", marginTop="0.15rem"),
         ),
         rx.cond(
             ~is_user,
@@ -2471,90 +2803,143 @@ def admin_visit_list() -> rx.Component:
     )
 
 
-def admin_conversations() -> rx.Component:
-    return rx.cond(
-        State.admin_convs.length() == 0,
-        rx.text("No conversations recorded yet.", color=MUTED, fontSize="0.8rem"),
-        rx.vstack(
-            rx.foreach(
-                State.admin_convs,
-                lambda r: rx.cond(
-                    r["kind"] == "header",
-                    rx.box(
+def pager(page, total, on_prev, on_next) -> rx.Component:
+    """Prev / Next + "Page X / Y" for a paginated admin list."""
+    return rx.hstack(
+        rx.button("← Prev", size="1", variant="outline", color=MUTED,
+                  on_click=on_prev, disabled=(page <= 0)),
+        rx.text("Page ", page + 1, " / ", total, color=MUTED, fontSize="0.8rem"),
+        rx.button("Next →", size="1", variant="outline", color=MUTED,
+                  on_click=on_next, disabled=((page + 1) >= total)),
+        justify="center", width="100%", spacing="2",
+    )
+
+
+def thread_card(t, takeover: bool = True) -> rx.Component:
+    """One conversation card: owner + identity, status, and the last 4 messages
+    (clamped to 120 chars/line, 4 lines) — a single preview block per thread."""
+    return rx.box(
+        rx.hstack(
+            rx.text(t["owner"], color=ACCENT, fontSize="0.85rem", fontWeight="600", flex="1"),
+            rx.text(t["status"], color=MUTED, fontSize="0.7rem"),
+            rx.cond(
+                t["ai_paused"] == "true",
+                rx.text("AI paused", color="#f59e0b", fontSize="0.7rem"),
+                rx.box(),
+            ),
+            rx.cond(
+                takeover,
+                rx.button("Take Over Chat", size="1", background="#3b82f6", color="#0b0e14",
+                          on_click=State.set_active_live_chat(t["id"])),
+                rx.box(),
+            ),
+            justify="between", width="100%", flexWrap="wrap", spacing="2",
+        ),
+        rx.text(t["identity"], " · ", t["msg_count"], " msgs", color=MUTED, fontSize="0.75rem", marginTop="0.2rem"),
+        rx.box(
+            rx.text(t["preview"], color="#c9d2e3", fontSize="0.8rem", whiteSpace="pre-wrap"),
+            background="#0d1117",
+            border="1px solid #2a3247",
+            borderRadius="0.4rem",
+            padding="0.5rem 0.7rem",
+            marginTop="0.4rem",
+            width="100%",
+        ),
+        rx.text("last message ", t["last_seen"], color=MUTED, fontSize="0.7rem", marginTop="0.3rem"),
+        background="#131826",
+        border="1px solid #2a3247",
+        borderRadius="0.5rem",
+        padding="0.5rem 0.9rem",
+        width="100%",
+    )
+
+
+def admin_threads_list(takeover: bool = True) -> rx.Component:
+    """The shared Conversations / Live-Chats thread list, paginated."""
+    return rx.vstack(
+        rx.cond(
+            State.admin_threads_page.length() == 0,
+            rx.text("No conversations recorded yet.", color=MUTED, fontSize="0.8rem"),
+            rx.vstack(
+                rx.foreach(State.admin_threads_page, lambda t: thread_card(t, takeover)),
+                spacing="2",
+                width="100%",
+            ),
+        ),
+        pager(
+            State.admin_thread_page,
+            State.admin_thread_pages,
+            State.admin_threads_prev,
+            State.admin_threads_next,
+        ),
+        width="100%",
+    )
+
+
+def admin_users_list() -> rx.Component:
+    """Registered users + guests: Name, Email, Location, Description, each with
+    their most recent chat thread attached (last 4 messages, clamped)."""
+    return rx.vstack(
+        rx.cond(
+            State.admin_users_page.length() == 0,
+            rx.text("No users recorded yet.", color=MUTED, fontSize="0.8rem"),
+            rx.vstack(
+                rx.foreach(
+                    State.admin_users_page,
+                    lambda u: rx.box(
                         rx.hstack(
-                            rx.text(f"#{r['id']}", color=ACCENT, fontSize="0.8rem", fontWeight="600"),
-                            rx.text(r["created"], color=MUTED, fontSize="0.75rem"),
-                            rx.text(
-                                r["identity"],
-                                color=MUTED, fontSize="0.75rem",
+                            rx.text(u["name"], color=ACCENT, fontSize="0.85rem", fontWeight="600", flex="1"),
+                            rx.text(u["email"], color="#c9d2e3", fontSize="0.8rem"),
+                            rx.text(u["role"], color=MUTED, fontSize="0.7rem"),
+                            rx.cond(
+                                u["guest"] == "True",
+                                rx.text("guest", color="#94a3b8", fontSize="0.7rem"),
+                                rx.box(),
                             ),
-                            justify="between",
+                            justify="between", width="100%", flexWrap="wrap", spacing="2",
+                        ),
+                        rx.hstack(
+                            rx.text("Location:", color=MUTED, fontSize="0.75rem"),
+                            rx.text(u["location"], color="#c9d2e3", fontSize="0.75rem", flex="1"),
                             width="100%",
-                            flexWrap="wrap",
+                        ),
+                        rx.hstack(
+                            rx.text("Description:", color=MUTED, fontSize="0.75rem"),
+                            rx.text(u["description"], color="#c9d2e3", fontSize="0.75rem", flex="1"),
+                            width="100%",
                         ),
                         rx.cond(
-                            r["email"] != "",
-                            rx.text(f"{r['email']} · {r['last_msg']}", color="#c9d2e3", fontSize="0.8rem", marginTop="0.2rem", whiteSpace="pre-wrap"),
-                            rx.text(r["last_msg"], color="#c9d2e3", fontSize="0.8rem", marginTop="0.2rem", whiteSpace="pre-wrap"),
+                            u["thread"] != "",
+                            rx.box(
+                                rx.text(u["thread"], color="#c9d2e3", fontSize="0.8rem", whiteSpace="pre-wrap"),
+                                background="#0d1117",
+                                border="1px solid #2a3247",
+                                borderRadius="0.4rem",
+                                padding="0.5rem 0.7rem",
+                                marginTop="0.4rem",
+                                width="100%",
+                            ),
+                            rx.box(),
                         ),
+                        rx.text("last seen ", u["last_seen"], " · ", u["msgs"], " msgs", color=MUTED, fontSize="0.7rem", marginTop="0.3rem"),
                         background="#131826",
                         border="1px solid #2a3247",
                         borderRadius="0.5rem",
                         padding="0.5rem 0.9rem",
                         width="100%",
                     ),
-                    rx.box(
-                        rx.text(r["content"], whiteSpace="pre-wrap", color="#c9d2e3", fontSize="0.85rem"),
-                        background=rx.cond(r["role"] == "user", "#1f2937", "#182032"),
-                        border="1px solid #2f3b52",
-                        borderRadius="0.6rem",
-                        padding="0.5rem 0.8rem",
-                        width="100%",
-                    ),
                 ),
+                spacing="2",
+                width="100%",
             ),
-            spacing="2",
-            width="100%",
         ),
-    )
-
-
-def admin_people_list() -> rx.Component:
-    """Per-visitor/user conversation grouping with sender identity."""
-    return rx.cond(
-        State.admin_people.length() == 0,
-        rx.text("No conversations recorded yet.", color=MUTED, fontSize="0.8rem"),
-        rx.vstack(
-            rx.foreach(
-                State.admin_people,
-                lambda p: rx.box(
-                    rx.hstack(
-                        rx.text(p["label"], color=ACCENT, fontSize="0.85rem", fontWeight="600", flex="1"),
-                        rx.text(
-                            p["convs"].to_string() + " chats · " + p["msgs"].to_string() + " msgs",
-                            color=MUTED, fontSize="0.75rem",
-                        ),
-                        justify="between",
-                        width="100%",
-                    ),
-                    rx.text(
-                        p["identity"],
-                        color=MUTED,
-                        fontSize="0.75rem",
-                        marginTop="0.2rem",
-                    ),
-                    rx.text(p["last_msg"], color="#c9d2e3", fontSize="0.8rem", marginTop="0.2rem", whiteSpace="pre-wrap"),
-                    rx.text(f"last seen {p['last_seen']}", color=MUTED, fontSize="0.7rem", marginTop="0.2rem"),
-                    background="#131826",
-                    border="1px solid #2a3247",
-                    borderRadius="0.5rem",
-                    padding="0.6rem 0.9rem",
-                    width="100%",
-                ),
-            ),
-            spacing="2",
-            width="100%",
+        pager(
+            State.admin_user_page,
+            State.admin_user_pages,
+            State.admin_users_prev,
+            State.admin_users_next,
         ),
+        width="100%",
     )
 
 
@@ -2675,7 +3060,8 @@ def admin_page() -> rx.Component:
                     ),
                     rx.tabs.content(
                         rx.vstack(
-                            rx.text("Registered Users & Guests", color=MUTED, fontSize="0.8rem"),
+                            rx.text("Users & guests (Name, Email, Location, Description)", color=MUTED, fontSize="0.8rem"),
+                            admin_users_list(),
                             width="100%",
                         ),
                         value="users",
@@ -2690,10 +3076,8 @@ def admin_page() -> rx.Component:
                     ),
                     rx.tabs.content(
                         rx.vstack(
-                            rx.text("People (grouped by visitor/user)", color=MUTED, fontSize="0.8rem"),
-                            admin_people_list(),
-                            rx.text("Recent conversations", color=MUTED, fontSize="0.8rem", marginTop="1rem"),
-                            admin_conversations(),
+                            rx.text("Chat threads (one per conversation, newest activity first)", color=MUTED, fontSize="0.8rem"),
+                            admin_threads_list(takeover=True),
                             width="100%",
                         ),
                         value="conversations",
@@ -2707,44 +3091,7 @@ def admin_page() -> rx.Component:
                             ),
                             rx.cond(
                                 State.active_live_chat_id == "",
-                                rx.vstack(
-                                    rx.foreach(
-                                        State.admin_convs,
-                                        lambda r: rx.cond(
-                                            r["kind"] == "header",
-                                            rx.box(
-                                                rx.hstack(
-                                                    rx.text(f"#{r['id']}", color=ACCENT, fontSize="0.8rem", fontWeight="600"),
-                                                    rx.text(r["created"], color=MUTED, fontSize="0.75rem"),
-                            rx.text(
-                                r["identity"],
-                                color=MUTED, fontSize="0.75rem",
-                            ),
-                            rx.button(
-                                "Take Over Chat",
-                                                        size="1", background="#3b82f6", color="#0b0e14",
-                                                        on_click=State.set_active_live_chat(r['id'])
-                                                    ),
-                                                    justify="between",
-                                                    width="100%",
-                                                    flexWrap="wrap",
-                                                ),
-                                                rx.cond(
-                                                    r["email"] != "",
-                                                    rx.text(f"{r['email']} · {r['last_msg']}", color="#c9d2e3", fontSize="0.8rem", marginTop="0.2rem", whiteSpace="pre-wrap"),
-                                                    rx.text(r["last_msg"], color="#c9d2e3", fontSize="0.8rem", marginTop="0.2rem", whiteSpace="pre-wrap"),
-                                                ),
-                                                background="#131826",
-                                                border="1px solid #2a3247",
-                                                borderRadius="0.5rem",
-                                                padding="0.5rem 0.9rem",
-                                                width="100%",
-                                            ),
-                                            rx.box()
-                                        )
-                                    ),
-                                    width="100%"
-                                ),
+                                admin_threads_list(takeover=True),
                                 rx.vstack(
                                     rx.hstack(
                                         rx.text(f"Chatting in: {State.active_live_chat_id}", color=ACCENT),
@@ -2783,6 +3130,10 @@ def admin_page() -> rx.Component:
                                                             m["edited"] != "",
                                                             rx.text("✎ edited", color=MUTED, fontSize="0.7rem"),
                                                         ),
+                                                        rx.cond(
+                                                            m["compacted"] != "",
+                                                            rx.text("📄 " + m["compacted"], color="#f59e0b", fontSize="0.7rem"),
+                                                        ),
                                                         rx.text(m["content"], color="#e8ecf4", fontSize="0.85rem", whiteSpace="pre-wrap", flex="1"),
                                                         rx.button("✎", on_click=State.start_edit_msg(m["idx"]), size="1", variant="ghost", color=MUTED),
                                                         spacing="2",
@@ -2798,7 +3149,7 @@ def admin_page() -> rx.Component:
                                                 )
                                             )
                                         ),
-                                        width="100%", height="400px", overflowY="auto", padding="1rem", border="1px solid #2a3247", borderRadius="0.5rem", background="#131826"
+                                        width="100%", height="400px", overflowY="auto", padding="1rem", border="1px solid #2a3247", borderRadius="0.5rem", background="#131826", id="live-chat-log"
                                     ),
                                     rx.el.form(
                                         rx.hstack(
@@ -2897,6 +3248,7 @@ app = rx.App(
         rx.el.link(rel="apple-touch-icon", href=FAVICON_SVG),
         rx.el.style(GIRLY_CSS),
         rx.el.script(THEME_JS),
+        rx.el.script(DING_JS),
         rx.el.meta(name="description", content="Frank Escudero CV - Bridging deep-tech execution with strategic business growth. AI-updated virtual employee."),
         rx.el.meta(property="og:site_name", content="Frank Escudero CV"),
         rx.el.meta(property="og:title", content="Frank Escudero — virtual-employee CV"),
