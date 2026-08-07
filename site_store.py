@@ -270,7 +270,7 @@ def backfill_geo(ip: str, geo: dict) -> None:
             _write("visits.json", visits)
 
 
-def log_conv_message(conv_id: str, role: str, content: str, ip: str = "", geo: dict | None = None, email: str = "") -> None:
+def log_conv_message(conv_id: str, role: str, content: str, ip: str = "", geo: dict | None = None, email: str = "", visitor_id: str = "", device: str = "") -> None:
     """Append a message to a conversation transcript (creates it on first use)."""
     if not conv_id or not content:
         return
@@ -283,6 +283,8 @@ def log_conv_message(conv_id: str, role: str, content: str, ip: str = "", geo: d
                 "created": _iso(),
                 "ip": ip,
                 "email": (email or "").strip().lower(),
+                "visitor_id": (visitor_id or "").strip().lower(),
+                "device": (device or ""),
                 "location": ", ".join(
                     x for x in ((geo or {}).get("city", ""), (geo or {}).get("country", "")) if x
                 ) or "unknown",
@@ -290,7 +292,18 @@ def log_conv_message(conv_id: str, role: str, content: str, ip: str = "", geo: d
                 "messages": [],
             }
             convs.append(conv)
+        # Keep identity fields fresh on every message (a visitor may identify
+        # themselves mid-thread, or log in).
+        if email:
+            conv["email"] = (email or "").strip().lower()
+        if visitor_id:
+            conv["visitor_id"] = (visitor_id or "").strip().lower()
+        if device:
+            conv["device"] = device
         conv.setdefault("messages", []).append({"role": role, "content": content, "ts": _iso()})
+        conv["last_activity_epoch"] = time.time()
+        if role == "user":
+            conv["last_user_msg_epoch"] = time.time()
         if len(convs) > CONVS_CAP:
             convs = convs[-CONVS_CAP:]
         _write("conversations.json", convs)
@@ -338,6 +351,71 @@ def is_ai_paused(conv_id: str) -> bool:
     return False
 
 
+def message_count() -> int:
+    """Total chat messages across all conversations (cheap poll sentinel)."""
+    convs = _read("conversations.json", [])
+    return sum(len(c.get("messages", [])) for c in convs)
+
+
+def edit_conv_message(conv_id: str, index: int, content: str) -> bool:
+    """Replace a message in a conversation transcript (admin edits)."""
+    if not conv_id or not content:
+        return False
+    with _LOCK:
+        convs = _read("conversations.json", [])
+        for c in convs:
+            if c.get("id") == conv_id:
+                msgs = c.get("messages", [])
+                if 0 <= index < len(msgs):
+                    msgs[index]["content"] = content
+                    msgs[index]["ts"] = _iso()
+                    msgs[index]["edited"] = True
+                    _write("conversations.json", convs)
+                    return True
+                return False
+    return False
+
+
+def touch_typing(conv_id: str) -> None:
+    """Stamp a 'typing' heartbeat on a conversation (throttled server-side)."""
+    if not conv_id:
+        return
+    now = time.time()
+    with _LOCK:
+        convs = _read("conversations.json", [])
+        for c in convs:
+            if c.get("id") == conv_id:
+                last = c.get("last_typing_epoch", 0) or 0
+                if now - last < 2.0:
+                    return
+                c["last_typing_epoch"] = now
+                c["last_activity_epoch"] = now
+                _write("conversations.json", convs)
+                return
+
+
+def _conv_status(c: dict) -> str:
+    """Derive a human presence status for a conversation from heartbeat stamps.
+
+    `typing…` while the visitor is mid-composition (<8s), then `active` while
+    their last activity is fresh (<2min), then `away`.
+    """
+    now = time.time()
+    last_typing = c.get("last_typing_epoch", 0) or 0
+    last_act = c.get("last_activity_epoch", 0) or 0
+    last_user = c.get("last_user_msg_epoch", 0) or 0
+    if last_typing and now - last_typing < 8:
+        return "typing…"
+    latest = max(last_act, last_user)
+    if not latest:
+        return "away"
+    age = now - latest
+    if age < 120:
+        secs = int(age)
+        return f"active {secs}s ago" if secs < 60 else f"active {secs // 60}m ago"
+    return "away"
+
+
 def admin_data() -> dict:
     """Aggregate everything the dashboard needs in one lock-protected pass."""
     with _LOCK:
@@ -381,6 +459,8 @@ def admin_data() -> dict:
     # a "header" row per conversation, then one "msg" row per turn.
     conv_rows: list[dict[str, str]] = []
     for c in reversed(convs[-30:]):
+        msgs = c.get("messages", [])
+        last_msg = msgs[-1].get("content", "") if msgs else ""
         conv_rows.append(
             {
                 "kind": "header",
@@ -390,9 +470,18 @@ def admin_data() -> dict:
                 "role": "",
                 "content": "",
                 "ai_paused": str(c.get("ai_paused", False)),
+                "email": c.get("email", "") or "",
+                "visitor_id": c.get("visitor_id", "") or "",
+                "ip": c.get("ip", "") or "",
+                "device": c.get("device", "") or "",
+                "last_msg": last_msg[:160],
+                "status": _conv_status(c),
+                "identity": ", ".join(
+                    x for x in (c.get("location", ""), c.get("ip", ""), c.get("device", "")) if x
+                ) or "unknown",
             }
         )
-        for m in c.get("messages", []):
+        for m in msgs:
             conv_rows.append(
                 {
                     "kind": "msg",
@@ -402,8 +491,55 @@ def admin_data() -> dict:
                     "role": m.get("role", ""),
                     "content": m.get("content", ""),
                     "ai_paused": "False",
+                    "email": "",
+                    "visitor_id": "",
+                    "ip": "",
+                    "device": "",
+                    "last_msg": "",
+                    "status": "",
+                    "identity": "",
                 }
             )
+
+    # Group conversations by person: logged-in users key on email, anonymous
+    # visitors on their stable localStorage visitor_id. Newest activity first.
+    people: dict[str, dict[str, object]] = {}
+    for c in reversed(convs):
+        msgs = c.get("messages", [])
+        if not msgs:
+            continue
+        email = (c.get("email") or "").strip().lower()
+        vid = (c.get("visitor_id") or "").strip().lower()
+        key = email if email else (vid or c.get("id", ""))
+        last_msg = msgs[-1].get("content", "")
+        if key not in people:
+            people[key] = {
+                "label": email or ("Guest " + vid[:8] if vid else "Guest"),
+                "email": email,
+                "visitor_id": vid,
+                "ip": c.get("ip", "") or "",
+                "location": c.get("location", "") or "unknown",
+                "device": c.get("device", "") or "",
+                "last_msg": last_msg[:200],
+                "msgs": 0,
+                "convs": 0,
+                "last_seen": c.get("created", ""),
+            }
+        row = people[key]
+        row["msgs"] = int(row["msgs"]) + len(msgs)
+        row["convs"] = int(row["convs"]) + 1
+        row["last_seen"] = c.get("created", "") or row["last_seen"]
+        row["status"] = _conv_status(c) or row.get("status", "")
+        if not row["ip"] and c.get("ip"):
+            row["ip"] = c["ip"]
+        if not row["location"] or row["location"] == "unknown":
+            row["location"] = c.get("location", "") or "unknown"
+        if not row["device"] and c.get("device"):
+            row["device"] = c["device"]
+        row["identity"] = ", ".join(
+            x for x in (str(row["location"]), str(row["ip"]), str(row["device"])) if x
+        ) or "unknown"
+    people_list = sorted(people.values(), key=lambda d: d.get("last_seen", ""), reverse=True)
     return {
         "total": total,
         "unique": unique,
@@ -416,4 +552,5 @@ def admin_data() -> dict:
         "pages": sorted(({"path": k, "count": c} for k, c in pages.items()), key=lambda d: -d["count"]),
         "recent": recent,
         "convs_list": conv_rows,
+        "people": people_list,
     }

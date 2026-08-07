@@ -337,7 +337,17 @@ window.playBing = function() {
 """
 
 BROWSER_INFO_JS = (
-    "JSON.stringify({"
+    "(function(){"
+    "let v=null;"
+    "try{"
+    "  v=localStorage.getItem('cv_visitor')||'';"
+    "  if(!v){"
+    "    v='v_'+'xxxxxxxx'.replace(/x/g,function(){return ((Math.random()*16)|0).toString(16);})"
+    "      +'-'+Date.now().toString(36);"
+    "    localStorage.setItem('cv_visitor',v);"
+    "  }"
+    "}catch(e){}"
+    "return JSON.stringify({"
     "lang:navigator.language||'',"
     "langs:(navigator.languages||[]).join(','),"
     "tz:(Intl.DateTimeFormat().resolvedOptions().timeZone)||'',"
@@ -346,9 +356,24 @@ BROWSER_INFO_JS = (
     "mem:navigator.deviceMemory||0,"
     "online:navigator.onLine,"
     "now:Date.now(),"
-    "screen:screen.width+'x'+screen.height"
-    "})"
+    "screen:screen.width+'x'+screen.height,"
+    "visitor:v,"
+    "ua:navigator.userAgent||''"
+    "});"
+    "})()"
 )
+
+# Client-side self-perpetuating poll timer. Reflex's _call_script handler awaits
+# promise-returning JS before firing the callback, so the resolved promise
+# schedules the next tick. Used to auto-refresh the admin dashboard.
+ADMIN_POLL_MS = 10_000
+LIVE_CHAT_POLL_MS = 4_000
+
+
+def auto_refresh_js(ms: int) -> str:
+    return (
+        "(async () => { await new Promise(r => setTimeout(r, " + str(ms) + ")); return 'tick'; })()"
+    )
 
 # Maps an IETF language tag (en-US, de, fr, nl, es...) to a spoken English name
 # so the LLM can address the visitor in the right language even when the tag
@@ -819,9 +844,8 @@ def work_in_progress_banner() -> rx.Component:
             border="1px solid #2a3247",
         ),
         rx.text(
-            "Oh my God, the code is horrible! It's like reading a framework written on LSD. "
-            "I'm not touching this during a heatwave. To be clear, some of the information "
-            "about me is straight up made up. — Frank",
+            "Disclaimer, the AI was trained by other AIs so my info is a photocopy of a "
+            "photocopy of a photocopy. There are a lot of errors, but I'm testing a theory. -Frank",
             color=MUTED,
             fontSize="0.85rem",
             textAlign="center",
@@ -846,27 +870,6 @@ FAVICON_SVG = (
     "fill='%234ade80' font-family='monospace' font-size='30' font-weight='700'"
     "%3EFE%3C/text%3E%3C/svg%3E"
 )
-
-
-def markdown_page(title: str, doc: str, body: str) -> rx.Component:
-    """Shared layout for content pages: heading + markdown body + footer nav."""
-    return rx.center(
-        rx.vstack(
-            auth_menu(),
-            rx.heading(title, size="4", color="#e8ecf4"),
-            rx.link("Back to main", href="/", color=ACCENT, fontSize="0.85rem"),
-            rx.markdown(body, color="#c9d2e3"),
-            page_footer(),
-            spacing="4",
-            width="min(860px, 92vw)",
-            padding="2.5rem 1rem",
-            align="center",
-        ),
-        width="100%",
-        minHeight="100vh",
-        background=BG,
-        fontFamily="ui-monospace, Menlo, monospace",
-    )
 
 
 def read_doc(name: str) -> str:
@@ -986,17 +989,25 @@ def _visitor_notify_text(ctx: dict[str, str], ip: str, geo: dict[str, str]) -> s
     return "\n".join(f"{k}: {v}" for k, v in fields if v)
 
 
-def _visitor_context_text(ctx: dict[str, str], user_email: str = "", user_name: str = "") -> str:
+def _visitor_context_text(ctx: dict[str, str], user_email: str = "", user_name: str = "", is_admin: bool = False) -> str:
     """Format the collected visitor context into an LLM-readable block."""
     lines = [
         "\n\nVISITOR CONTEXT (everything known about the current visitor; use it to "
         "personalise answers):"
     ]
     if user_email:
-        lines.append(f"- Identified Email: {user_email}")
-        if user_name:
-            lines.append(f"- User Name: {user_name}")
-        lines.append("- They have an account or have identified themselves.")
+        if is_admin:
+            lines.append(f"- Identified as: SITE OWNER / ADMIN ({user_name or 'Frank'}, {user_email}).")
+            lines.append(
+                "- This is Frank, who runs this site. Address them as the person in charge. "
+                "They are fully trusted and may discuss internal site operations, the stack, "
+                "deployment, code, and admin dashboards openly. Do not ask them who they are."
+            )
+        else:
+            lines.append(f"- Identified Email: {user_email}")
+            if user_name:
+                lines.append(f"- User Name: {user_name}")
+            lines.append("- They have an account or have identified themselves.")
     else:
         lines.append("- Unidentified Guest (No email provided).")
         lines.append("- You can ask for their email to remember them, and suggest setting a password for safe chat history.")
@@ -1042,14 +1053,14 @@ def _visitor_context_text(ctx: dict[str, str], user_email: str = "", user_name: 
     return "\n".join(lines)
 
 
-def _system_message(ctx: dict[str, str] | None = None, user_email: str = "", user_name: str = "") -> dict[str, str]:
+def _system_message(ctx: dict[str, str] | None = None, user_email: str = "", user_name: str = "", is_admin: bool = False) -> dict[str, str]:
     return {
         "role": "system",
         "content": (
             read_doc("prompt.md")
             + "\n\nKNOWLEDGE:\n"
             + read_doc("knowledge.md")
-            + _visitor_context_text(ctx or {}, user_email, user_name)
+            + _visitor_context_text(ctx or {}, user_email, user_name, is_admin)
         ),
     }
 
@@ -1098,6 +1109,7 @@ class State(rx.State):
 
     def clear_unread(self):
         self.has_unread = False
+        self._last_admin_msg_count = site_store.message_count()
 
     @rx.var
     def notifications_enabled(self) -> bool:
@@ -1121,6 +1133,7 @@ class State(rx.State):
     # Per-session analytics/transcript identifiers.
     conv_id: str = ""
     visitor_ip: str = ""
+    visitor_id: str = ""  # stable localStorage id, groups convs per browser/user
 
     # Profile Picture & Editing
     user_avatar: str = ""
@@ -1156,15 +1169,62 @@ class State(rx.State):
     admin_pages: list[dict[str, object]] = []
     admin_visits: list[dict[str, object]] = []
     admin_convs: list[dict[str, str]] = []
+    admin_people: list[dict[str, object]] = []
     admin_log: str = ""
+    _last_admin_msg_count: int = -1
+
+    # Content editor (admin-only): the doc being edited + live preview source.
+    page_doc: str = ""          # which <doc>.md is loaded on a public page
+    page_body: str = ""         # rendered body of the current page (from read_doc)
+    doc_edit_source: str = ""   # working textarea buffer in the admin editor
+    editing_doc: str = ""       # <doc>.md currently open in the admin editor
+    doc_saved: bool = False     # flash "Saved" after a successful write
+
+    async def load_public_doc(self, doc_name: str):
+        """on_load for content pages: restore session, log the visit, read the doc."""
+        self._restore_session()
+        await self._record_visit()
+        self.page_doc = doc_name
+        self.page_body = read_doc(doc_name)
+        self.editing_doc = doc_name
+
+    def open_doc_editor(self, doc_name: str):
+        """Open a markdown doc in the admin WYSIWYG editor (loads current source)."""
+        self.editing_doc = doc_name
+        self.doc_edit_source = read_doc(doc_name)
+        self.doc_saved = False
+
+    def set_doc_edit_source(self, value: str):
+        self.doc_edit_source = value or ""
+
+    def save_doc(self):
+        """Write the admin editor buffer back to /web/<doc>.md (crash-safe)."""
+        name = self.editing_doc
+        if not name or not name.endswith(".md") or "/" in name:
+            return
+        source = self.doc_edit_source
+        if not isinstance(source, str):
+            return
+        try:
+            tmp = WEB / f".{name}.tmp"
+            tmp.write_text(source)
+            os.replace(tmp, WEB / name)
+        except OSError:
+            logger.exception("doc save failed: %s", name)
+            return
+        self.page_body = source
+        self.doc_saved = True
 
     # Live Chat State
     live_chat_input: str = ""
     active_live_chat_id: str = ""
     live_chat_messages: list[dict[str, str]] = []
+    edit_msg_idx: int = -1
+    edit_msg_text: str = ""
 
     def set_active_live_chat(self, conv_id: str):
         self.active_live_chat_id = conv_id
+        self.edit_msg_idx = -1
         site_store.toggle_ai_pause(conv_id, True)
         self.refresh_live_chat()
 
@@ -1174,8 +1234,34 @@ class State(rx.State):
         convs = site_store._read("conversations.json", [])
         for c in convs:
             if c.get("id") == self.active_live_chat_id:
-                self.live_chat_messages = c.get("messages", [])
+                self.live_chat_messages = [
+                    {**m, "idx": i, "edited": "edited" if m.get("edited") else ""}
+                    for i, m in enumerate(c.get("messages", []))
+                ]
                 break
+
+    def start_edit_msg(self, idx: str):
+        idx = int(idx)
+        for m in self.live_chat_messages:
+            if int(m["idx"]) == idx:
+                self.edit_msg_idx = idx
+                self.edit_msg_text = m["content"]
+                break
+
+    def cancel_edit_msg(self):
+        self.edit_msg_idx = -1
+        self.edit_msg_text = ""
+
+    def set_edit_msg_text(self, value: str):
+        self.edit_msg_text = value or ""
+
+    def save_edit_msg(self):
+        if self.edit_msg_idx < 0 or not self.edit_msg_text.strip() or not self.active_live_chat_id:
+            return
+        if site_store.edit_conv_message(self.active_live_chat_id, self.edit_msg_idx, self.edit_msg_text.strip()):
+            self.edit_msg_idx = -1
+            self.edit_msg_text = ""
+            self.refresh_live_chat()
 
     def send_live_chat_message(self, form_data: dict):
         msg = form_data.get("message", "").strip()
@@ -1285,6 +1371,13 @@ class State(rx.State):
         self._restore_session()
         if not self.is_admin:
             return rx.redirect("/")
+        self._load_admin_payload()
+        # Kick off the auto-refresh loop. Each tick re-arms itself via the
+        # call_script callback; it stops once the admin leaves the page.
+        return rx.call_script(auto_refresh_js(ADMIN_POLL_MS), callback=State.refresh_admin)
+
+    def _load_admin_payload(self) -> None:
+        """Read the whole dashboard payload into state (shared by load + poll)."""
         data = site_store.admin_data()
         self.admin_stats = {
             "total": data["total"],
@@ -1296,7 +1389,32 @@ class State(rx.State):
         self.admin_pages = data["pages"]
         self.admin_visits = data["recent"]
         self.admin_convs = data["convs_list"]
+        self.admin_people = data.get("people", [])
         self.admin_log = server_log_tail(40)
+        if self.active_live_chat_id:
+            self.refresh_live_chat()
+
+    def refresh_admin(self):
+        """Auto-refresh tick for /admin. Guards, reloads, re-arms the poll.
+
+        Silently returns (loop stops) once the admin navigates away or loses
+        their session, so a stale timer can't keep polling in the background.
+        """
+        self._restore_session()
+        if not self.is_admin:
+            return
+        page_path = getattr(getattr(self.router, "url", None), "path", "") or ""
+        if not page_path.startswith("/admin"):
+            return
+        # New visitor/user messages while not actively chatting -> ring the bell.
+        if not self.active_live_chat_id and not self.busy:
+            now_count = site_store.message_count()
+            if self._last_admin_msg_count >= 0 and now_count > self._last_admin_msg_count:
+                self.has_unread = True
+            self._last_admin_msg_count = now_count
+        self._load_admin_payload()
+        ms = LIVE_CHAT_POLL_MS if self.active_live_chat_id else ADMIN_POLL_MS
+        return rx.call_script(auto_refresh_js(ms), callback=State.refresh_admin)
 
     async def do_login(self, form_data: dict):
         email = str(form_data.get("email") or "").strip().lower()
@@ -1401,6 +1519,9 @@ class State(rx.State):
         self.visitor_geo = geo
         if not self.conv_id:
             self.conv_id = "c_" + secrets.token_hex(6)
+        # Stable per-browser identity (localStorage), persisted client-side so
+        # returning anonymous visitors keep the same thread grouping.
+        self.visitor_id = browser.get("visitor") or self.visitor_id or ("v_" + secrets.token_hex(8))
 
         # Language: prefer the browser's reported language, then the header.
         prefs = (
@@ -1491,17 +1612,38 @@ class State(rx.State):
 
         self.messages.append({"role": "assistant", "content": ""})
         yield
+        is_admin_greet = self.is_admin
+        is_returning = bool(self.user_email) and not is_admin_greet
         try:
             client = get_chat_client()
+            if is_admin_greet:
+                greet_hook = (
+                    "Now: Frank (the site owner) is signed in and opening the site. "
+                    "Write a short, warm personal greeting for him in English. "
+                    "Address him as the person in charge of this site. Do NOT ask who "
+                    "he is, do NOT ask for an email, do NOT treat him as a stranger. "
+                    "Acknowledge him as the owner comfortably and briefly."
+                )
+            elif is_returning:
+                greet_hook = (
+                    f"Now: a returning identified visitor ({self.user_email}) is opening "
+                    f"the site. Write a short personal greeting for them in {lang} "
+                    "(EVERY word in {lang}, no exceptions) that welcomes them back "
+                    "warmly and naturally, mentioning that you remember them. Do not "
+                    "re-ask who they are."
+                )
+            else:
+                greet_hook = (
+                    f"Now: you just detected a new visitor. Write a short personal "
+                    f"greeting for them in {lang} (the visitor's language - EVERY word "
+                    f"you write must be in {lang}, no exceptions). Make it warm and relevant."
+                )
             parts = [
                 read_doc("prompt.md"),
                 "\n\nKNOWLEDGE:\n",
                 read_doc("knowledge.md"),
-                _visitor_context_text(ctx, self.user_email, self.user_name),
-                "\n\nNow: you just detected a new visitor. Write a short ",
-                f"personal greeting for them in {lang} (the visitor's language - ",
-                f"EVERY word you write must be in {lang}, no exceptions). ",
-                "Make it warm and relevant.",
+                _visitor_context_text(ctx, self.user_email, self.user_name, self.is_admin),
+                "\n\n" + greet_hook,
             ]
             if time_of_day:
                 parts.append(f" Their local time is {time_of_day}.")
@@ -1566,8 +1708,13 @@ class State(rx.State):
                 "rise; during the day, mention sunset). Mention the pressure or other "
                 "meteorological detail only if it makes the greeting feel natural. Never "
                 "say the sun is out at night or vice versa. It must "
-                "be 1-3 sentences, feel natural, and END by asking the visitor who they "
-                "are. Only name their city/country if the visitor details actually provide "
+                "be 1-3 sentences and feel natural."
+                + (
+                    " END by asking the visitor who they are."
+                    if not (is_admin_greet or is_returning)
+                    else " Do NOT ask who they are."
+                )
+                + " Only name their city/country if the visitor details actually provide "
                 "a location. NEVER invent or guess a city from the timezone - if you are "
                 "not told where they are, greet them warmly without naming a place. Do "
                 "not mention IP addresses, tokens, or anything sensitive."
@@ -1580,7 +1727,7 @@ class State(rx.State):
                         "role": "system",
                         "content": system_content,
                     },
-                    {"role": "user", "content": "Greet me and ask who I am."},
+                    {"role": "user", "content": "Greet me now."},
                 ],
                 temperature=0.7,
                 reasoning_effort="none",
@@ -1598,28 +1745,48 @@ class State(rx.State):
                     yield rx.call_script(chat_scroll_js())
             logger.info("greeting: chunks=%d text=%r", len(chunks), self.messages[-1]["content"])
             if not chunks:
-                self.messages[-1]["content"] = (
-                    f"Hi! I'm Frank's assistant — welcome. I can tell you're in "
-                    f"{ctx.get('location') or ctx.get('device') or 'a browser'} "
-                    f"right now. Who are you?"
-                )
+                if is_admin_greet:
+                    self.messages[-1]["content"] = (
+                        "Welcome back, Frank. Everything's running — the dashboard is ready whenever you want it."
+                    )
+                elif is_returning:
+                    self.messages[-1]["content"] = (
+                        "Welcome back! Good to see you again. What can I help you with?"
+                    )
+                else:
+                    self.messages[-1]["content"] = (
+                        f"Hi! I'm Frank's assistant — welcome. I can tell you're in "
+                        f"{ctx.get('location') or ctx.get('device') or 'a browser'} "
+                        f"right now. Who are you?"
+                    )
         except Exception:  # noqa: BLE001
             logger.exception("greeting generation failed")
-            self.messages[-1]["content"] = (
-                "Hi! I'm Frank's assistant. Ask me anything about Frank's CV. Who are you?"
-            )
+            if is_admin_greet:
+                self.messages[-1]["content"] = (
+                    "Welcome back, Frank. Everything's running — the dashboard is ready whenever you want it."
+                )
+            elif is_returning:
+                self.messages[-1]["content"] = (
+                    "Welcome back! Good to see you again. What can I help you with?"
+                )
+            else:
+                self.messages[-1]["content"] = (
+                    "Hi! I'm Frank's assistant. Ask me anything about Frank's CV. Who are you?"
+                )
             _notify("⚠ AI greeting failed", "A visitor arrived but the LLM greeting failed.", ["warning"])
         site_store.log_conv_message(
             self.conv_id, "assistant", self.messages[-1]["content"],
             self.visitor_ip, self.visitor_geo, self.user_email,
+            self.visitor_id, self.visitor_context.get("device", ""),
         )
         site_store.backfill_geo(self.visitor_ip, self.visitor_geo)
         greet = self.messages[-1]["content"].strip().splitlines()[0][:80]
-        _notify(
-            "New visitor",
-            _visitor_notify_text(ctx, self.visitor_ip, self.visitor_geo) + f"\n\nGreeting: {greet}",
-            ["wave"],
-        )
+        if not is_admin_greet and not is_returning:
+            _notify(
+                "New visitor",
+                _visitor_notify_text(ctx, self.visitor_ip, self.visitor_geo) + f"\n\nGreeting: {greet}",
+                ["wave"],
+            )
 
     async def handle_submit(self, form_data: dict):
         # Read straight from the DOM's FormData at submit time (the input is
@@ -1629,6 +1796,12 @@ class State(rx.State):
         async for event in self.ask(q):
             yield event
 
+    def note_typing(self, _value: str = ""):
+        """Visitor typing heartbeat -> stamps presence for admin takeover UI."""
+        if not self.conv_id:
+            self.conv_id = "c_" + secrets.token_hex(6)
+        site_store.touch_typing(self.conv_id)
+
     async def ask(self, q: str):
         """Run the full ask flow: append the question, notify, stream the answer."""
         if not q or self.busy:
@@ -1636,7 +1809,7 @@ class State(rx.State):
         if not self.conv_id:
             self.conv_id = "c_" + secrets.token_hex(6)
         self.messages.append({"role": "user", "content": q})
-        site_store.log_conv_message(self.conv_id, "user", q, self.visitor_ip, self.visitor_geo, self.user_email)
+        site_store.log_conv_message(self.conv_id, "user", q, self.visitor_ip, self.visitor_geo, self.user_email, self.visitor_id, self.visitor_context.get("device", ""))
         if self.conv_id not in _NOTIFIED_CONVS:
             _NOTIFIED_CONVS.add(self.conv_id)
             ip = self.visitor_ip or "unknown"
@@ -1651,7 +1824,7 @@ class State(rx.State):
         self.messages.append({"role": "assistant", "content": ""})
         yield
         try:
-            history = [_system_message(self.visitor_context, self.user_email, self.user_name), *self.messages[:-1][-10:]]
+            history = [_system_message(self.visitor_context, self.user_email, self.user_name, self.is_admin), *self.messages[:-1][-10:]]
             client = get_chat_client()
             # Check if admin has taken over
             if site_store.is_ai_paused(self.conv_id):
@@ -1693,6 +1866,7 @@ class State(rx.State):
         site_store.log_conv_message(
             self.conv_id, "assistant", self.messages[-1]["content"],
             self.visitor_ip, self.visitor_geo, self.user_email,
+            self.visitor_id, self.visitor_context.get("device", ""),
         )
         self.busy = False
         yield rx.call_script(chat_scroll_js())
@@ -1798,6 +1972,7 @@ def chat_panel() -> rx.Component:
                     disabled=State.busy,
                     auto_complete="off",
                     auto_capitalize="off",
+                    on_change=State.note_typing,
                     style={
                         "flex": "1",
                         "background": "#0d1117",
@@ -1879,13 +2054,12 @@ def index() -> rx.Component:
 
 
 def about() -> rx.Component:
-    body = read_doc("knowledge.md")
     return rx.center(
         rx.vstack(
             auth_menu(),
             rx.heading("About me", size="4", color="#e8ecf4"),
             rx.link("Back to main", href="/", color=ACCENT, fontSize="0.85rem"),
-            rx.markdown(body, color="#c9d2e3"),
+            rx.markdown(State.page_body, color="#c9d2e3"),
             page_footer(),
             spacing="4",
             width="min(860px, 92vw)",
@@ -1900,17 +2074,16 @@ def about() -> rx.Component:
 
 
 def cv() -> rx.Component:
-    return markdown_page("Frank Escudero — CV", "cv.md", read_doc("cv.md"))
+    return markdown_page("Frank Escudero — CV", State.page_body)
 
 
 def contact() -> rx.Component:
-    body = read_doc("contact.md")
     return rx.center(
         rx.vstack(
             auth_menu(),
             rx.heading("Contact", size="4", color="#e8ecf4"),
             rx.link("Back to main", href="/", color=ACCENT, fontSize="0.85rem"),
-            rx.markdown(body, color="#c9d2e3"),
+            rx.markdown(State.page_body, color="#c9d2e3"),
             page_footer(),
             spacing="4",
             width="min(860px, 92vw)",
@@ -1925,7 +2098,28 @@ def contact() -> rx.Component:
 
 
 def projects() -> rx.Component:
-    return markdown_page("Projects — Frank Escudero", "projects.md", read_doc("projects.md"))
+    return markdown_page("Projects — Frank Escudero", State.page_body)
+
+
+def markdown_page(title: str, body: rx.Var[str]) -> rx.Component:
+    """Shared layout for content pages: heading + markdown body + footer nav."""
+    return rx.center(
+        rx.vstack(
+            auth_menu(),
+            rx.heading(title, size="4", color="#e8ecf4"),
+            rx.link("Back to main", href="/", color=ACCENT, fontSize="0.85rem"),
+            rx.markdown(body, color="#c9d2e3"),
+            page_footer(),
+            spacing="4",
+            width="min(860px, 92vw)",
+            padding="2.5rem 1rem",
+            align="center",
+        ),
+        width="100%",
+        minHeight="100vh",
+        background=BG,
+        fontFamily="ui-monospace, Menlo, monospace",
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -1970,6 +2164,7 @@ def auth_menu() -> rx.Component:
                     ),
                 ),
                 rx.menu.content(
+                    rx.menu.item("Home", on_click=rx.redirect("/")),
                     rx.menu.item("Profile", on_click=rx.redirect("/profile")),
                     rx.cond(
                         State.is_admin,
@@ -2289,9 +2484,18 @@ def admin_conversations() -> rx.Component:
                         rx.hstack(
                             rx.text(f"#{r['id']}", color=ACCENT, fontSize="0.8rem", fontWeight="600"),
                             rx.text(r["created"], color=MUTED, fontSize="0.75rem"),
-                            rx.text(r["location"], color=MUTED, fontSize="0.75rem"),
+                            rx.text(
+                                r["identity"],
+                                color=MUTED, fontSize="0.75rem",
+                            ),
                             justify="between",
                             width="100%",
+                            flexWrap="wrap",
+                        ),
+                        rx.cond(
+                            r["email"] != "",
+                            rx.text(f"{r['email']} · {r['last_msg']}", color="#c9d2e3", fontSize="0.8rem", marginTop="0.2rem", whiteSpace="pre-wrap"),
+                            rx.text(r["last_msg"], color="#c9d2e3", fontSize="0.8rem", marginTop="0.2rem", whiteSpace="pre-wrap"),
                         ),
                         background="#131826",
                         border="1px solid #2a3247",
@@ -2315,6 +2519,94 @@ def admin_conversations() -> rx.Component:
     )
 
 
+def admin_people_list() -> rx.Component:
+    """Per-visitor/user conversation grouping with sender identity."""
+    return rx.cond(
+        State.admin_people.length() == 0,
+        rx.text("No conversations recorded yet.", color=MUTED, fontSize="0.8rem"),
+        rx.vstack(
+            rx.foreach(
+                State.admin_people,
+                lambda p: rx.box(
+                    rx.hstack(
+                        rx.text(p["label"], color=ACCENT, fontSize="0.85rem", fontWeight="600", flex="1"),
+                        rx.text(
+                            p["convs"].to_string() + " chats · " + p["msgs"].to_string() + " msgs",
+                            color=MUTED, fontSize="0.75rem",
+                        ),
+                        justify="between",
+                        width="100%",
+                    ),
+                    rx.text(
+                        p["identity"],
+                        color=MUTED,
+                        fontSize="0.75rem",
+                        marginTop="0.2rem",
+                    ),
+                    rx.text(p["last_msg"], color="#c9d2e3", fontSize="0.8rem", marginTop="0.2rem", whiteSpace="pre-wrap"),
+                    rx.text(f"last seen {p['last_seen']}", color=MUTED, fontSize="0.7rem", marginTop="0.2rem"),
+                    background="#131826",
+                    border="1px solid #2a3247",
+                    borderRadius="0.5rem",
+                    padding="0.6rem 0.9rem",
+                    width="100%",
+                ),
+            ),
+            spacing="2",
+            width="100%",
+        ),
+    )
+
+
+def doc_editor() -> rx.Component:
+    """Admin-only WYSIWYG editor: markdown textarea with live preview + save."""
+    return rx.vstack(
+        rx.hstack(
+            rx.text("Editing", color=MUTED, fontSize="0.8rem"),
+            rx.text(State.editing_doc, color=ACCENT, fontSize="0.8rem", fontWeight="600"),
+            spacing="2",
+            width="100%",
+        ),
+        rx.vstack(
+            rx.text("Markdown", color=MUTED, fontSize="0.75rem"),
+            rx.text_area(
+                value=State.doc_edit_source,
+                on_change=State.set_doc_edit_source,
+                min_height="340px",
+                width="100%",
+                background="#0d1117",
+                color="#e8ecf4",
+                borderColor="#2a3247",
+                fontFamily="ui-monospace, Menlo, monospace",
+            ),
+            spacing="2",
+            width="100%",
+        ),
+        rx.vstack(
+            rx.text("Live preview", color=MUTED, fontSize="0.75rem"),
+            rx.box(
+                rx.markdown(State.doc_edit_source, color="#c9d2e3"),
+                width="100%",
+                minHeight="200px",
+                background="#0d1117",
+                border="1px solid #2a3247",
+                borderRadius="0.5rem",
+                padding="0.8rem",
+            ),
+            spacing="2",
+            width="100%",
+        ),
+        rx.hstack(
+            rx.button("Save page", on_click=State.save_doc, background="#3b82f6", color="#0b0e14"),
+            rx.cond(State.doc_saved, rx.text("Saved ✓", color="#4ade80", fontSize="0.8rem")),
+            spacing="3",
+            width="100%",
+        ),
+        spacing="4",
+        width="100%",
+    )
+
+
 def admin_page() -> rx.Component:
     return rx.center(
         rx.vstack(
@@ -2329,6 +2621,7 @@ def admin_page() -> rx.Component:
                         rx.tabs.trigger("Visits", value="visits"),
                         rx.tabs.trigger("Conversations", value="conversations"),
                         rx.tabs.trigger("Live Chats", value="live_chats"),
+                        rx.tabs.trigger("Pages", value="pages"),
                         rx.tabs.trigger("System", value="system"),
                     ),
                     rx.tabs.content(
@@ -2397,7 +2690,9 @@ def admin_page() -> rx.Component:
                     ),
                     rx.tabs.content(
                         rx.vstack(
-                            rx.text("Recent conversations", color=MUTED, fontSize="0.8rem"),
+                            rx.text("People (grouped by visitor/user)", color=MUTED, fontSize="0.8rem"),
+                            admin_people_list(),
+                            rx.text("Recent conversations", color=MUTED, fontSize="0.8rem", marginTop="1rem"),
                             admin_conversations(),
                             width="100%",
                         ),
@@ -2417,20 +2712,33 @@ def admin_page() -> rx.Component:
                                         State.admin_convs,
                                         lambda r: rx.cond(
                                             r["kind"] == "header",
-                                            rx.hstack(
-                                                rx.text(f"#{r['id']}", color=ACCENT, fontSize="0.8rem", fontWeight="600"),
-                                                rx.text(r["created"], color=MUTED, fontSize="0.75rem"),
-                                                rx.button(
-                                                    "Take Over Chat",
-                                                    size="1", background="#3b82f6", color="#0b0e14",
-                                                    on_click=State.set_active_live_chat(r['id'])
+                                            rx.box(
+                                                rx.hstack(
+                                                    rx.text(f"#{r['id']}", color=ACCENT, fontSize="0.8rem", fontWeight="600"),
+                                                    rx.text(r["created"], color=MUTED, fontSize="0.75rem"),
+                            rx.text(
+                                r["identity"],
+                                color=MUTED, fontSize="0.75rem",
+                            ),
+                            rx.button(
+                                "Take Over Chat",
+                                                        size="1", background="#3b82f6", color="#0b0e14",
+                                                        on_click=State.set_active_live_chat(r['id'])
+                                                    ),
+                                                    justify="between",
+                                                    width="100%",
+                                                    flexWrap="wrap",
                                                 ),
-                                                justify="between",
-                                                width="100%",
+                                                rx.cond(
+                                                    r["email"] != "",
+                                                    rx.text(f"{r['email']} · {r['last_msg']}", color="#c9d2e3", fontSize="0.8rem", marginTop="0.2rem", whiteSpace="pre-wrap"),
+                                                    rx.text(r["last_msg"], color="#c9d2e3", fontSize="0.8rem", marginTop="0.2rem", whiteSpace="pre-wrap"),
+                                                ),
                                                 background="#131826",
                                                 border="1px solid #2a3247",
                                                 borderRadius="0.5rem",
                                                 padding="0.5rem 0.9rem",
+                                                width="100%",
                                             ),
                                             rx.box()
                                         )
@@ -2446,25 +2754,61 @@ def admin_page() -> rx.Component:
                                     rx.box(
                                         rx.foreach(
                                             State.live_chat_messages,
-                                            lambda m: rx.box(
-                                                rx.text(m["content"], color="#e8ecf4", fontSize="0.85rem", whiteSpace="pre-wrap"),
-                                                background=rx.cond(m["role"] == "user", "#1f2937", "#0d1117"),
-                                                border="1px solid #2a3247",
-                                                padding="0.5rem",
-                                                borderRadius="0.5rem",
-                                                marginBottom="0.5rem",
-                                                alignSelf=rx.cond(m["role"] == "user", "flex-start", "flex-end")
+                                            lambda m: rx.cond(
+                                                State.edit_msg_idx == m["idx"],
+                                                rx.box(
+                                                    rx.text_area(
+                                                        value=State.edit_msg_text,
+                                                        on_change=State.set_edit_msg_text,
+                                                        width="100%",
+                                                        background="#0d1117",
+                                                        color="#e8ecf4",
+                                                        borderColor="#2a3247",
+                                                    ),
+                                                    rx.hstack(
+                                                        rx.button("Save", on_click=State.save_edit_msg, size="1", background="#3b82f6", color="#0b0e14"),
+                                                        rx.button("Cancel", on_click=State.cancel_edit_msg, size="1", variant="outline", color=MUTED),
+                                                        spacing="2",
+                                                        marginTop="0.4rem",
+                                                    ),
+                                                    background="#131826",
+                                                    border="1px solid #2a3247",
+                                                    padding="0.5rem",
+                                                    borderRadius="0.5rem",
+                                                    marginBottom="0.5rem",
+                                                ),
+                                                rx.box(
+                                                    rx.hstack(
+                                                        rx.cond(
+                                                            m["edited"] != "",
+                                                            rx.text("✎ edited", color=MUTED, fontSize="0.7rem"),
+                                                        ),
+                                                        rx.text(m["content"], color="#e8ecf4", fontSize="0.85rem", whiteSpace="pre-wrap", flex="1"),
+                                                        rx.button("✎", on_click=State.start_edit_msg(m["idx"]), size="1", variant="ghost", color=MUTED),
+                                                        spacing="2",
+                                                        align="center",
+                                                        width="100%",
+                                                    ),
+                                                    background=rx.cond(m["role"] == "user", "#1f2937", "#0d1117"),
+                                                    border="1px solid #2a3247",
+                                                    padding="0.5rem",
+                                                    borderRadius="0.5rem",
+                                                    marginBottom="0.5rem",
+                                                    alignSelf=rx.cond(m["role"] == "user", "flex-start", "flex-end")
+                                                )
                                             )
                                         ),
                                         width="100%", height="400px", overflowY="auto", padding="1rem", border="1px solid #2a3247", borderRadius="0.5rem", background="#131826"
                                     ),
-                                    rx.form(
+                                    rx.el.form(
                                         rx.hstack(
-                                            rx.input(name="message", placeholder="Type a message...", width="100%", background="#0d1117", borderColor="#2a3247", color="#e8ecf4"),
+                                            rx.el.input(name="message", placeholder="Type a message...", width="100%", background="#0d1117", borderColor="#2a3247", color="#e8ecf4"),
                                             rx.button("Send", type="submit", background=ACCENT, color="#0b0e14"),
                                             width="100%"
                                         ),
                                         on_submit=State.send_live_chat_message,
+                                        auto_complete="off",
+                                        reset_on_submit=True,
                                         width="100%"
                                     ),
                                     width="100%"
@@ -2473,6 +2817,27 @@ def admin_page() -> rx.Component:
                             width="100%",
                         ),
                         value="live_chats",
+                    ),
+                    rx.tabs.content(
+                        rx.vstack(
+                            rx.hstack(
+                                rx.text("Page content editor", color="#e8ecf4", fontSize="1rem"),
+                                rx.button("knowledge.md", on_click=State.open_doc_editor("knowledge.md"), size="1", variant="outline"),
+                                rx.button("cv.md", on_click=State.open_doc_editor("cv.md"), size="1", variant="outline"),
+                                rx.button("contact.md", on_click=State.open_doc_editor("contact.md"), size="1", variant="outline"),
+                                rx.button("projects.md", on_click=State.open_doc_editor("projects.md"), size="1", variant="outline"),
+                                justify="between",
+                                width="100%",
+                                flexWrap="wrap",
+                            ),
+                            rx.cond(
+                                State.editing_doc != "",
+                                doc_editor(),
+                                rx.text("Pick a markdown file to edit above.", color=MUTED),
+                            ),
+                            width="100%",
+                        ),
+                        value="pages",
                     ),
                     rx.tabs.content(
                         rx.vstack(
@@ -2544,10 +2909,10 @@ app = rx.App(
     ],
 )
 app.add_page(index, route="/", title="Frank Escudero — virtual-employee CV", on_load=State.load_home)
-app.add_page(about, route="/about", title="About — Frank Escudero", on_load=State.load_public)
-app.add_page(cv, route="/cv", title="CV — Frank Escudero", on_load=State.load_public)
-app.add_page(contact, route="/contact", title="Contact — Frank Escudero CV", on_load=State.load_public)
-app.add_page(projects, route="/projects", title="Projects — Frank Escudero CV", on_load=State.load_public)
+app.add_page(about, route="/about", title="About — Frank Escudero", on_load=State.load_public_doc("knowledge.md"))
+app.add_page(cv, route="/cv", title="CV — Frank Escudero", on_load=State.load_public_doc("cv.md"))
+app.add_page(contact, route="/contact", title="Contact — Frank Escudero CV", on_load=State.load_public_doc("contact.md"))
+app.add_page(projects, route="/projects", title="Projects — Frank Escudero CV", on_load=State.load_public_doc("projects.md"))
 app.add_page(login_page, route="/login", title="Sign in — Frank Escudero CV", on_load=State.load_public)
 app.add_page(signup_page, route="/signup", title="Sign up — Frank Escudero CV", on_load=State.load_public)
 app.add_page(profile_page, route="/profile", title="Profile — Frank Escudero CV", on_load=State.load_profile)
