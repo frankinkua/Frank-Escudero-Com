@@ -946,6 +946,30 @@ def read_doc(name: str) -> str:
         return f"<!-- missing {name} -->"
 
 
+def _human_size(n: int) -> str:
+    if n >= 1024 * 1024:
+        return f"{n / (1024 * 1024):.1f} MB"
+    if n >= 1024:
+        return f"{n / 1024:.1f} KB"
+    return f"{n} B"
+
+
+def list_editable_docs() -> list[dict[str, object]]:
+    """File-manager list of markdown docs editable from the admin Pages tab."""
+    docs: list[dict[str, object]] = []
+    try:
+        files = sorted(WEB.glob("*.md"))
+    except OSError:
+        return docs
+    for f in files:
+        try:
+            size = f.stat().st_size
+        except OSError:
+            size = 0
+        docs.append({"name": f.name, "size": size, "size_label": _human_size(size)})
+    return docs
+
+
 def build_failed_marker() -> str | None:
     marker = WEB / ".last_build_failed"
     try:
@@ -1044,6 +1068,87 @@ def live_chat_scroll_js() -> str:
     return (
         "var el=document.getElementById('live-chat-log');"
         "if(el)el.scrollTop=el.scrollHeight;"
+    )
+
+
+def _focus_js(element_id: str) -> str:
+    """Restore keyboard focus to an input after the UI re-renders."""
+    return (
+        "(function(){"
+        "var el=document.getElementById('" + element_id + "');"
+        "if(!el)return;"
+        "el.focus();"
+        "var t=el.value.length;"
+        "try{el.setSelectionRange(t,t);}catch(e){}"
+        "})()"
+    )
+
+
+def setup_avatar_editor_js() -> str:
+    """Attach pointer-drag handlers to the circular avatar crop viewport.
+
+    The image inside is a 200%-sized box (110px of slack per axis) that the
+    visitor pans to frame their face in the circle. The live offset is kept on
+    the element so the Save button crops from the exact same geometry.
+    """
+    return (
+        "(function(){"
+        "var v=document.getElementById('avatar-crop-view');"
+        "if(!v||v.__avready)return;"
+        "v.__avready=true;"
+        "var R=110,dx=0,dy=0,ox=0,oy=0,sx=0,sy=0,on=false;"
+        "function apply(){"
+        "  v.__avoff={dx:dx,dy:dy};"
+        "  var img=document.getElementById('avatar-crop-img');"
+        "  if(img)img.style.transform='translate(-50%,-50%) translate('+dx+'px,'+dy+'px)';"
+        "}"
+        "v.__avoff={dx:0,dy:0};"
+        "v.addEventListener('pointerdown',function(e){"
+        "  on=true;sx=e.clientX;sy=e.clientY;ox=dx;oy=dy;"
+        "  try{v.setPointerCapture(e.pointerId);}catch(err){}"
+        "});"
+        "v.addEventListener('pointermove',function(e){"
+        "  if(!on)return;"
+        "  dx=Math.max(-R,Math.min(R,ox+(e.clientX-sx)));"
+        "  dy=Math.max(-R,Math.min(R,oy+(e.clientY-sy)));"
+        "  apply();"
+        "});"
+        "function up(){on=false;}"
+        "v.addEventListener('pointerup',up);"
+        "v.addEventListener('pointercancel',up);"
+        "})()"
+    )
+
+
+def crop_avatar_js() -> str:
+    """Canvas-crop the visible square of the avatar editor; returns a data URI.
+
+    Mirrors the CSS geometry: the view is 220px, the image box is 200% (440px),
+    centred with translate(-50%,-50%) then panned by the stored offset. The
+    drawn region [0,220]x[0,220] is exactly what the circular frame shows.
+    """
+    return (
+        "(function(){"
+        "var v=document.getElementById('avatar-crop-view');"
+        "if(!v)return '';"
+        "var img=document.getElementById('avatar-crop-img');"
+        "if(!img)return '';"
+        "var S=220,R=110;"
+        "var nw=img.naturalWidth||0,nh=img.naturalHeight||0;"
+        "if(!nw||!nh)return '';"
+        "var off=(v.__avoff)||{dx:0,dy:0};"
+        "var scale=Math.max(S*2/nw,S*2/nh);"
+        "var dw=nw*scale,dh=nh*scale;"
+        "var boxL=-R+off.dx,boxT=-R+off.dy;"
+        "var iL=boxL+(S*2-dw)/2,iT=boxT+(S*2-dh)/2;"
+        "var c=document.createElement('canvas');"
+        "c.width=S;c.height=S;"
+        "var ctx=c.getContext('2d');"
+        "if(!ctx)return '';"
+        "ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';"
+        "ctx.drawImage(img,iL,iT,dw,dh);"
+        "return c.toDataURL('image/jpeg',0.92);"
+        "})()"
     )
 
 
@@ -1293,6 +1398,8 @@ class State(rx.State):
 
     # Profile Picture & Editing
     user_avatar: str = ""
+    avatar_pending: str = ""   # raw uploaded image shown in the crop editor
+    is_editing_avatar: bool = False
     is_editing_profile: bool = False
 
     async def handle_avatar_upload(self, files: list[rx.UploadFile]):
@@ -1302,9 +1409,24 @@ class State(rx.State):
         import base64
         b64 = base64.b64encode(upload_data).decode("utf-8")
         mime_type = files[0].content_type or "image/png"
-        data_uri = f"data:{mime_type};base64,{b64}"
+        # Stage the raw image for the crop editor; nothing is persisted until
+        # the visitor presses Save (which uploads the panned crop).
+        self.avatar_pending = f"data:{mime_type};base64,{b64}"
+        self.is_editing_avatar = True
+        return rx.call_script(setup_avatar_editor_js())
+
+    def save_avatar_cropped(self, data_uri: str):
+        """Persist the cropped avatar produced by the client-side canvas crop."""
+        if not self.user_email or not data_uri or not self.is_editing_avatar:
+            return
         self.user_avatar = data_uri
+        self.avatar_pending = ""
+        self.is_editing_avatar = False
         site_store.update_user_profile(self.user_email, {"avatar": data_uri})
+
+    def cancel_avatar_edit(self):
+        self.avatar_pending = ""
+        self.is_editing_avatar = False
 
     def save_profile_name(self, form_data: dict):
         if not self.user_email:
@@ -1383,9 +1505,11 @@ class State(rx.State):
     # Content editor (admin-only): the doc being edited + live preview source.
     page_doc: str = ""          # which <doc>.md is loaded on a public page
     page_body: str = ""         # rendered body of the current page (from read_doc)
+    home_intro: str = ""        # rendered body of the main page (home.md)
     doc_edit_source: str = ""   # working textarea buffer in the admin editor
     editing_doc: str = ""       # <doc>.md currently open in the admin editor
     doc_saved: bool = False     # flash "Saved" after a successful write
+    admin_docs: list[dict[str, object]] = []  # file-manager list for the Pages tab
 
     async def load_public_doc(self, doc_name: str):
         """on_load for content pages: restore session, log the visit, read the doc."""
@@ -1399,6 +1523,12 @@ class State(rx.State):
         """Open a markdown doc in the admin WYSIWYG editor (loads current source)."""
         self.editing_doc = doc_name
         self.doc_edit_source = read_doc(doc_name)
+        self.doc_saved = False
+
+    def close_doc_editor(self):
+        """Return from the editor to the Pages file-manager list."""
+        self.editing_doc = ""
+        self.doc_edit_source = ""
         self.doc_saved = False
 
     def set_doc_edit_source(self, value: str):
@@ -1420,6 +1550,8 @@ class State(rx.State):
             logger.exception("doc save failed: %s", name)
             return
         self.page_body = source
+        if name == "home.md":
+            self.home_intro = source
         self.doc_saved = True
 
     # Live Chat State
@@ -1657,6 +1789,7 @@ class State(rx.State):
         self._restore_session()
         await self._record_visit()
         self.suggestions = random.sample(SUGGESTIONS, 2)
+        self.home_intro = read_doc("home.md")
         return [
             rx.call_script(BROWSER_INFO_JS, callback=State.on_browser_info),
             rx.call_script(
@@ -1697,6 +1830,7 @@ class State(rx.State):
         self.admin_visits = data["recent"]
         self.admin_threads = data["threads"]
         self.admin_users = data["users"]
+        self.admin_docs = list_editable_docs()
         self._repage()
         self.admin_log = server_log_tail(40)
         if self.active_live_chat_id:
@@ -2113,6 +2247,9 @@ class State(rx.State):
         q = str(form_data.get("question") or "").strip()
         async for event in self.ask(q):
             yield event
+        # The last state flush (busy=False) re-renders the panel; put the caret
+        # back in the input so the visitor can keep typing without clicking.
+        yield rx.call_script(_focus_js("chat-input"))
 
     def note_typing(self, _value: str = ""):
         """Visitor typing heartbeat -> stamps presence for admin takeover UI."""
@@ -2266,7 +2403,7 @@ def suggestion_chip(q: str) -> rx.Component:
         q,
         type="button",
         disabled=State.busy,
-        on_click=State.ask(q),
+        on_click=[State.ask(q), rx.call_script(_focus_js("chat-input"))],
         style={
             "background": "transparent",
             "color": MUTED,
@@ -2305,8 +2442,8 @@ def chat_panel() -> rx.Component:
             rx.hstack(
                 rx.el.input(
                     name="question",
+                    id="chat-input",
                     placeholder="Ask something about this site...",
-                    disabled=State.busy,
                     auto_complete="off",
                     auto_capitalize="off",
                     on_change=State.note_typing,
@@ -2331,7 +2468,10 @@ def chat_panel() -> rx.Component:
                 spacing="2",
                 width="100%",
             ),
-            on_submit=State.handle_submit,
+            on_submit=[
+                State.handle_submit,
+                rx.call_script(_focus_js("chat-input")),
+            ],
             auto_complete="off",
             reset_on_submit=True,
             width="100%",
@@ -2353,7 +2493,7 @@ def index() -> rx.Component:
                 alignItems="center",
             ),
             work_in_progress_banner(),
-            rx.text("Full stack app that auto-updates itself via an autonomous AI agent.", color=ACCENT),
+            rx.markdown(State.home_intro, color=ACCENT),
             banner(),
             chat_panel(),
             rx.hstack(
@@ -2631,6 +2771,49 @@ def signup_page() -> rx.Component:
     )
 
 
+def avatar_crop_editor() -> rx.Component:
+    """Circular viewport for panning the freshly uploaded picture into place."""
+    return rx.box(
+        rx.box(
+            rx.image(
+                src=State.avatar_pending,
+                id="avatar-crop-img",
+                style={
+                    "position": "absolute",
+                    "left": "50%",
+                    "top": "50%",
+                    "width": "200%",
+                    "height": "200%",
+                    "maxWidth": "none",
+                    "maxHeight": "none",
+                    "objectFit": "cover",
+                    "transform": "translate(-50%, -50%)",
+                    "userSelect": "none",
+                    "pointerEvents": "none",
+                },
+            ),
+            id="avatar-crop-view",
+            style={
+                "width": "220px",
+                "height": "220px",
+                "borderRadius": "50%",
+                "overflow": "hidden",
+                "position": "relative",
+                "cursor": "grab",
+                "touchAction": "none",
+                "userSelect": "none",
+                "background": "#1e293b",
+            },
+        ),
+        style={
+            "border": "2px solid #3b82f6",
+            "borderRadius": "50%",
+            "display": "inline-block",
+            "lineHeight": "0",
+        },
+    )
+
+
 def profile_page() -> rx.Component:
     return rx.center(
         rx.vstack(
@@ -2644,26 +2827,60 @@ def profile_page() -> rx.Component:
                             rx.center(
                                 rx.vstack(
                                     rx.cond(
-                                        State.user_avatar != "",
-                                        rx.image(src=State.user_avatar, width="100px", height="100px", borderRadius="50%", border="2px solid #3b82f6", objectFit="cover"),
-                                        rx.box(
-                                            rx.icon("user", size=48, color="#94a3b8"),
-                                            width="100px", height="100px", borderRadius="50%", border="2px solid #2a3247",
-                                            display="flex", alignItems="center", justifyContent="center", background="#1e293b"
-                                        )
+                                        State.is_editing_avatar,
+                                        avatar_crop_editor(),
+                                        rx.cond(
+                                            State.user_avatar != "",
+                                            rx.image(src=State.user_avatar, width="100px", height="100px", borderRadius="50%", border="2px solid #3b82f6", objectFit="cover"),
+                                            rx.box(
+                                                rx.icon("user", size=48, color="#94a3b8"),
+                                                width="100px", height="100px", borderRadius="50%", border="2px solid #2a3247",
+                                                display="flex", alignItems="center", justifyContent="center", background="#1e293b"
+                                            )
+                                        ),
                                     ),
-                                    rx.upload(
-                                        rx.button("Upload Picture", variant="outline", size="1", color=MUTED, cursor="pointer"),
-                                        id="avatar_upload",
-                                        multiple=False,
-                                        accept={
-                                            "image/png": [".png"],
-                                            "image/jpeg": [".jpg", ".jpeg"],
-                                            "image/webp": [".webp"]
-                                        },
-                                        max_files=1,
-                                        on_drop=State.handle_avatar_upload(rx.upload_files(upload_id="avatar_upload")),
-                                        padding="0.5rem"
+                                    rx.cond(
+                                        State.is_editing_avatar,
+                                        rx.vstack(
+                                            rx.text("Drag the picture to fit it in the circle", color=MUTED, fontSize="0.75rem"),
+                                            rx.hstack(
+                                                rx.button(
+                                                    "Save Picture",
+                                                    size="1",
+                                                    background=ACCENT,
+                                                    color="#0b0e14",
+                                                    on_click=rx.call_script(crop_avatar_js(), callback=State.save_avatar_cropped),
+                                                ),
+                                                rx.button(
+                                                    "Cancel",
+                                                    size="1",
+                                                    variant="outline",
+                                                    color=MUTED,
+                                                    on_click=State.cancel_avatar_edit,
+                                                ),
+                                                spacing="2",
+                                                align="center",
+                                            ),
+                                            spacing="2",
+                                            align="center",
+                                        ),
+                                        rx.vstack(
+                                            rx.el.style("#avatar_upload{border:none !important;padding:0.5rem !important;}"),
+                                            rx.upload(
+                                                rx.button("Upload Picture", variant="outline", size="1", color=MUTED, cursor="pointer"),
+                                                id="avatar_upload",
+                                                multiple=False,
+                                                accept={
+                                                    "image/png": [".png"],
+                                                    "image/jpeg": [".jpg", ".jpeg"],
+                                                    "image/webp": [".webp"]
+                                                },
+                                                max_files=1,
+                                                on_drop=State.handle_avatar_upload(rx.upload_files(upload_id="avatar_upload")),
+                                            ),
+                                            spacing="2",
+                                            align="center",
+                                        ),
                                     ),
                                     spacing="2",
                                     align="center"
@@ -2988,12 +3205,38 @@ def doc_editor() -> rx.Component:
         ),
         rx.hstack(
             rx.button("Save page", on_click=State.save_doc, background="#3b82f6", color="#0b0e14"),
+            rx.button("Close", on_click=State.close_doc_editor, variant="outline", color=MUTED),
             rx.cond(State.doc_saved, rx.text("Saved ✓", color="#4ade80", fontSize="0.8rem")),
             spacing="3",
             width="100%",
         ),
         spacing="4",
         width="100%",
+    )
+
+
+def admin_doc_row(d: dict[str, object]) -> rx.Component:
+    """One clickable row in the Pages file-manager list."""
+    return rx.hstack(
+        rx.icon("file-text", size=16, color=MUTED),
+        rx.text(d["name"], color="#c9d2e3", fontSize="0.85rem", flex="1"),
+        rx.text(d["size_label"], color=MUTED, fontSize="0.75rem"),
+        rx.button(
+            "Edit",
+            size="1",
+            variant="outline",
+            color=MUTED,
+            on_click=State.open_doc_editor(d["name"]),
+        ),
+        width="100%",
+        padding="0.5rem 0.75rem",
+        background="#131826",
+        border="1px solid #2a3247",
+        borderRadius="0.5rem",
+        marginBottom="0.4rem",
+        align="center",
+        cursor="pointer",
+        _hover={"background": "#182032", "borderColor": "#3b82f6"},
     )
 
 
@@ -3009,8 +3252,7 @@ def admin_page() -> rx.Component:
                         rx.tabs.trigger("Summary", value="summary"),
                         rx.tabs.trigger("Users", value="users"),
                         rx.tabs.trigger("Visits", value="visits"),
-                        rx.tabs.trigger("Conversations", value="conversations"),
-                        rx.tabs.trigger("Live Chats", value="live_chats"),
+                        rx.tabs.trigger("Chats", value="chats"),
                         rx.tabs.trigger("Pages", value="pages"),
                         rx.tabs.trigger("System", value="system"),
                     ),
@@ -3081,14 +3323,6 @@ def admin_page() -> rx.Component:
                     ),
                     rx.tabs.content(
                         rx.vstack(
-                            rx.text("Chat threads (one per conversation, newest activity first)", color=MUTED, fontSize="0.8rem"),
-                            admin_threads_list(takeover=True),
-                            width="100%",
-                        ),
-                        value="conversations",
-                    ),
-                    rx.tabs.content(
-                        rx.vstack(
                             rx.hstack(
                                 rx.text("Active Chat Threads", color="#e8ecf4", fontSize="1rem"),
                                 rx.button("Refresh", on_click=State.refresh_live_chat, size="1", variant="outline"),
@@ -3096,7 +3330,11 @@ def admin_page() -> rx.Component:
                             ),
                             rx.cond(
                                 State.active_live_chat_id == "",
-                                admin_threads_list(takeover=True),
+                                rx.vstack(
+                                    rx.text("Chat threads (one per conversation, newest activity first) — click one to take it over.", color=MUTED, fontSize="0.75rem"),
+                                    admin_threads_list(takeover=True),
+                                    width="100%",
+                                ),
                                 rx.vstack(
                                     rx.hstack(
                                         rx.text(f"Chatting in: {State.active_live_chat_id}", color=ACCENT),
@@ -3172,24 +3410,23 @@ def admin_page() -> rx.Component:
                             ),
                             width="100%",
                         ),
-                        value="live_chats",
+                        value="chats",
                     ),
                     rx.tabs.content(
                         rx.vstack(
                             rx.hstack(
                                 rx.text("Page content editor", color="#e8ecf4", fontSize="1rem"),
-                                rx.button("knowledge.md", on_click=State.open_doc_editor("knowledge.md"), size="1", variant="outline"),
-                                rx.button("cv.md", on_click=State.open_doc_editor("cv.md"), size="1", variant="outline"),
-                                rx.button("contact.md", on_click=State.open_doc_editor("contact.md"), size="1", variant="outline"),
-                                rx.button("projects.md", on_click=State.open_doc_editor("projects.md"), size="1", variant="outline"),
+                                rx.text("Pick a file to edit", color=MUTED, fontSize="0.75rem"),
                                 justify="between",
                                 width="100%",
-                                flexWrap="wrap",
                             ),
                             rx.cond(
                                 State.editing_doc != "",
                                 doc_editor(),
-                                rx.text("Pick a markdown file to edit above.", color=MUTED),
+                                rx.vstack(
+                                    rx.foreach(State.admin_docs, admin_doc_row),
+                                    width="100%",
+                                ),
                             ),
                             width="100%",
                         ),
