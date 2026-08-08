@@ -29,6 +29,7 @@ if not logger.handlers:
     _console.setLevel(logging.INFO)
     logger.addHandler(_console)
 WEB = pathlib.Path("/web")
+DEFAULT_HOME_TITLE = "Agentic Generated Self-Hosted AI Webserver"
 # Remote LM Studio OpenAI-compatible endpoint (self-hosted at frank's LAN).
 # Same box/model the cron worker uses; bonsai stays loaded in VRAM.
 # NOTE: this is an external service; revoke/invalidate the key if it leaks.
@@ -939,6 +940,25 @@ FAVICON_SVG = (
 )
 
 
+def parse_home_doc(source: str) -> tuple[str, str]:
+    """Split home.md into (title, intro). A leading '# ' line is the H1; the
+    rest is rendered as the intro paragraph. Files without it keep the title."""
+    lines = source.splitlines()
+    if lines and lines[0].startswith("# "):
+        return lines[0][2:].strip(), "\n".join(lines[1:]).lstrip("\n")
+    return DEFAULT_HOME_TITLE, source
+
+
+def _default_home() -> tuple[str, str]:
+    try:
+        return parse_home_doc((WEB / "home.md").read_text())
+    except OSError:
+        return DEFAULT_HOME_TITLE, ""
+
+
+_DEFAULT_HOME_TITLE, _DEFAULT_HOME_INTRO = _default_home()
+
+
 def read_doc(name: str) -> str:
     try:
         return (WEB / name).read_text()
@@ -954,6 +974,9 @@ def _human_size(n: int) -> str:
     return f"{n} B"
 
 
+PUBLIC_DOCS = {"home.md", "knowledge.md", "cv.md", "contact.md", "projects.md"}
+
+
 def list_editable_docs() -> list[dict[str, object]]:
     """File-manager list of markdown docs editable from the admin Pages tab."""
     docs: list[dict[str, object]] = []
@@ -966,7 +989,12 @@ def list_editable_docs() -> list[dict[str, object]]:
             size = f.stat().st_size
         except OSError:
             size = 0
-        docs.append({"name": f.name, "size": size, "size_label": _human_size(size)})
+        docs.append({
+            "name": f.name,
+            "size": size,
+            "size_label": _human_size(size),
+            "public": f.name in PUBLIC_DOCS,
+        })
     return docs
 
 
@@ -1085,37 +1113,79 @@ def _focus_js(element_id: str) -> str:
 
 
 def setup_avatar_editor_js() -> str:
-    """Attach pointer-drag handlers to the circular avatar crop viewport.
+    """Attach pan/zoom handlers to the circular avatar crop viewport.
 
-    The image inside is a 200%-sized box (110px of slack per axis) that the
-    visitor pans to frame their face in the circle. The live offset is kept on
-    the element so the Save button crops from the exact same geometry.
+    The image is a box of `2*S*z` px (S=220, z=1..4) centred inside the 220px
+    circle; the visitor pans and zooms to frame their face. Pan/zoom state is
+    kept on the element (``__avoff``/``__z``) so the Save button crops from the
+    exact same geometry. Oversized sources are downscaled in place to keep the
+    canvas crop memory-bounded.
     """
     return (
         "(function(){"
         "var v=document.getElementById('avatar-crop-view');"
         "if(!v||v.__avready)return;"
         "v.__avready=true;"
-        "var R=110,dx=0,dy=0,ox=0,oy=0,sx=0,sy=0,on=false;"
+        "var img=document.getElementById('avatar-crop-img');"
+        "var S=220,z=1,dx=0,dy=0,ox=0,oy=0,sx=0,sy=0,on=false;"
+        "v.__avoff={dx:0,dy:0};v.__z=1;"
+        "v.__mime=(img&&img.src)||'';"
         "function apply(){"
-        "  v.__avoff={dx:dx,dy:dy};"
-        "  var img=document.getElementById('avatar-crop-img');"
-        "  if(img)img.style.transform='translate(-50%,-50%) translate('+dx+'px,'+dy+'px)';"
+        "  var R=S*(z-0.5);"
+        "  dx=Math.max(-R,Math.min(R,dx));"
+        "  dy=Math.max(-R,Math.min(R,dy));"
+        "  v.__avoff={dx:dx,dy:dy};v.__z=z;"
+        "  if(img){"
+        "    img.style.width=(S*2*z)+'px';"
+        "    img.style.height=(S*2*z)+'px';"
+        "    img.style.transform='translate(-50%,-50%) translate('+dx+'px,'+dy+'px)';"
+        "  }"
         "}"
-        "v.__avoff={dx:0,dy:0};"
+        "function setZoom(nz){"
+        "  z=Math.max(1,Math.min(4,nz));apply();"
+        "}"
+        "v.__zoom=setZoom;"
         "v.addEventListener('pointerdown',function(e){"
         "  on=true;sx=e.clientX;sy=e.clientY;ox=dx;oy=dy;"
         "  try{v.setPointerCapture(e.pointerId);}catch(err){}"
         "});"
         "v.addEventListener('pointermove',function(e){"
         "  if(!on)return;"
-        "  dx=Math.max(-R,Math.min(R,ox+(e.clientX-sx)));"
-        "  dy=Math.max(-R,Math.min(R,oy+(e.clientY-sy)));"
+        "  dx=ox+(e.clientX-sx);dy=oy+(e.clientY-sy);"
         "  apply();"
         "});"
         "function up(){on=false;}"
         "v.addEventListener('pointerup',up);"
         "v.addEventListener('pointercancel',up);"
+        "v.addEventListener('wheel',function(e){"
+        "  e.preventDefault();"
+        "  setZoom(z+(e.deltaY<0?0.1:-0.1));"
+        "},{passive:false});"
+        "apply();"
+        "function downscale(){"
+        "  var nw=img.naturalWidth||0,nh=img.naturalHeight||0,MAX=2048;"
+        "  if(!nw||!nh||Math.max(nw,nh)<=MAX)return;"
+        "  var k=MAX/Math.max(nw,nh);"
+        "  var c=document.createElement('canvas');"
+        "  c.width=Math.round(nw*k);c.height=Math.round(nh*k);"
+        "  var ctx=c.getContext('2d');"
+        "  if(!ctx)return;"
+        "  ctx.drawImage(img,0,0,c.width,c.height);"
+        "  img.src=c.toDataURL('image/jpeg',0.88);"
+        "}"
+        "if(img&&!img.complete){img.addEventListener('load',downscale);}"
+        "else if(img){downscale();}"
+        "})()"
+    )
+
+
+def zoom_avatar_js(dz: float) -> str:
+    """Step the avatar editor zoom by dz via the stored `__zoom` closure."""
+    return (
+        "(function(){"
+        "var v=document.getElementById('avatar-crop-view');"
+        "if(!v||!v.__zoom)return;"
+        "v.__zoom(" + repr(float(dz)) + ");"
         "})()"
     )
 
@@ -1123,9 +1193,10 @@ def setup_avatar_editor_js() -> str:
 def crop_avatar_js() -> str:
     """Canvas-crop the visible square of the avatar editor; returns a data URI.
 
-    Mirrors the CSS geometry: the view is 220px, the image box is 200% (440px),
+    Mirrors the CSS geometry: the view is S=220px, the image box is 2*S*z px
     centred with translate(-50%,-50%) then panned by the stored offset. The
-    drawn region [0,220]x[0,220] is exactly what the circular frame shows.
+    drawn region [0,S]x[0,S] is exactly what the circular frame shows. PNG is
+    exported for transparent sources (png/webp) so corners never turn black.
     """
     return (
         "(function(){"
@@ -1133,21 +1204,23 @@ def crop_avatar_js() -> str:
         "if(!v)return '';"
         "var img=document.getElementById('avatar-crop-img');"
         "if(!img)return '';"
-        "var S=220,R=110;"
+        "var S=220;"
         "var nw=img.naturalWidth||0,nh=img.naturalHeight||0;"
         "if(!nw||!nh)return '';"
-        "var off=(v.__avoff)||{dx:0,dy:0};"
-        "var scale=Math.max(S*2/nw,S*2/nh);"
+        "var z=v.__z||1,off=v.__avoff||{dx:0,dy:0};"
+        "var scale=Math.max(S*2*z/nw,S*2*z/nh);"
         "var dw=nw*scale,dh=nh*scale;"
-        "var boxL=-R+off.dx,boxT=-R+off.dy;"
-        "var iL=boxL+(S*2-dw)/2,iT=boxT+(S*2-dh)/2;"
+        "var boxL=S*(0.5-z)+off.dx,boxT=S*(0.5-z)+off.dy;"
+        "var iL=boxL+(S*2*z-dw)/2,iT=boxT+(S*2*z-dh)/2;"
         "var c=document.createElement('canvas');"
         "c.width=S;c.height=S;"
         "var ctx=c.getContext('2d');"
         "if(!ctx)return '';"
         "ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';"
         "ctx.drawImage(img,iL,iT,dw,dh);"
-        "return c.toDataURL('image/jpeg',0.92);"
+        "var mime=(v.__mime||'').toLowerCase();"
+        "var png=mime.indexOf('image/png')===0||mime.indexOf('image/webp')===0;"
+        "return c.toDataURL(png?'image/png':'image/jpeg',0.92);"
         "})()"
     )
 
@@ -1400,12 +1473,20 @@ class State(rx.State):
     user_avatar: str = ""
     avatar_pending: str = ""   # raw uploaded image shown in the crop editor
     is_editing_avatar: bool = False
+    avatar_saved: bool = False # flash "Saved ✓" after the crop is persisted
+    avatar_error: str = ""     # upload rejection reason (e.g. file too large)
     is_editing_profile: bool = False
 
     async def handle_avatar_upload(self, files: list[rx.UploadFile]):
         if not files or not self.user_email:
             return
         upload_data = await files[0].read()
+        if len(upload_data) > 15 * 1024 * 1024:
+            self.avatar_pending = ""
+            self.is_editing_avatar = False
+            self.avatar_saved = False
+            self.avatar_error = "Image is too large (max 15 MB)."
+            return
         import base64
         b64 = base64.b64encode(upload_data).decode("utf-8")
         mime_type = files[0].content_type or "image/png"
@@ -1413,6 +1494,8 @@ class State(rx.State):
         # the visitor presses Save (which uploads the panned crop).
         self.avatar_pending = f"data:{mime_type};base64,{b64}"
         self.is_editing_avatar = True
+        self.avatar_saved = False
+        self.avatar_error = ""
         return rx.call_script(setup_avatar_editor_js())
 
     def save_avatar_cropped(self, data_uri: str):
@@ -1422,11 +1505,15 @@ class State(rx.State):
         self.user_avatar = data_uri
         self.avatar_pending = ""
         self.is_editing_avatar = False
+        self.avatar_error = ""
+        self.avatar_saved = True
         site_store.update_user_profile(self.user_email, {"avatar": data_uri})
 
     def cancel_avatar_edit(self):
         self.avatar_pending = ""
         self.is_editing_avatar = False
+        self.avatar_saved = False
+        self.avatar_error = ""
 
     def save_profile_name(self, form_data: dict):
         if not self.user_email:
@@ -1505,7 +1592,8 @@ class State(rx.State):
     # Content editor (admin-only): the doc being edited + live preview source.
     page_doc: str = ""          # which <doc>.md is loaded on a public page
     page_body: str = ""         # rendered body of the current page (from read_doc)
-    home_intro: str = ""        # rendered body of the main page (home.md)
+    home_title: str = _DEFAULT_HOME_TITLE  # main-page H1 (home.md)
+    home_intro: str = _DEFAULT_HOME_INTRO  # rendered main-page intro (home.md)
     doc_edit_source: str = ""   # working textarea buffer in the admin editor
     editing_doc: str = ""       # <doc>.md currently open in the admin editor
     doc_saved: bool = False     # flash "Saved" after a successful write
@@ -1551,7 +1639,7 @@ class State(rx.State):
             return
         self.page_body = source
         if name == "home.md":
-            self.home_intro = source
+            self.home_title, self.home_intro = parse_home_doc(source)
         self.doc_saved = True
 
     # Live Chat State
@@ -1789,7 +1877,7 @@ class State(rx.State):
         self._restore_session()
         await self._record_visit()
         self.suggestions = random.sample(SUGGESTIONS, 2)
-        self.home_intro = read_doc("home.md")
+        self.home_title, self.home_intro = parse_home_doc(read_doc("home.md"))
         return [
             rx.call_script(BROWSER_INFO_JS, callback=State.on_browser_info),
             rx.call_script(
@@ -2486,7 +2574,7 @@ def index() -> rx.Component:
     return rx.center(
         rx.vstack(
             rx.hstack(
-                rx.heading("Agentic Generated Self-Hosted AI Webserver", size="5", color="#e8ecf4"),
+                rx.heading(State.home_title, size="5", color="#e8ecf4"),
                 auth_menu(),
                 width="min(720px, 92vw)",
                 justify="between",
@@ -2632,7 +2720,15 @@ def auth_menu() -> rx.Component:
             rx.menu.root(
                 rx.menu.trigger(
                     rx.button(
-                        f"Hi {State.user_name} ▾",
+                        rx.hstack(
+                            rx.cond(
+                                State.user_avatar != "",
+                                rx.image(src=State.user_avatar, width="20px", height="20px", borderRadius="50%", objectFit="cover"),
+                            ),
+                            rx.text(f"Hi {State.user_name} ▾"),
+                            spacing="2",
+                            align="center",
+                        ),
                         size="1",
                         variant="outline",
                         background="transparent",
@@ -2842,7 +2938,13 @@ def profile_page() -> rx.Component:
                                     rx.cond(
                                         State.is_editing_avatar,
                                         rx.vstack(
-                                            rx.text("Drag the picture to fit it in the circle", color=MUTED, fontSize="0.75rem"),
+                                            rx.text("Drag to position · scroll or +/− to zoom", color=MUTED, fontSize="0.75rem"),
+                                            rx.hstack(
+                                                rx.button("-", size="1", variant="outline", color=MUTED, width="2rem", on_click=rx.call_script(zoom_avatar_js(-0.25))),
+                                                rx.button("+", size="1", variant="outline", color=MUTED, width="2rem", on_click=rx.call_script(zoom_avatar_js(0.25))),
+                                                spacing="2",
+                                                align="center",
+                                            ),
                                             rx.hstack(
                                                 rx.button(
                                                     "Save Picture",
@@ -2857,6 +2959,10 @@ def profile_page() -> rx.Component:
                                                     variant="outline",
                                                     color=MUTED,
                                                     on_click=State.cancel_avatar_edit,
+                                                ),
+                                                rx.cond(
+                                                    State.avatar_saved,
+                                                    rx.text("Saved ✓", color=ACCENT, fontSize="0.8rem"),
                                                 ),
                                                 spacing="2",
                                                 align="center",
@@ -2877,6 +2983,10 @@ def profile_page() -> rx.Component:
                                                 },
                                                 max_files=1,
                                                 on_drop=State.handle_avatar_upload(rx.upload_files(upload_id="avatar_upload")),
+                                            ),
+                                            rx.cond(
+                                                State.avatar_error != "",
+                                                rx.text(State.avatar_error, color="#fca5a5", fontSize="0.75rem"),
                                             ),
                                             spacing="2",
                                             align="center",
@@ -3220,6 +3330,11 @@ def admin_doc_row(d: dict[str, object]) -> rx.Component:
     return rx.hstack(
         rx.icon("file-text", size=16, color=MUTED),
         rx.text(d["name"], color="#c9d2e3", fontSize="0.85rem", flex="1"),
+        rx.cond(
+            d["public"],
+            rx.box("page", color=ACCENT, border="1px solid #25633f", background="#0f2a1c", borderRadius="0.75rem", padding="0 0.4rem", fontSize="0.65rem", lineHeight="1.5"),
+            rx.box("doc", color=MUTED, border="1px solid #2a3247", background="#131826", borderRadius="0.75rem", padding="0 0.4rem", fontSize="0.65rem", lineHeight="1.5"),
+        ),
         rx.text(d["size_label"], color=MUTED, fontSize="0.75rem"),
         rx.button(
             "Edit",
