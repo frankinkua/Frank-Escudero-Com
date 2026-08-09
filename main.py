@@ -966,6 +966,19 @@ def read_doc(name: str) -> str:
         return f"<!-- missing {name} -->"
 
 
+INCIDENT_LOG = read_doc("incident.md")
+
+
+def incident_log() -> rx.Component:
+    """Homepage incident writeup, rendered just above the footer."""
+    return rx.vstack(
+        rx.markdown(INCIDENT_LOG, color=MUTED, fontSize="0.8rem"),
+        width="min(720px, 92vw)",
+        padding="1rem",
+        borderTop="1px solid #2a3247",
+    )
+
+
 def _human_size(n: int) -> str:
     if n >= 1024 * 1024:
         return f"{n / (1024 * 1024):.1f} MB"
@@ -2604,6 +2617,7 @@ def index() -> rx.Component:
                 width="min(720px, 92vw)",
                 justify="center",
             ),
+            incident_log(),
             page_footer(),
             spacing="5",
             width="100%",
