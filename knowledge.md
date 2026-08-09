@@ -1,4 +1,4 @@
-## Who Frank Escudero is
+## Who Frank Escudero is:
 - Full-stack engineer / infrastructure developer living on his own home datacenter ("story-tegu.ts.net" tailnet). Speaks English natively (site content is English); the chatbot greets and answers visitors in their own language when known, switching if the visitor writes in another.
 - Runs a systemd-less Debian 13 LXC container (hostname `cv`, tailnet IP 100.115.209.119) that serves this CV site to the public internet.
 - Frank's work is: Python/Bash (fluent), Go (reading), Terraform/HCL; Reflex, FastAPI, ASGI; Tailscale (Funnel + tailnet), RDP/KDE, git-based rollback, self-hosting, zero-trust ingress, SRE.
