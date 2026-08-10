@@ -33,14 +33,17 @@ DEFAULT_HOME_TITLE = "Agentic Generated Self-Hosted AI Webserver"
 # Remote LM Studio OpenAI-compatible endpoint (self-hosted at frank's LAN).
 # Same box/model the cron worker uses; bonsai stays loaded in VRAM.
 # NOTE: this is an external service; revoke/invalidate the key if it leaks.
-CHAT_URL = "http://192.168.178.120:1234/v1"
-CHAT_API_KEY = "lm-studio"  # LM Studio gate; keep as placeholder token
-CHAT_MODEL = "prism-ml/bonsai-27b"
+CHAT_URL = os.environ.get("CHAT_URL", "http://192.168.178.120:1234/v1")
+CHAT_API_KEY = os.environ.get("CHAT_API_KEY", "lm-studio")
+CHAT_MODEL = os.environ.get("CHAT_MODEL", "prism-ml/bonsai-27b")
+CHAT_ENABLED = os.environ.get("CHAT_ENABLED", "1") == "1"
 chat_client: AsyncOpenAI | None = None
 
 
-def get_chat_client() -> AsyncOpenAI:
+def get_chat_client() -> AsyncOpenAI | None:
     global chat_client
+    if not CHAT_ENABLED:
+        return None
     if chat_client is None:
         chat_client = AsyncOpenAI(
             base_url=CHAT_URL, api_key=CHAT_API_KEY, timeout=httpx.Timeout(300.0)
@@ -1354,6 +1357,8 @@ def _system_message(ctx: dict[str, str] | None = None, user_email: str = "", use
 async def _ai_call(messages: list[dict[str, str]]) -> str:
     """Full (non-streamed) completion via the remote LM Studio endpoint."""
     client = get_chat_client()
+    if client is None:
+        return FALLBACK
     resp = await client.chat.completions.create(
         model=CHAT_MODEL,
         messages=messages,
@@ -2161,154 +2166,9 @@ class State(rx.State):
         yield
         is_admin_greet = self.is_admin
         is_returning = bool(self.user_email) and not is_admin_greet
-        try:
-            client = get_chat_client()
-            if is_admin_greet:
-                greet_hook = (
-                    "Now: Frank (the site owner) is signed in and opening the site. "
-                    "Write a short, warm personal greeting for him in English. "
-                    "Address him as the person in charge of this site. Do NOT ask who "
-                    "he is, do NOT ask for an email, do NOT treat him as a stranger. "
-                    "Acknowledge him as the owner comfortably and briefly."
-                )
-            elif is_returning:
-                greet_hook = (
-                    f"Now: a returning identified visitor ({self.user_email}) is opening "
-                    f"the site. Write a short personal greeting for them in {lang} "
-                    "(EVERY word in {lang}, no exceptions) that welcomes them back "
-                    "warmly and naturally, mentioning that you remember them. Do not "
-                    "re-ask who they are."
-                )
-            else:
-                greet_hook = (
-                    f"Now: you just detected a new visitor. Write a short personal "
-                    f"greeting for them in {lang} (the visitor's language - EVERY word "
-                    f"you write must be in {lang}, no exceptions). Make it warm and relevant."
-                )
-            parts = [
-                read_doc("prompt.md"),
-                "\n\nKNOWLEDGE:\n",
-                read_doc("knowledge.md"),
-                _visitor_context_text(ctx, self.user_email, self.user_name, self.is_admin),
-                "\n\n" + greet_hook,
-            ]
-            if time_of_day:
-                parts.append(f" Their local time is {time_of_day}.")
-            if weather.get("word"):
-                parts.append(f" The weather there is {weather['word']} {weather['emoji']}.")
-            if weather.get("temp"):
-                parts.append(
-                    f" Temperature: {weather['temp']}"
-                    + (f" (feels like {weather['feels_like']})." if weather.get("feels_like") else ".")
-                )
-            if weather.get("pressure"):
-                parts.append(f" Pressure: {weather['pressure']}.")
-            if weather.get("humidity"):
-                parts.append(f" Humidity: {weather['humidity']}.")
-            if weather.get("wind"):
-                parts.append(f" Wind: {weather['wind']}.")
-            if weather.get("warning"):
-                parts.append(
-                    f" There is a weather warning in effect: {weather['warning']}. "
-                    "Mention it in a natural, non-alarmist way."
-                )
-            if weather.get("sunrise") and weather.get("sunset"):
-                parts.append(
-                    f" The sun there rises at {weather['sunrise']} and sets at "
-                    f"{weather['sunset']} local time."
-                )
-            if weather.get("moon"):
-                parts.append(
-                    f" The moon there is in its {weather['moon']} phase {weather['moon_emoji']}."
-                )
-            if location:
-                parts.append(f" They are in {location}.")
-            if ctx.get("device"):
-                parts.append(
-                    f" Their browser reports the device as: {ctx['device']}. If their setup "
-                    "is noteworthy (e.g. a small phone screen, an enormous display, unusually "
-                    "many cores/RAM, or being offline), you may mention it once, lightly. "
-                    "Do not read a screen resolution out loud like a spec sheet."
-                )
-            if lang and location:
-                parts.append(
-                    f" Their browser language is {lang} and they are browsing from "
-                    f"{location}. If that pairing tells an interesting story - e.g. a "
-                    "Spanish speaker in France is probably on holiday, someone browsing "
-                    "from their own country in their native language is likely at home - "
-                    "weave ONE such smart observation into the greeting, naturally and "
-                    "briefly. Never force it if nothing stands out."
-                )
-            if flag and not is_windows:
-                parts.append(f" Their country flag is {flag}. Put that flag at the START of the greeting.")
-            elif is_windows:
-                parts.append(
-                    " They are on Windows. ONLY the country/flag emoji must be avoided "
-                    "(Windows fonts cannot render regional-indicator flag emoji). Other "
-                    "emoji - weather, sun, moon, temperature - are FINE and welcome. "
-                    "Mention their country/region by name in plain text."
-                )
-            parts.append(
-                " Craft the greeting around their local time, the sun cycle, the moon "
-                "and the weather when available (e.g. a rainy evening gets a rain emoji "
-                "and a 'cozy' note; at night, talk about the moon and when the sun will "
-                "rise; during the day, mention sunset). Mention the pressure or other "
-                "meteorological detail only if it makes the greeting feel natural. Never "
-                "say the sun is out at night or vice versa. It must "
-                "be 1-3 sentences and feel natural."
-                + (
-                    " END by asking the visitor who they are."
-                    if not (is_admin_greet or is_returning)
-                    else " Do NOT ask who they are."
-                )
-                + " Only name their city/country if the visitor details actually provide "
-                "a location. NEVER invent or guess a city from the timezone - if you are "
-                "not told where they are, greet them warmly without naming a place. Do "
-                "not mention IP addresses, tokens, or anything sensitive."
-            )
-            system_content = "".join(parts)
-            stream = await client.chat.completions.create(
-                model=CHAT_MODEL,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": system_content,
-                    },
-                    {"role": "user", "content": "Greet me now."},
-                ],
-                temperature=0.7,
-                reasoning_effort="none",
-                max_tokens=300,
-                stream=True,
-            )
-            chunks: list[str] = []
-            async for event in stream:
-                if not event.choices:
-                    continue
-                delta = event.choices[0].delta.content or ""
-                if delta:
-                    chunks.append(delta)
-                    self.messages[-1]["content"] = "".join(chunks)
-                    yield rx.call_script(chat_scroll_js())
-            logger.info("greeting: chunks=%d text=%r", len(chunks), self.messages[-1]["content"])
-            if not chunks:
-                if is_admin_greet:
-                    self.messages[-1]["content"] = (
-                        "Welcome back, Frank. Everything's running — the dashboard is ready whenever you want it."
-                    )
-                elif is_returning:
-                    self.messages[-1]["content"] = (
-                        "Welcome back! Good to see you again. What can I help you with?"
-                    )
-                else:
-                    self.messages[-1]["content"] = (
-                        f"Hi! I'm Frank's assistant — welcome. I can tell you're in "
-                        f"{ctx.get('location') or ctx.get('device') or 'a browser'} "
-                        f"right now. Who are you?"
-                    )
-        except Exception:  # noqa: BLE001
-            logger.exception("greeting generation failed")
-            self.greeting_in_progress = False
+        client = get_chat_client()
+        if client is None:
+            # AI disabled or not configured - use fallback greeting
             if is_admin_greet:
                 self.messages[-1]["content"] = (
                     "Welcome back, Frank. Everything's running — the dashboard is ready whenever you want it."
@@ -2321,7 +2181,168 @@ class State(rx.State):
                 self.messages[-1]["content"] = (
                     "Hi! I'm Frank's assistant. Ask me anything about Frank's CV. Who are you?"
                 )
-            _notify("⚠ AI greeting failed", "A visitor arrived but the LLM greeting failed.", ["warning"])
+            _notify("AI greeting failed", "A visitor arrived but the LLM greeting failed.", ["warning"])
+        else:
+            try:
+                if is_admin_greet:
+                    greet_hook = (
+                        "Now: Frank (the site owner) is signed in and opening the site. "
+                        "Write a short, warm personal greeting for him in English. "
+                        "Address him as the person in charge of this site. Do NOT ask who "
+                        "he is, do NOT ask for an email, do NOT treat him as a stranger. "
+                        "Acknowledge him as the owner comfortably and briefly."
+                    )
+                elif is_returning:
+                    greet_hook = (
+                        f"Now: a returning identified visitor ({self.user_email}) is opening "
+                        f"the site. Write a short personal greeting for them in {lang} "
+                        "(EVERY word in {lang}, no exceptions) that welcomes them back "
+                        "warmly and naturally, mentioning that you remember them. Do not "
+                        "re-ask who they are."
+                    )
+                else:
+                    greet_hook = (
+                        f"Now: you just detected a new visitor. Write a short personal "
+                        f"greeting for them in {lang} (the visitor's language - EVERY word "
+                        f"you write must be in {lang}, no exceptions). Make it warm and relevant."
+                    )
+                parts = [
+                    read_doc("prompt.md"),
+                    "\n\nKNOWLEDGE:\n",
+                    read_doc("knowledge.md"),
+                    _visitor_context_text(ctx, self.user_email, self.user_name, self.is_admin),
+                    "\n\n" + greet_hook,
+                ]
+                if time_of_day:
+                    parts.append(f" Their local time is {time_of_day}.")
+                if weather.get("word"):
+                    parts.append(f" The weather there is {weather['word']} {weather['emoji']}.")
+                if weather.get("temp"):
+                    parts.append(
+                        f" Temperature: {weather['temp']}"
+                        + (f" (feels like {weather['feels_like']})." if weather.get("feels_like") else ".")
+                    )
+                if weather.get("pressure"):
+                    parts.append(f" Pressure: {weather['pressure']}.")
+                if weather.get("humidity"):
+                    parts.append(f" Humidity: {weather['humidity']}.")
+                if weather.get("wind"):
+                    parts.append(f" Wind: {weather['wind']}.")
+                if weather.get("warning"):
+                    parts.append(
+                        f" There is a weather warning in effect: {weather['warning']}. "
+                        "Mention it in a natural, non-alarmist way."
+                    )
+                if weather.get("sunrise") and weather.get("sunset"):
+                    parts.append(
+                        f" The sun there rises at {weather['sunrise']} and sets at "
+                        f"{weather['sunset']} local time."
+                    )
+                if weather.get("moon"):
+                    parts.append(
+                        f" The moon there is in its {weather['moon']} phase {weather['moon_emoji']}."
+                    )
+                if location:
+                    parts.append(f" They are in {location}.")
+                if ctx.get("device"):
+                    parts.append(
+                        f" Their browser reports the device as: {ctx['device']}. If their setup "
+                        "is noteworthy (e.g. a small phone screen, an enormous display, unusually "
+                        "many cores/RAM, or being offline), you may mention it once, lightly. "
+                        "Do not read a screen resolution out loud like a spec sheet."
+                    )
+                if lang and location:
+                    parts.append(
+                        f" Their browser language is {lang} and they are browsing from "
+                        f"{location}. If that pairing tells an interesting story - e.g. a "
+                        "Spanish speaker in France is probably on holiday, someone browsing "
+                        "from their own country in their native language is likely at home - "
+                        "weave ONE such smart observation into the greeting, naturally and "
+                        "briefly. Never force it if nothing stands out."
+                    )
+                if flag and not is_windows:
+                    parts.append(f" Their country flag is {flag}. Put that flag at the START of the greeting.")
+                elif is_windows:
+                    parts.append(
+                        " They are on Windows. ONLY the country/flag emoji must be avoided "
+                        "(Windows fonts cannot render regional-indicator flag emoji). Other "
+                        "emoji - weather, sun, moon, temperature - are FINE and welcome. "
+                        "Mention their country/region by name in plain text."
+                    )
+                parts.append(
+                    " Craft the greeting around their local time, the sun cycle, the moon "
+                    "and the weather when available (e.g. a rainy evening gets a rain emoji "
+                    "and a 'cozy' note; at night, talk about the moon and when the sun will "
+                    "rise; during the day, mention sunset). Mention the pressure or other "
+                    "meteorological detail only if it makes the greeting feel natural. Never "
+                    "say the sun is out at night or vice versa. It must "
+                    "be 1-3 sentences and feel natural."
+                    + (
+                        " END by asking the visitor who they are."
+                        if not (is_admin_greet or is_returning)
+                        else " Do NOT ask who they are."
+                    )
+                    + " Only name their city/country if the visitor details actually provide "
+                    "a location. NEVER invent or guess a city from the timezone - if you are "
+                    "not told where they are, greet them warmly without naming a place. Do "
+                    "not mention IP addresses, tokens, or anything sensitive."
+                )
+                system_content = "".join(parts)
+                stream = await client.chat.completions.create(
+                    model=CHAT_MODEL,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": system_content,
+                        },
+                        {"role": "user", "content": "Greet me now."},
+                    ],
+                    temperature=0.7,
+                    reasoning_effort="none",
+                    max_tokens=300,
+                    stream=True,
+                )
+                chunks: list[str] = []
+                async for event in stream:
+                    if not event.choices:
+                        continue
+                    delta = event.choices[0].delta.content or ""
+                    if delta:
+                        chunks.append(delta)
+                        self.messages[-1]["content"] = "".join(chunks)
+                        yield rx.call_script(chat_scroll_js())
+                logger.info("greeting: chunks=%d text=%r", len(chunks), self.messages[-1]["content"])
+                if not chunks:
+                    if is_admin_greet:
+                        self.messages[-1]["content"] = (
+                            "Welcome back, Frank. Everything's running — the dashboard is ready whenever you want it."
+                        )
+                    elif is_returning:
+                        self.messages[-1]["content"] = (
+                            "Welcome back! Good to see you again. What can I help you with?"
+                        )
+                    else:
+                        self.messages[-1]["content"] = (
+                            f"Hi! I'm Frank's assistant — welcome. I can tell you're in "
+                            f"{ctx.get('location') or ctx.get('device') or 'a browser'} "
+                            f"right now. Who are you?"
+                        )
+            except Exception:  # noqa: BLE001
+                logger.exception("greeting generation failed")
+                self.greeting_in_progress = False
+                if is_admin_greet:
+                    self.messages[-1]["content"] = (
+                        "Welcome back, Frank. Everything's running — the dashboard is ready whenever you want it."
+                    )
+                elif is_returning:
+                    self.messages[-1]["content"] = (
+                        "Welcome back! Good to see you again. What can I help you with?"
+                    )
+                else:
+                    self.messages[-1]["content"] = (
+                        "Hi! I'm Frank's assistant. Ask me anything about Frank's CV. Who are you?"
+                    )
+                _notify("AI greeting failed", "A visitor arrived but the LLM greeting failed.", ["warning"])
         site_store.log_conv_message(
             self.conv_id, "assistant", self.messages[-1]["content"],
             self.visitor_ip, self.visitor_geo, self.user_email,
@@ -2398,6 +2419,12 @@ class State(rx.State):
                 if m.get("role") in ("user", "assistant")
             ][-10:]
             client = get_chat_client()
+            if client is None:
+                self.messages[-1]["content"] = FALLBACK
+                _notify("Chat backend error", "AI chat is disabled or not configured", ["warning"])
+                self.busy = False
+                yield rx.call_script(chat_ding_js())
+                return
             # Check if admin has taken over
             if site_store.is_ai_paused(self.conv_id):
                 self.messages[-1]["content"] = "(Waiting for Frank to type...)"
@@ -2433,7 +2460,7 @@ class State(rx.State):
             self.messages[-1]["content"] = (
                 f"(chat backend error: {exc.__class__.__name__})"
             )
-            _notify("⚠ Chat backend error", f"{exc.__class__.__name__}: {q[:80]}", ["warning"])
+            _notify("Chat backend error", f"{exc.__class__.__name__}: {q[:80]}", ["warning"])
         site_store.log_conv_message(
             self.conv_id, "assistant", self.messages[-1]["content"],
             self.visitor_ip, self.visitor_geo, self.user_email,

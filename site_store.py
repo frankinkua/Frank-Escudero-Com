@@ -405,6 +405,65 @@ def is_ai_paused(conv_id: str) -> bool:
     return False
 
 
+def request_live_chat(conv_id: str) -> None:
+    """Mark a conversation as having a pending live chat request."""
+    if not conv_id:
+        return
+    with _LOCK:
+        convs = _read("conversations.json", [])
+        for c in convs:
+            if c.get("id") == conv_id:
+                c["live_chat_requested"] = True
+                c["live_chat_requested_epoch"] = time.time()
+                c["ai_paused"] = True
+                break
+        _write("conversations.json", convs)
+
+
+def dismiss_live_chat(conv_id: str) -> None:
+    """Clear the live chat request flag when admin joins."""
+    if not conv_id:
+        return
+    with _LOCK:
+        convs = _read("conversations.json", [])
+        for c in convs:
+            if c.get("id") == conv_id:
+                c["live_chat_requested"] = False
+                break
+        _write("conversations.json", convs)
+
+
+def get_live_chat_requests() -> list[dict]:
+    """Get all conversations with pending live chat requests, newest first."""
+    convs = _read("conversations.json", [])
+    requests = []
+    for c in convs:
+        if c.get("live_chat_requested"):
+            requests.append({
+                "id": c.get("id", ""),
+                "owner": c.get("owner_email") or c.get("email") or "guest",
+                "location": c.get("location", "unknown"),
+                "msg_count": len(c.get("messages", [])),
+                "last_seen": c.get("last_activity_epoch", 0),
+                "requested_at": c.get("live_chat_requested_epoch", 0),
+                "preview": _preview(c.get("messages", [])),
+            })
+    requests.sort(key=lambda x: x["requested_at"], reverse=True)
+    return requests
+
+
+def _preview(messages: list[dict], lines: int = 2, chars: int = 80) -> str:
+    """Short preview of the last few messages in a thread."""
+    if not messages:
+        return "(no messages)"
+    parts = []
+    for m in messages[-lines:]:
+        role = "Frank" if m.get("role") == "assistant" else "Visitor"
+        content = (m.get("content") or "")[:chars]
+        parts.append(f"{role}: {content}")
+    return "\n".join(parts)
+
+
 def message_count() -> int:
     """Total chat messages across all conversations (cheap poll sentinel)."""
     convs = _read("conversations.json", [])
@@ -681,3 +740,300 @@ def admin_data() -> dict:
         "threads": threads,
         "users": users_list,
     }
+
+
+# --------------------------------------------------------------------------- #
+# Settings (simple key-value store for site config)
+# --------------------------------------------------------------------------- #
+def get_setting(key: str, default=None):
+    """Get a site setting."""
+    with _LOCK:
+        settings = _read("settings.json", {})
+        return settings.get(key, default)
+
+
+def set_setting(key: str, value) -> None:
+    """Set a site setting (atomic write)."""
+    with _LOCK:
+        settings = _read("settings.json", {})
+        settings[key] = value
+        _write("settings.json", settings)
+
+
+def get_all_settings() -> dict:
+    """Get all settings."""
+    with _LOCK:
+        return _read("settings.json", {})
+
+
+# Default settings
+DEFAULT_SETTINGS = {
+    "chat_auto_open_delay": 5,
+    "cron_lookback_hours": 24,
+    "cron_min_confidence": 0.8,
+    "cron_max_changes_per_run": 5,
+    "cron_notify_on_apply": True,
+    "live_chat_enabled": True,
+    "live_chat_timeout_seconds": 120,
+}
+
+
+def ensure_default_settings() -> None:
+    """Ensure all default settings exist."""
+    with _LOCK:
+        settings = _read("settings.json", {})
+        changed = False
+        for k, v in DEFAULT_SETTINGS.items():
+            if k not in settings:
+                settings[k] = v
+                changed = True
+        if changed:
+            _write("settings.json", settings)
+
+
+# --------------------------------------------------------------------------- #
+# Proposals Log (audit trail for cron improvements)
+# --------------------------------------------------------------------------- #
+PROPOSALS_CAP = 500
+
+
+def log_proposal(proposal: dict) -> None:
+    """Log a proposal (applied, rejected, or pending)."""
+    with _LOCK:
+        log = _read("proposals_log.json", {"applied": [], "rejected": [], "pending_review": []})
+        proposal["logged_at"] = _iso()
+        proposal["id"] = proposal.get("id") or f"prop_{secrets.token_hex(6)}"
+        if proposal["type"] == "applied":
+            log["applied"].insert(0, proposal)
+            log["applied"] = log["applied"][:PROPOSALS_CAP]
+        elif proposal["type"] == "rejected":
+            log["rejected"].insert(0, proposal)
+            log["rejected"] = log["rejected"][:PROPOSALS_CAP]
+        else:
+            log["pending_review"].insert(0, proposal)
+            log["pending_review"] = log["pending_review"][:PROPOSALS_CAP]
+        _write("proposals_log.json", log)
+
+
+def get_proposals_log() -> dict:
+    """Get the full proposals log."""
+    with _LOCK:
+        return _read("proposals_log.json", {"applied": [], "rejected": [], "pending_review": []})
+
+
+def move_proposal_to_applied(proposal_id: str, commit_sha: str) -> bool:
+    """Move a proposal from pending_review to applied with commit SHA."""
+    with _LOCK:
+        log = _read("proposals_log.json", {"applied": [], "rejected": [], "pending_review": []})
+        for i, p in enumerate(log["pending_review"]):
+            if p.get("id") == proposal_id:
+                p["type"] = "applied"
+                p["commit_sha"] = commit_sha
+                p["applied_at"] = _iso()
+                log["applied"].insert(0, p)
+                log["applied"] = log["applied"][:PROPOSALS_CAP]
+                log["pending_review"].pop(i)
+                _write("proposals_log.json", log)
+                return True
+    return False
+
+
+def reject_proposal(proposal_id: str, reason: str) -> bool:
+    """Move a proposal from pending_review to rejected."""
+    with _LOCK:
+        log = _read("proposals_log.json", {"applied": [], "rejected": [], "pending_review": []})
+        for i, p in enumerate(log["pending_review"]):
+            if p.get("id") == proposal_id:
+                p["type"] = "rejected"
+                p["reject_reason"] = reason
+                p["rejected_at"] = _iso()
+                log["rejected"].insert(0, p)
+                log["rejected"] = log["rejected"][:PROPOSALS_CAP]
+                log["pending_review"].pop(i)
+                _write("proposals_log.json", log)
+                return True
+    return False
+
+
+def revert_proposal(proposal_id: str) -> tuple[bool, str]:
+    """Revert an applied proposal by git revert. Returns (success, message)."""
+    with _LOCK:
+        log = _read("proposals_log.json", {"applied": [], "rejected": [], "pending_review": []})
+        for p in log["applied"]:
+            if p.get("id") == proposal_id:
+                commit_sha = p.get("commit_sha")
+                if not commit_sha:
+                    return False, "No commit SHA found"
+                try:
+                    import subprocess
+                    result = subprocess.run(
+                        ["git", "revert", "--no-edit", commit_sha],
+                        cwd=WEB, capture_output=True, text=True, timeout=10
+                    )
+                    if result.returncode == 0:
+                        push_result = subprocess.run(
+                            ["git", "push", "origin", "main"],
+                            cwd=WEB, capture_output=True, text=True, timeout=15
+                        )
+                        if push_result.returncode == 0:
+                            p["type"] = "reverted"
+                            p["reverted_at"] = _iso()
+                            p["revert_commit"] = result.stdout.strip().split()[-1] if result.stdout else ""
+                            _write("proposals_log.json", log)
+                            return True, f"Reverted via {p['revert_commit'][:7]}"
+                        else:
+                            return False, f"Push failed: {push_result.stderr}"
+                    else:
+                        return False, f"Revert failed: {result.stderr}"
+                except Exception as e:
+                    return False, str(e)
+    return False, "Proposal not found"
+
+
+# --------------------------------------------------------------------------- #
+# Live Chat Availability
+# --------------------------------------------------------------------------- #
+def set_live_chat_available(available: bool) -> None:
+    """Set whether Frank is available for live chat takeover."""
+    set_setting("live_chat_available", available)
+    if not available:
+        set_setting("live_chat_conv_id", "")
+
+
+def is_live_chat_available() -> bool:
+    """Check if Frank is available for live chat."""
+    return get_setting("live_chat_available", False)
+
+
+def set_live_chat_conv_id(conv_id: str) -> None:
+    """Set the conversation ID for the active live chat session."""
+    set_setting("live_chat_conv_id", conv_id)
+
+
+def get_live_chat_conv_id() -> str:
+    """Get the conversation ID for the active live chat session."""
+    return get_setting("live_chat_conv_id", "")
+
+
+def clear_live_chat_session() -> None:
+    """Clear the live chat session."""
+    set_setting("live_chat_available", False)
+    set_setting("live_chat_conv_id", "")
+
+
+# --------------------------------------------------------------------------- #
+# Conversation Helpers for Cron
+# --------------------------------------------------------------------------- #
+def get_recent_conversations(hours: int = 24) -> list[dict]:
+    """Get conversations with activity in the last N hours."""
+    cutoff = time.time() - (hours * 3600)
+    with _LOCK:
+        convs = _read("conversations.json", [])
+    recent = []
+    for c in convs:
+        last_activity = c.get("last_activity_epoch", 0) or 0
+        if last_activity >= cutoff and c.get("messages"):
+            recent.append(c)
+    return recent
+
+
+def get_visitor_messages(convs: list[dict]) -> list[dict]:
+    """Extract visitor->AI message pairs from conversations for analysis."""
+    pairs = []
+    for c in convs:
+        msgs = c.get("messages", [])
+        for i, m in enumerate(msgs):
+            if m.get("role") == "user" and i + 1 < len(msgs):
+                next_msg = msgs[i + 1]
+                if next_msg.get("role") == "assistant":
+                    pairs.append({
+                        "conv_id": c.get("id"),
+                        "visitor_id": c.get("visitor_id"),
+                        "email": c.get("email"),
+                        "location": c.get("location"),
+                        "question": m.get("content"),
+                        "answer": next_msg.get("content"),
+                        "ts": m.get("ts"),
+                    })
+    return pairs
+
+
+# --------------------------------------------------------------------------- #
+# Content Management Helpers (for cron & proposals)
+# --------------------------------------------------------------------------- #
+WEB = pathlib.Path("/web")
+
+
+def read_content_file(filename: str) -> str:
+    """Read a markdown content file."""
+    path = WEB / filename
+    try:
+        return path.read_text()
+    except OSError:
+        return ""
+
+
+def write_content_file(filename: str, content: str) -> bool:
+    """Write a markdown content file atomically."""
+    path = WEB / filename
+    try:
+        tmp = path.with_suffix(path.suffix + ".tmp")
+        tmp.write_text(content)
+        os.replace(tmp, path)
+        return True
+    except OSError:
+        return False
+
+
+def apply_css_change(prop: str, value: str) -> bool:
+    """Apply a CSS custom property change to main.py head_components."""
+    main_py = WEB / "main.py"
+    content = main_py.read_text()
+    
+    marker = "/* CRON_CSS_VARS_START */"
+    end_marker = "/* CRON_CSS_VARS_END */"
+    
+    new_vars = f"""{marker}
+:root {{
+  {prop}: {value};
+}}
+{end_marker}"""
+    
+    if marker in content:
+        import re
+        pattern = f"{marker}.*?{end_marker}"
+        content = re.sub(pattern, new_vars, content, flags=re.DOTALL)
+    else:
+        insert_point = content.find("GIRLY_CSS = \"\"\"")
+        if insert_point != -1:
+            content = content[:insert_point] + new_vars + "\n\n" + content[insert_point:]
+        else:
+            return False
+    
+    try:
+        tmp = main_py.with_suffix(main_py.suffix + ".tmp")
+        tmp.write_text(content)
+        os.replace(tmp, main_py)
+        return True
+    except OSError:
+        return False
+
+
+def git_commit_and_push(message: str) -> tuple[bool, str]:
+    """Commit all changes and push. Returns (success, commit_sha)."""
+    try:
+        import subprocess
+        subprocess.run(["git", "add", "-A"], cwd=WEB, check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", message],
+            cwd=WEB, check=True, capture_output=True
+        )
+        sha_result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=WEB, check=True, capture_output=True, text=True
+        )
+        sha = sha_result.stdout.strip()
+        subprocess.run(["git", "push", "origin", "main"], cwd=WEB, check=True, capture_output=True)
+        return True, sha
+    except subprocess.CalledProcessError as e:
+        return False, e.stderr
