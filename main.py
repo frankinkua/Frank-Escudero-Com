@@ -1472,6 +1472,12 @@ class State(rx.State):
         self.has_unread = False
         self._last_admin_msg_count = site_store.message_count()
 
+    def open_chat_popup(self):
+        self.chat_popup_open = True
+
+    def close_chat_popup(self):
+        self.chat_popup_open = False
+
     @rx.var
     def notifications_enabled(self) -> bool:
         import notify
@@ -1503,6 +1509,9 @@ class State(rx.State):
     avatar_saved: bool = False # flash "Saved ✓" after the crop is persisted
     avatar_error: str = ""     # upload rejection reason (e.g. file too large)
     is_editing_profile: bool = False
+
+    # Floating chat window
+    chat_popup_open: bool = False                     # True: FAB opens the popup
 
     async def handle_avatar_upload(self, files: list[rx.UploadFile]):
         if not files or not self.user_email:
@@ -2619,6 +2628,67 @@ def chat_panel() -> rx.Component:
     )
 
 
+def chat_fab() -> rx.Component:
+    """Floating action button that opens the chat popup."""
+    return rx.box(
+        rx.button(
+            rx.hstack(
+                rx.icon(tag="message-circle", size=20),
+                rx.text("Chat", fontSize="0.85rem"),
+                spacing="1",
+                align="center",
+            ),
+            on_click=State.open_chat_popup,
+            background=ACCENT,
+            color="#0b0e14",
+            fontWeight="600",
+            style={
+                "position": "fixed",
+                "right": "1.5rem",
+                "bottom": "1.5rem",
+                "zIndex": 1000,
+                "borderRadius": "9999px",
+                "padding": "0.6rem 1rem",
+                "boxShadow": "0 8px 24px rgba(0, 0, 0, 0.4)",
+            },
+        ),
+        id="chat-fab",
+    )
+
+
+def chat_popup() -> rx.Component:
+    """Floating chat window (renders the existing chat_panel), opened via the FAB."""
+    return rx.cond(
+        State.chat_popup_open,
+        rx.box(
+            # click-through backdrop closes the popup
+            rx.box(
+                position="fixed",
+                inset="0",
+                background="rgba(0, 0, 0, 0.55)",
+                zIndex=999,
+                on_click=State.close_chat_popup,
+            ),
+            # floating chat window, anchored opposite the FAB
+            rx.box(
+            chat_fab(),
+            chat_popup(),
+                position="fixed",
+                right="1.5rem",
+                bottom="6rem",
+                zIndex=1000,
+                maxHeight="min(80vh, 85vh)",
+                overflow="auto",
+                borderRadius="0.75rem",
+                boxShadow="0 24px 60px rgba(0, 0, 0, 0.5)",
+                background=BG,
+                padding="1rem",
+            ),
+        ),
+        rx.fragment(),
+    )
+
+
 def index() -> rx.Component:
     return rx.center(
         rx.vstack(
@@ -2800,7 +2870,6 @@ def auth_menu() -> rx.Component:
             ),
             rx.hstack(
                 rx.link("Sign in", href="/login", color=MUTED, fontSize="0.85rem"),
-                rx.link("Sign up", href="/signup", color=ACCENT, fontSize="0.85rem"),
                 spacing="3",
             ),
         ),
@@ -2862,7 +2931,6 @@ def login_page() -> rx.Component:
             ),
             auth_error_box(),
             rx.hstack(
-                rx.link("Create an account", href="/signup", color=ACCENT, fontSize="0.85rem"),
                 rx.link("Back to main", href="/", color=MUTED, fontSize="0.85rem"),
                 spacing="4",
             ),
