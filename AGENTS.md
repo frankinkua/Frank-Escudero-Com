@@ -70,6 +70,11 @@ When you need to compile, run, reload, or debug a Reflex application, follow the
   `/etc/init.d/websiteserver start`. Make every change safe to re-run.
 - **Do not touch git history destructively.** Prefer additive edits; never rewrite
   commits already pushed to this LXC (it is the only "remote").
+- **Never create branches. Trunk-based only.** Commit **directly on `main`**. Do NOT
+  run `git checkout -b` / `git switch -c` / `git branch <name>`, and do NOT open pull
+  requests. Stray agent-created branches (`*-<taskid>`) polluted the remote and had to
+  be force-deleted; a `.githooks/pre-commit` hook now refuses commits off `main`
+  (`core.hooksPath` is set to `.githooks` in this clone; keep it that way).
 
 ## Reality check (what this actually is right now)
 - Site: **`https://cv.story-tegu.ts.net`** (Tailscale Funnel `/` -> `127.0.0.1:8000`).

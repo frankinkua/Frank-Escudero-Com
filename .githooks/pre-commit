@@ -1,0 +1,19 @@
+#!/bin/sh
+# Trunk-based policy: this repo forbids feature branches.
+# All work must be committed directly on 'main'. Branches are only created
+# accidentally (e.g. by AI agents) and end up stale on the remote.
+set -u
+
+branch="$(git symbolic-ref --short -q HEAD 2>/dev/null || echo '')"
+if [ -z "$branch" ]; then
+    echo "pre-commit: detached HEAD - refusing to commit. Switch to 'main' first." >&2
+    exit 1
+fi
+if [ "$branch" != "main" ]; then
+    echo "pre-commit: trunk-based repo - you are on branch '$branch', which is forbidden." >&2
+    echo "Move your changes to 'main' and commit there:" >&2
+    echo "  git add -A && git stash -m working-changes && git switch main" >&2
+    echo "  git stash pop   # resolve conflicts, then commit on main" >&2
+    exit 1
+fi
+exit 0

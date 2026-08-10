@@ -1,0 +1,11 @@
+#!/bin/sh
+# Warn loudly (but do not block) when someone leaves 'main'.
+# Branching is discouraged here; stray branches are auto-deleted/forbidden.
+set -u
+
+branch="$(git symbolic-ref --short -q HEAD 2>/dev/null || echo '')"
+if [ -n "$branch" ] && [ "$branch" != "main" ]; then
+    echo "WARNING: you are now on branch '$branch'. This repo is trunk-based;" >&2
+    echo "all work belongs on 'main'. Do not create feature branches." >&2
+fi
+exit 0
