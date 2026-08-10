@@ -1,0 +1,19 @@
+tunnel: frank-escudero-cv
+credentials-file: /web/.cloudflared/frank-escudero-cv.json
+
+ingress:
+  - hostname: frank-escudero.com
+    service: http://localhost:8000
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 30s
+      keepAliveConnections: 10
+      keepAliveTimeout: 90s
+  - hostname: www.frank-escudero.com
+    service: http://localhost:8000
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 30s
+      keepAliveConnections: 10
+      keepAliveTimeout: 90s
+  - service: http_status:404

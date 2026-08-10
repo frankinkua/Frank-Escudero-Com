@@ -43,3 +43,15 @@
 - [x] Trailing-slash navigation: `/cv` → 307 → `/cv/` → 200, as designed.
 - [x] `main.py` compiles under Python 3.13 with no deprecation warnings.
 - [x] Reflex gotchas hit + worked around: no `rx.EventSpec` (drop return annotations on handlers), computed vars need `@rx.var` not `@property`, no `or`/`.get()` on Var proxies (precompute in store), no nested `foreach` over `dict[str, object]` (flatten rows in store).
+
+### Done this session (2026-08-10)
+- [x] **Cloudflare Tunnel**: `frank-escudero.com` + `www.frank-escudero.com` → `https://frank-escudero.com/` (Cloudflare Zero Trust tunnel, token-based)
+- [x] **Redirect old domain**: `cv.story-tegu.ts.net/*` → `frank-escudero.com/*` (301 permanent, preserves path + query) via Starlette middleware + JS fallback
+- [x] **Social metadata**: Updated OpenGraph + Twitter Card tags with new domain, `summary_large_image`, `og:image` + `twitter:image` pointing to `/media/frank.png`
+- [x] **Image copy**: `cv-image-frank-with-his-horse.png` → `/web/media/frank.png` (served via existing `/media/frank.png` route)
+
+### Future — Rabbit Holes (DO NOT START without explicit go-ahead)
+- **Dynamic OG image via ComfyUI img2img**: Generate time/culture/weather/relationship-adapted variants of `frank.png` on request. Requires ComfyUI API, prompt templates, caching layer.
+- **Audio greetings**: Generate WhatsApp-style voice notes (TTS or local model) per visitor context. Play button on home page.
+- **Audio input**: Visitor voice messages → STT → chat pipeline.
+- **Visitor-aware personalization**: Use geo/IP/timezone/weather from analytics to customize image/audio/content.

@@ -46,7 +46,12 @@ def get_chat_client() -> AsyncOpenAI | None:
         return None
     if chat_client is None:
         chat_client = AsyncOpenAI(
-            base_url=CHAT_URL, api_key=CHAT_API_KEY, timeout=httpx.Timeout(300.0)
+            base_url=CHAT_URL,
+            api_key=CHAT_API_KEY,
+            # Fail fast when the LLM host is unreachable so an in-flight greeting/ask
+            # can't stall a client's event queue (which blocks the chat FAB click).
+            # A reachable local endpoint (Ollama) completes well within these limits.
+            timeout=httpx.Timeout(60.0, connect=3.0),
         )
     return chat_client
 FALLBACK = (
@@ -301,6 +306,10 @@ THEME_JS = """(function () {
     var saved = 'dark';
     try { saved = localStorage.getItem('cv_theme') || 'dark'; } catch (e) {}
     apply(saved);
+  }
+  // Redirect old Tailscale domain to new canonical domain
+  if (window.location.hostname.endsWith("cv.story-tegu.ts.net")) {
+    window.location.replace("https://frank-escudero.com" + window.location.pathname + window.location.search);
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
@@ -796,14 +805,14 @@ def rss_xml() -> str:
 
     changelog_items = "\n".join(
         f"<item><title>update {sha} — {subj}</title>"
-        f"<link>https://cv.story-tegu.ts.net/</link>"
+        f"<link>https://frank-escudero.com/</link>"
         f"<guid>{sha}</guid><pubDate>{ci}</pubDate>"
         f"<description>Site update {sha}</description></item>"
         for sha, ci, subj in changelog_entries()
     )
     static_items = "\n".join(
         f"<item><title>{title}</title>"
-        f"<link>https://cv.story-tegu.ts.net/{link}</link>"
+        f"<link>https://frank-escudero.com/{link}</link>"
         f"<guid>{guid}</guid><pubDate>{now}</pubDate>"
         f"<description>{_slug(body)}</description></item>"
         for title, link, guid, body in (
@@ -816,7 +825,7 @@ def rss_xml() -> str:
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<rss version="2.0"><channel>'
         "<title>Frank Escudero CV</title>"
-        "<link>https://cv.story-tegu.ts.net/</link>"
+        "<link>https://frank-escudero.com/</link>"
         "<description>Frank Escudero's self-hosted AI CV — content and site updates.</description>"
         f"{changelog_items}{static_items}</channel></rss>\n"
     )
@@ -829,7 +838,7 @@ def sitemap_xml() -> str:
         "", "/about", "/cv", "/projects", "/contact", "/appointments",
     ]
     entries = "\n".join(
-        f"<url><loc>https://cv.story-tegu.ts.net{u}/</loc>"
+        f"<url><loc>https://frank-escudero.com{u}/</loc>"
         f"<lastmod>{now}</lastmod><changefreq>weekly</changefreq></url>"
         for u in urls
     )
@@ -2638,7 +2647,7 @@ def index() -> rx.Component:
             rx.hstack(
                 rx.link("LinkedIn", href="https://www.linkedin.com/in/frankeee/", color=ACCENT, is_external=True),
                 rx.link("GitHub", href="https://github.com/frankinkua", color=ACCENT, is_external=True),
-                rx.text("story-tegu", color=MUTED),
+                rx.text("frank-escudero.com", color=MUTED),
                 spacing="4",
                 fontSize="0.85rem",
                 width="min(720px, 92vw)",
@@ -3625,7 +3634,7 @@ async def _notify_startup() -> None:
     try:
         await notify.send(
             "CV site started",
-            f"{VERSION_LABEL} · {UPDATED_LABEL} UTC\nRoutes live at https://cv.story-tegu.ts.net",
+            f"{VERSION_LABEL} · {UPDATED_LABEL} UTC\nRoutes live at https://frank-escudero.com",
             ["computer"],
         )
     except Exception:  # noqa: BLE001
@@ -3644,21 +3653,28 @@ app = rx.App(
     head_components=[
         rx.el.link(rel="icon", type="image/svg+xml", href=FAVICON_SVG),
         rx.el.link(rel="apple-touch-icon", href=FAVICON_SVG),
+        rx.el.meta(property="og:site_name", content="Frank Escudero CV"),
+        rx.el.meta(property="og:title", content="Frank Escudero — Software Engineer CV"),
+        rx.el.meta(property="og:description", content="Frank Escudero CV - Bridging deep-tech execution with strategic business growth. AI-updated software engineer."),
+        rx.el.meta(property="og:type", content="website"),
+        rx.el.meta(property="og:url", content="https://frank-escudero.com/"),
+        rx.el.meta(property="og:image", content="https://frank-escudero.com/media/frank-og.jpg?v=1"),
+        rx.el.meta(property="og:image:width", content="1200"),
+        rx.el.meta(property="og:image:height", content="630"),
+        rx.el.meta(property="og:image:alt", content="Frank Escudero with his horse"),
+        rx.el.meta(property="og:image:type", content="image/jpeg"),
+        rx.el.meta(name="twitter:card", content="summary_large_image"),
+        rx.el.meta(name="twitter:title", content="Frank Escudero — Software Engineer CV"),
+        rx.el.meta(name="twitter:description", content="Frank Escudero CV - Bridging deep-tech execution with strategic business growth. AI-updated software engineer."),
+        rx.el.meta(name="twitter:image", content="https://frank-escudero.com/media/frank-og.jpg?v=1"),
+        rx.el.meta(name="twitter:image:alt", content="Frank Escudero with his horse"),
+        rx.el.meta(name="description", content="Frank Escudero CV - Bridging deep-tech execution with strategic business growth. AI-updated software engineer."),
         rx.el.style(GIRLY_CSS),
         rx.el.script(THEME_JS),
         rx.el.script(DING_JS),
-        rx.el.meta(name="description", content="Frank Escudero CV - Bridging deep-tech execution with strategic business growth. AI-updated virtual employee."),
-        rx.el.meta(property="og:site_name", content="Frank Escudero CV"),
-        rx.el.meta(property="og:title", content="Frank Escudero — virtual-employee CV"),
-        rx.el.meta(property="og:description", content="Frank Escudero CV - Bridging deep-tech execution with strategic business growth. AI-updated virtual employee."),
-        rx.el.meta(property="og:type", content="website"),
-        rx.el.meta(property="og:url", content="https://cv.story-tegu.ts.net/"),
-        rx.el.meta(name="twitter:card", content="summary"),
-        rx.el.meta(name="twitter:title", content="Frank Escudero — virtual-employee CV"),
-        rx.el.meta(name="twitter:description", content="Frank Escudero CV - Bridging deep-tech execution with strategic business growth. AI-updated virtual employee."),
     ],
 )
-app.add_page(index, route="/", title="Frank Escudero — virtual-employee CV", on_load=State.load_home)
+app.add_page(index, route="/", title="Frank Escudero — Software Engineer CV", on_load=State.load_home)
 app.add_page(about, route="/about", title="About — Frank Escudero", on_load=State.load_public_doc("knowledge.md"))
 app.add_page(cv, route="/cv", title="CV — Frank Escudero", on_load=State.load_public_doc("cv.md"))
 app.add_page(contact, route="/contact", title="Contact — Frank Escudero CV", on_load=State.load_public_doc("contact.md"))
@@ -3669,6 +3685,24 @@ app.add_page(profile_page, route="/profile", title="Profile — Frank Escudero C
 app.add_page(admin_page, route="/admin", title="Admin — Frank Escudero CV", on_load=State.load_admin)
 
 app.register_lifespan_task(_notify_startup)
+
+
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import RedirectResponse
+
+
+class RedirectOldDomainMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        host = request.headers.get("host", "")
+        if host.endswith("cv.story-tegu.ts.net"):
+            new_url = f"https://frank-escudero.com{request.url.path}"
+            if request.url.query:
+                new_url += f"?{request.url.query}"
+            return RedirectResponse(url=new_url, status_code=301)
+        return await call_next(request)
+
+
+app._api.add_middleware(RedirectOldDomainMiddleware)
 
 
 async def _rss(request):
@@ -3684,7 +3718,7 @@ async def _sitemap(request):
 async def _robots(request):
     from starlette.responses import Response
     return Response(
-        "User-agent: *\nAllow: /\nSitemap: https://cv.story-tegu.ts.net/sitemap.xml\n",
+        "User-agent: *\nAllow: /\nSitemap: https://frank-escudero.com/sitemap.xml\n",
         media_type="text/plain; charset=utf-8",
     )
 
@@ -3761,10 +3795,98 @@ async def _whimsy_audio(request):
 async def _frank_picture(request):
     from starlette.responses import Response
     return Response(
-        FRANK_PHOTO.read_bytes(),
+        pathlib.Path("/web/media/frank.png").read_bytes(),
         media_type="image/png",
         headers={"Cache-Control": "public, max-age=3600"},
     )
+
+
+async def _frank_picture_jpg(request):
+    from starlette.responses import Response
+    return Response(
+        pathlib.Path("/web/media/frank.jpg").read_bytes(),
+        media_type="image/jpeg",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
+
+
+async def _frank_picture_og(request):
+    from starlette.responses import Response
+    return Response(
+        pathlib.Path("/web/media/frank-og.jpg").read_bytes(),
+        media_type="image/jpeg",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
+
+
+# Middleware to move OG tags to top of <head> for WhatsApp crawler compatibility
+class OGTagOrderMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        # Add debug header to verify middleware runs
+        response.headers["X-OG-Middleware"] = "active"
+        if response.media_type == "text/html":
+            body = b""
+            async for chunk in response.body_iterator:
+                body += chunk
+            
+            # DEBUG
+            body_str = body.decode("utf-8", errors="ignore")
+            print(f"[OGTagOrderMiddleware] Processing HTML, length={len(body_str)}")
+            print(f"[OGTagOrderMiddleware] First 300 chars: {body_str[:300]}")
+            
+            # Extract all og: and twitter: meta tags
+            import re
+            og_tags = re.findall(r'(<meta property="og:[^"]*" content="[^"]*"\s*/?>)', body_str)
+            twitter_tags = re.findall(r'(<meta name="twitter:[^"]*" content="[^"]*"\s*/?>)', body_str)
+            
+            print(f"[OGTagOrderMiddleware] Found {len(og_tags)} og tags, {len(twitter_tags)} twitter tags")
+            for tag in og_tags + twitter_tags:
+                print(f"  Tag: {tag[:100]}")
+            
+            if og_tags or twitter_tags:
+                # Remove them from current positions
+                for tag in og_tags + twitter_tags:
+                    body_str = body_str.replace(tag + "\n", "").replace(tag, "")
+                
+                # Build new tag block
+                new_tags = "\n".join(og_tags + twitter_tags)
+                
+                # Insert after <meta charset="utf-8"/> (handles charSet, charset, different quotes)
+                new_body = re.sub(
+                    r'(<meta\s+char(?:s|S)et=["\']utf-8["\']\s*/?>)',
+                    r'\1\n' + new_tags + '\n',
+                    body_str,
+                    count=1,
+                    flags=re.IGNORECASE
+                )
+                
+                if new_body == body_str:
+                    print("[OGTagOrderMiddleware] WARNING: Regex did not match!")
+                    # Fallback: insert after <head>
+                    new_body = re.sub(
+                        r'(<head[^>]*>)',
+                        r'\1\n' + new_tags + '\n',
+                        body_str,
+                        count=1,
+                        flags=re.IGNORECASE
+                    )
+                    if new_body != body_str:
+                        print("[OGTagOrderMiddleware] Fallback worked!")
+                    else:
+                        print("[OGTagOrderMiddleware] Fallback also failed!")
+                
+                body_str = new_body
+            
+            # Create new response
+            from starlette.responses import HTMLResponse
+            return HTMLResponse(
+                content=body_str,
+                status_code=response.status_code,
+                headers=dict(response.headers),
+                media_type="text/html"
+            )
+        return response
 
 
 try:
@@ -3773,6 +3895,10 @@ try:
     app._api.add_route("/robots.txt", _robots)
     app._api.add_route("/appointments", _appointments)
     app._api.add_route("/media/frank.png", _frank_picture)
+    app._api.add_route("/media/frank.jpg", _frank_picture_jpg)
+    app._api.add_route("/media/frank-og.jpg", _frank_picture_og)
     app._api.add_route("/media/whimsy.wav", _whimsy_audio)
+    # Add OG tag ordering middleware (must be last to wrap everything)
+    app._api.add_middleware(OGTagOrderMiddleware)
 except Exception:  # noqa: BLE001
     logger.warning("could not mount /rss, /sitemap.xml, /robots.txt or /appointments route", exc_info=True)
