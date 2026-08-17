@@ -30,11 +30,11 @@ if not logger.handlers:
     logger.addHandler(_console)
 WEB = pathlib.Path("/web")
 DEFAULT_HOME_TITLE = "Agentic Generated Self-Hosted AI Webserver"
-# Remote LM Studio OpenAI-compatible endpoint (self-hosted at frank's LAN).
-# Same box/model the cron worker uses; bonsai stays loaded in VRAM.
-# NOTE: this is an external service; revoke/invalidate the key if it leaks.
-CHAT_URL = os.environ.get("CHAT_URL", "http://192.168.178.120:1234/v1")
-CHAT_API_KEY = os.environ.get("CHAT_API_KEY", "lm-studio")
+# Remote OpenAI-compatible endpoint: the olla LLM proxy on `gx10-23ef`
+# (spark, 100.100.1.10), port 40114. No auth token required. Reachable over
+# Tailscale only (not the LAN).
+CHAT_URL = os.environ.get("CHAT_URL", "http://100.100.1.10:40114/olla/proxy/v1")
+CHAT_API_KEY = os.environ.get("CHAT_API_KEY", "olla")
 CHAT_MODEL = os.environ.get("CHAT_MODEL", "prism-ml/bonsai-27b")
 CHAT_ENABLED = os.environ.get("CHAT_ENABLED", "1") == "1"
 chat_client: AsyncOpenAI | None = None
@@ -1364,7 +1364,7 @@ def _system_message(ctx: dict[str, str] | None = None, user_email: str = "", use
 
 
 async def _ai_call(messages: list[dict[str, str]]) -> str:
-    """Full (non-streamed) completion via the remote LM Studio endpoint."""
+    """Full (non-streamed) completion via the remote Ollama endpoint."""
     client = get_chat_client()
     if client is None:
         return FALLBACK
