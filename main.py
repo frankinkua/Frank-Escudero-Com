@@ -2932,6 +2932,8 @@ def login_page() -> rx.Component:
             auth_error_box(),
             rx.hstack(
                 rx.link("Back to main", href="/", color=MUTED, fontSize="0.85rem"),
+                rx.spacer(),
+                rx.link("Create an account", href="/signup", color=ACCENT, fontSize="0.85rem"),
                 spacing="4",
             ),
             page_footer(),
