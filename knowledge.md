@@ -1,87 +1,74 @@
 ## Who Frank Escudero is:
 - Full-stack engineer / infrastructure developer living on his own home datacenter ("story-tegu.ts.net" tailnet). Speaks English natively (site content is English); the chatbot greets and answers visitors in their own language when known, switching if the visitor writes in another.
 - Runs a systemd-less Debian 13 LXC container (hostname `cv`, tailnet IP 100.115.209.119) that serves this CV site to the public internet.
-- Frank's work is: Python/Bash (fluent), Go (reading), Terraform/HCL; Reflex, FastAPI, ASGI; Tailscale (Funnel + tailnet), RDP/KDE, git-based rollback, self-hosting, zero-trust ingress, SRE.
-- Notable achievements (all real, on this box): booted the headless container from bare `bash` PID 1 with no systemd and brought up sshd, dbus, xrdp+KDE, Tailscale, the LLM, and the Reflex site; published the site publicly over a Tailscale Funnel; killed a 49 GB runaway tailscaled log that had filled the disk; and built this site so it is auto-updated by an autonomous AI agent.
+- Frank's work is: Python/Bash (fluent), Go (reading), Terraform/HCL; Reflex, FastAPI, ASGI; Tailscale (tailnet), Cloudflare Tunnel, RDP/KDE, git-based rollback, self-hosting, zero-trust ingress, SRE.
+- Notable achievements (all real, on this box): booted the headless container from bare `bash` PID 1 with no systemd and brought up sshd, dbus, xrdp+KDE, Tailscale, the LLM proxy, and the Reflex site; published the site publicly via Cloudflare Tunnel; killed a 49 GB runaway tailscaled log that had filled the disk; and rebuilt this site as a modular, per-visitor-personalized app.
 - Other notable achievements: Saved Coca-Cola €8.5M annually, reached over 100 million users with a Cannes Lions Award-winning application. M&A technical due diligence uncovering critical logic flaws. Personal cyber and hardware security advisor to the Director of the Argentine Intelligence Service (SIDE). Strategic and technical design for three presidential campaigns.
 - Public profiles: LinkedIn https://www.linkedin.com/in/frankeee/ , GitHub https://github.com/frankinkua
 
 ## The site (what the visitor is looking at)
-- The site is served over a Tailscale Funnel (public internet, zero-trust). Visitors are already on the site — never state its domain or full URL in a reply; use short relative paths like `/appointments`.
+- The site is served publicly at `frank-escudero.com` through a Cloudflare Tunnel. Visitors are already on the site — never state its domain or full URL in a reply; use short relative paths like `/cv` or `/timeline`.
 - It IS Frank's delivered CV: no placeholders, no "coming soon". The page is a self-hosted, self-editing web application maintained by Frank and an AI agent.
-- Stack: Reflex (Python) app in `/web/main.py`, production mode, listening on 127.0.0.1:8000.
-- The AI chatbot on this page is powered by a remote LLM server on Frank's LAN (LM Studio at http://192.168.178.120:1234, OpenAI-compatible /v1 API). The model is `prism-ml/bonsai-27b` (a reasoning model with 256k context, loaded on an 11GB VRAM GPU). The same model powers the opencode agent that improves the site.
-- Pages: `/` (home + chat + countdown), `/about` (about Frank), `/cv` (the CV), `/projects`, `/contact`, `/appointments`, `/login` (sign in to get updates), `/signup`, `/profile`. The admin gets `/admin` — a private analytics dashboard (visits, visitor locations + counts, full conversation transcripts, server log). All visitor data (analytics + chat transcripts) lives in `/web/data/` (JSON, gitignored); the bootstrap admin is `frank@inkua.eu` with a one-time password in `/web/data/.admin-bootstrap`.
-- Appointments: `/appointments` is Frank's calendar booking page — visitors pick a free slot for a call with Frank (it redirects to his Google Calendar appointment schedule). Only suggest it after you know who the visitor is and when it's relevant (recruiter, hiring manager, client, or anyone who wants to talk to Frank directly) — once, as a markdown link like `[book a slot](/appointments)`. Never push it in a greeting or to casual visitors. Don't take a visitor's name/email in the chat for booking — they enter that on the booking page itself.
-- Notifications: key events push to ntfy.sh topic `franke2032` (owner's phone) — site startup, new visitor conversation, first chat message, new signup, admin login, AI/greeting failures (from `notify.py`, fire-and-forget), plus a "site DOWN" alert from `/etc/init.d/websiteserver` if the server fails to start. The **new-visitor** ping carries the **full visitor fingerprint: IP, geo (country/region/city/lat-lon/timezone), language/locale, platform/device, local time, weather incl. pressure/humidity/wind/precip/warnings, sun/moon** (see `_visitor_notify_text`); the **visitor-message** ping is trimmed to just **location + IP + question** to identify the conversation. Disable via env `NTFY_ENABLED=0`, retarget via `NTFY_URL`.
+- Stack: Reflex (Python) app — thin `main.py` + the `webapp/` package — production mode, listening on `127.0.0.1:8000`. Content is markdown: `home.md`, `cv.md`, `timeline.md`.
+- The AI chatbot is powered by the **olla LLM proxy** on the tailnet box `gx10-23ef` (`100.100.1.10`), OpenAI-compatible at `/olla/proxy/v1`, model `prism-ml/bonsai-27b`, no auth token. Chat is wired through `webapp/bot.py`.
+- Pages: `/` (home, CV summary + aggressive chat widget), `/cv` (full CV), `/timeline` (work history from curated markdown + git log).
+- Visitor data (per-device fingerprints, visits, chat transcripts) lives in `/web/data/site.db` (SQLite, gitignored). The site does NOT have accounts, logins, or an admin panel.
 
-## The documents in /web (single source of truth)
-- `prompt.md` — the chatbot's system prompt (persona + rules).
-- `knowledge.md` — THIS file: everything the chatbot may answer from, plus the ops manual for agents.
-- `filter.md` — quality rules. Every chatbot answer is checked by a second AI pass; a draft that leaks internal details (model names, file paths, ports, tokens) is replaced with a polite refusal.
+## The documents in /web
+- `prompt.md` — legacy chatbot persona rules (kept for reference; the current system prompt is built in `webapp/bot.py`).
+- `knowledge.md` — THIS file: background facts for the assistant and the ops manual for agents.
+- `filter.md` — legacy draft-quality gate (kept for reference; the current build has no filter pass).
 
-## The AI worker loop (how the site gets improved)
-- `/web/opencode-worker.sh` is a SINGLE-SHOT runner (start -> run -> close). Each invocation spawns one fresh `opencode run` session against LM Studio `prism-ml/bonsai-27b`, works in `/web`, health-checks the site, commits, prints a `RESULT=` line, and exits. It has a hard TIMEOUT_MINUTES cap (30) and never lingers.
-- Scheduling repeats is the caller's job (cron / a wrapper / a terminal); the script itself has no loop and no sleep.
-- Rollback safety: one git commit per run; if the site is broken after a run the worker rolls back (`git checkout -- .`) and restarts the website service.
-- Config lives in `/web/opencode-worker.conf` (model, URL, prompt, timeouts). The cron watchdog is DISABLED on purpose.
+## How the site personalizes (the rebuild)
+- On load the browser runs a probe script (`webapp/js.py`) → posts UA, screen,
+  cores, memory, timezone, languages, WebRTC local IPs.
+- `webapp/device.py` creates a stable `device_id` and a normalized device name
+  ("Samsung Galaxy S25 Ultra", "Apple iPhone", ...) stored in SQLite
+  (`webapp/db.py`).
+- `webapp/theme.py` picks an accent/gradient per client (GPU vendor, timezone,
+  language, screen shape) and injects it live.
+- `webapp/blocks.py` serves per-client CSS/HTML/JS overrides from the `blocks`
+  table + shared `block_pool`.
+- The assistant (`webapp/bot.py`) greets the visitor personally, may open the
+  chat itself once per session, and nudges them if they idle.
 
 ## Services on this machine (hostname: cv)
 - `websiteserver` — `/etc/init.d/websiteserver {start|stop|status|restart}`; runs the Reflex app on port 8000. Log: /var/log/websiteserver.log.
-- `opencode-worker` — the improvement runner (see above); off by default, started manually.
-- `tailscaled` — REQUIRED for the funnel; never stop it or close the funnel.
-- No systemd (bare `bash` as PID 1); boot chain: `~/.bashrc -> start-rdp-server.sh` restores sshd, dbus, xrdp, Tailscale, and the site after a container restart.
+- `cloudflared` — Cloudflare Tunnel (token-based), exposes `frank-escudero.com` → `127.0.0.1:8000`. Log: /var/log/cloudflared.err.
+- `tailscaled` — required for the tailnet (`--no-logs-no-support`); the old Funnel (`cv.story-tegu.ts.net`) still 301s to the public domain.
+- `opencode-worker` — legacy improvement runner; OFF by default. Do not enable.
+- No systemd (bare `bash` as PID 1); boot chain: `~/.bashrc -> start-rdp-server.sh` restores sshd, dbus, xrdp, Tailscale, cloudflared, and the site.
 
-## How the chatbot pipeline works (implementation notes)
-1. Visitor message -> system prompt = prompt.md + "\n\n" + knowledge.md (+ last ~10 chat turns).
-2. Draft answer from LM Studio `prism-ml/bonsai-27b` (streaming chat completion), reasoning disabled (`reasoning_effort: "none"`).
-3. Filter pass: a second completion checks the draft against filter.md and replies JSON {"pass": bool, "reason": str}.
-4. Pass -> draft sent to visitor. Fail -> polite fallback. Failures are logged.
-- On first visit the site also sends a personalized greeting: the browser's
-  language/platform/timezone + epoch ms (`Date.now()`) plus a public IP
-  geolookup are used to greet the visitor in their own language and ask who
-  they are. The greeting can include: the visitor's local time of day
-  (morning/afternoon/evening/night, from their timezone), current weather
-  (open-meteo, no key, via lat/lon from the IP lookup), their city/country,
-  local sunrise/sunset times and the current moon phase (open-meteo
-  `/v1/forecast` with `daily=sunrise,sunset,moon_phase`), current conditions
-  (temperature, feels-like, humidity, precipitation, pressure, wind speed)
-  plus a derived weather warning for severe codes (freezing rain, heavy rain,
-  thunderstorms/hail), and a country or language flag emoji. Location precision
-  is city-level via ip-api.com; a MaxMind GeoLite2 `.mmdb` is NOT installed
-  (would need the `geoip2` package + DB file for offline lookups). Windows
-  system fonts do NOT render flag emoji (regional-indicator chars show as
-  letters), so the greeting must NOT start with a flag emoji when the platform
-  is Windows - use the country/device language in plain text instead. ALL other
-  emoji (weather, sun, moon, temperature) still work on Windows.
-- The collected visitor data is stored on the chat State as `visitor_context`
-  and re-injected into EVERY chat request afterwards (via `_system_message`),
-  so the assistant keeps personalizing follow-up answers (geo, language, locale,
-  time, weather incl. pressure/warnings, sun times), not just the greeting.
+## Chat pipeline (implementation notes)
+1. `webapp/state.py` `handle_submit` → appends the user message to
+   `State.messages` and calls `webapp.bot.chat(...)`.
+2. `bot.chat()` builds a system prompt from `cv.md` + `timeline.md` + the learned
+   device profile (`bot.system_prompt`), dedupes system messages (the olla engine
+   rejects a second system role), and calls the olla proxy with `user`+`assistant`
+   history (last 24 turns).
+3. The reply is appended and persisted to the `messages` table via `db.log_message`.
+- Greeting: computed server-side from the fingerprint (`theme.greeting`), no LLM
+  required; it can mention first-vs-returning visitor and the learned device.
 - Greeting gotchas (learned the hard way):
-  - Behind the Tailscale Funnel the socket IP is `127.0.0.1`, and a visitor on
-    the tailnet shows up as a CGNAT `100.x` address that ip-api.com cannot
-    geolocate (`geo={}`). Only public-IP visitors (e.g. phone on LTE) resolve to
-    a city. The greeting must therefore degrade gracefully when geo is empty.
-  - NEVER hand the raw timezone string to the LLM: it repeats it as a location
-    (`timezone: Europe/Berlin` -> "you are in Berlin"). Only pass the resolved
-    local time-of-day ("their local time is evening"). City/country must come
-    exclusively from the IP geolocation.
-  - The `web` logger needs its own `StreamHandler(level=INFO)`: Reflex's default
-    config suppresses INFO, so `greeting:` diagnostics never reached
-    `/var/log/websiteserver.log`. Grep that file for `greeting:` to debug.
-  - Language detection: `str(x) for x in (a or b or c)` iterates the STRING
-    character-by-character (parens do not make a tuple) - pass the raw string.
-  - open-meteo has NO `/v1/astronomy` endpoint (returns 404); sunrise, sunset and
-    moon_phase all come from `/v1/forecast` with `daily=sunrise,sunset,moon_phase`.
+  - Behind Cloudflare Tunnel / tailnet the socket IP is a private/loopback address,
+    so IP geolocation is often empty (`geo={}`). The greeting must degrade gracefully.
+  - NEVER hand a raw timezone string to the LLM: it repeats it as a location
+    (`timezone: Europe/Berlin` -> "you are in Berlin"). Pass only resolved
+    local time-of-day, or keep TZ for device scoring only.
+  - Windows browsers can't render flag emoji — omit a leading flag on `Win`
+    platforms; other emoji still work.
 
 ## Conventions
-- `/web` is a git repo; generated dirs (.venv, .web, __pycache__) are gitignored. One commit per meaningful change.
+- `/web` is a git repo; generated dirs (.venv, .web, __pycache__) are gitignored. One commit per meaningful change. Push to GitHub (`frankinkua/cv`) after committing.
 - NEVER use `git clean -fd` here: it deletes untracked config files (rxconfig.py, prompt.md, knowledge.md, filter.md, pyproject.toml). Roll back with `git checkout -- .` only.
 - When you (an agent) make changes, update the docs above so the next fresh session inherits the knowledge.
 
-
 ### Recent Site Updates (Aug 2026)
-- **Chat Handoff**: Frank (the admin) can now jump into live chats on the website. If the AI stops responding and says 'Frank is typing...', it means Frank has taken over the conversation.
-- **Profiles**: Users can upload profile pictures and log in securely via email. Guest (password-less) logins are supported to persist chat history.
-- **Admin Dashboard**: Now includes comprehensive views into User stats, Live Chats, Visits, and System Logs.
+- **Rebuild (modular)**: monolithic `main.py` (auth, admin, appointments, sessions)
+  replaced by a thin entry + `webapp/` package (db, device, js, theme, blocks,
+  bot, state, components, timeline). SQLite store, markdown content.
+- **Per-visitor personalization**: device fingerprinting, per-client accent/theme,
+  per-client CSS/HTML/JS blocks, aggressive chat (auto-opens, nudges, greets).
+- **Public ingress**: Cloudflare Tunnel `frank-escudero.com`; old Funnel domain 301s.
+- **LLM**: everything moved to the olla proxy (`100.100.1.10:40114/olla/proxy/v1`),
+  model `prism-ml/bonsai-27b`; LM Studio and the old Ollama hub retired.

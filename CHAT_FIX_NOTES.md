@@ -1,5 +1,10 @@
 # Chat button fix — investigation notes
 
+> **Status (Aug 2026): historical.** Describes the PRE-rebuild monolith (Tailscale
+> Funnel ingress, old single-file app). The rebuild (Aug 19 2026) replaced the
+> chat FAB with an auto-opening chat widget backed by the olla proxy; see
+> `/web/webapp/bot.py`, `state.py`, `components.py`. Kept for context only.
+
 ## Problem
 Clicking the chat FAB on `/` "does nothing" (no popup opens).
 
@@ -27,7 +32,7 @@ Tests run from this environment (Mon 10 Aug 2026 ~14:00 UTC):
 403 conclusions were wrong (invalid raw-upgrade test).
 
 ### 2. LLM endpoint is down (operational issue, not the open-button cause)
-`CHAT_URL="http://192.168.178.120:1234/v1"` (LM Studio LAN box) with
+`CHAT_URL="http://192.168.178.120:1234/v1"` (LM Studio LAN box, since retired) with
 `timeout=httpx.Timeout(300.0)` (5 min). Server logs show
 `openai.APIConnectionError`. The greeting/ask handlers fall back to `FALLBACK`,
 but a 300s timeout can block the per-client event-handler queue: while a
@@ -85,8 +90,8 @@ client" in logs). Lowering the timeout is the fix.
       (/web/main.py:65)
 - [ ] Make greeting/ask handlers fail fast + robust (already try/except, but
       ensure no un-awaited long generator holds the queue).
-- [ ] Restore LM Studio endpoint reachability (LAN box `192.168.178.120:1234`),
-      OR point `CHAT_URL` to a reachable LLM.
+- [ ] Restore LLM endpoint reachability (now Ollama on the tailnet box
+      `100.100.1.7:8080`), OR point `CHAT_URL` to a reachable LLM.
 - [ ] (Optional) Harden the click-outside JS to only act when popup is open and
       avoid firing `call_script("State.close_chat_popup")` on every outside click
       while closed (minor; not root cause).

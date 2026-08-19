@@ -1,5 +1,10 @@
 # Learnings & Improvements
 
+> **Status (Aug 2026): historical.** Written for the pre-rebuild monolith
+> (`site_store.py`, `main.get_chat_client`, single-file app). After the Aug 19
+> 2026 rebuild, chat/persistence live in `/web/webapp/` (bot.py, db.py, state.py).
+> Kept for context only.
+
 ## Session: Chat Backend Resilience & Server Stability
 
 ### What was done

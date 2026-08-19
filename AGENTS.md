@@ -60,7 +60,7 @@ When you need to compile, run, reload, or debug a Reflex application, follow the
 > Canonical ops runbook: **`/web/README.md`**. This file = Reflex *dev rules + test harness* only.
 
 ## ⚠️ Hard constraints (do not violate)
-- **Edit the app, NEVER the framework.** Everything you change lives in `/web`.
+- **Edit the app, NEVER the framework.** Everything you change lives under `/web`.
   Do NOT touch the Reflex framework files in the venv
   (`site-packages/reflex/**`, `site-packages/reflex_base/**`,
   `site-packages/reflex_components_*/**`, etc.). This box has **no internet for `pip install`**,
@@ -77,68 +77,82 @@ When you need to compile, run, reload, or debug a Reflex application, follow the
   (`core.hooksPath` is set to `.githooks` in this clone; keep it that way).
 
 ## Reality check (what this actually is right now)
-- Site: **`https://cv.story-tegu.ts.net`** (Tailscale Funnel `/` -> `127.0.0.1:8000`).
+- Public site: **`https://frank-escudero.com`** via **Cloudflare Tunnel**
+  (`cloudflared`), terminating on `127.0.0.1:8000`. The old Tailscale Funnel URL
+  `cv.story-tegu.ts.net` still exists but **301-redirects** to `frank-escudero.com`
+  (`RedirectOldDomainMiddleware` in `main.py`).
 - Stack: Reflex 0.9.7, Python 3.13, `uv`, `--env prod`, `backend_port=8000`, `frontend_port=8000`.
 - Host: systemd-less Debian 13 LXC (`cv`), PID 1 = `bash`; **boot = `/root/.bashrc`**.
-- Chat + cron worker both use **LM Studio** on frank's LAN: `CHAT_URL="http://192.168.178.120:1234/v1"`, `CHAT_MODEL="prism-ml/bonsai-27b"` (a reasoning model, 256k ctx, loaded in the box's VRAM). This is a remote endpoint — do not rewrite it to local ollama, and never touch `/dev/nvidia*` here (no GPU passthrough in this LXC).
-- Release target is **2026-08-05 16:00 UTC** (a fixed deployment date). The client-side countdown that displayed it was **removed** (the banner is now text-only) — do not resurrect it as a "server time" widget.
-- "work in progress" text appears **exactly once** on `/` (the banner). That is an invariant.
+- Code layout: `main.py` is a thin entry point; all real logic lives in the
+  **`/web/webapp/` package** (see README). Pages: `/`, `/cv`, `/timeline`
+  (+ `robots.txt`, `sitemap.xml`). Markdown content: `home.md`, `cv.md`, `timeline.md`.
+- **LLM (chat, greeting, style): the olla proxy** on the tailnet box `gx10-23ef`
+  (`100.100.1.10`), OpenAI-compatible endpoint
+  `CHAT_URL="http://100.100.1.10:40114/olla/proxy/v1"`, **no auth required**
+  (`CHAT_API_KEY="olla"` is accepted), model `CHAT_MODEL="prism-ml/bonsai-27b"`.
+  These are the defaults in `/web/webapp/bot.py` and `/etc/init.d/websiteserver`.
+  Do NOT point anything at LM Studio `:1234` or the retired Ollama
+  `100.100.1.7:8080` endpoints. Never touch `/dev/nvidia*` (no GPU passthrough in this LXC).
 
 ## Reflex dev rules (the ones that save time)
-- Edit only: `/web/main.py`, `/web/rxconfig.py`, `/web/app/` (page components), and
-  markdown under `/web/` that `read_doc()` opens (`about.md`, `cv.md`, `deploy.md`, `stack.md`, `timeline.md`).
+- Edit only: `/web/main.py`, `/web/rxconfig.py`, `/web/webapp/` (package modules),
+  and the markdown content under `/web/` that the pages render (`home.md`, `cv.md`,
+  `timeline.md`). Other `.md` files (knowledge/README/architecture/...) are docs —
+  update them only when behavior changes.
 - Never edit the venv. Use `/web/.venv/bin/python`, `/web/.venv/bin/reflex` if needed (rare).
 - `rxconfig.py`: `show_built_with_reflex=False`, `telemetry_enabled=False`, `disable_plugins=[SitemapPlugin]`,
   `backend_port=8000`. If the "Built with Reflex" badge reappears, this line was reverted — fix here, not in the DOM.
 - Pages via `app.add_page(fn, route=..., title=...)`. Use `rx.link` for nav. **Trailing slashes matter:** Reflex redirects `/x` -> `/x/`, so a nav link to `/cv` (no slash) costs you an extra 200 hop in tests. Use `/cv/`.
 - Styling via `rx.*` primitives + `class_name:`; do not inject arbitrary Tailwind classes (Reflex 0.9.7 props, not Tailwind).
-- Components: every page fn returns `rx.Component`. Reuse `page_footer()`; if you add a route, add it to the footer nav so the link count stays consistent.
+- Components: every page fn returns `rx.Component`. Reuse `nav()` and `footer()`; if you add a route, add it to the nav so link counts stay consistent.
 - Static assets: **no writes to `/web/assets`**. Favicon is an inline SVG data-URI in
   `rx.App(head_components=[rx.el.link(rel="icon", href=<data-uri>)])`.
 - `<title>` + `<meta description>` live in `head_components`/`rx.App`. Do not duplicate per page unless the title genuinely differs.
-- `rx.Html(...)` content is SSR-rendered *and* client-rendered. If a snippet needs the browser, wrap it in `if (typeof document !== 'undefined')` (see the theme script pattern already in `index()`).
-- Chat: `filter_draft(question, draft)` rejects a draft ONLY on clear safety/security leaks (see `/web/filter.md`). Grounded on-topic answers pass by default.
+- `rx.Html(...)` content is SSR-rendered *and* client-rendered. If a snippet needs the browser, wrap it in `if (typeof document !== 'undefined')` (see the probe/theme script patterns in `webapp/js.py` and `webapp/state.py`).
+
+## Data model (SQLite, the "store")
+`/web/webapp/db.py` manages `/web/data/site.db` (WAL). Tables:
+- `visitors` — per-device fingerprint (`device_id` PK, device name, profile JSON, IPs, visits).
+- `visits` — per-load rows (path, ip, ua, lang, ref).
+- `messages` — chat log (device_id, role, content).
+- `blocks` — **per-client** CSS/HTML/JS overrides keyed by device_id.
+- `block_pool` — shared pool any visitor can receive.
 
 ## How to test (do this before every commit)
 ### A. Syntax + import (instant, offline)
 ```bash
 cd /web
-/web/.venv/bin/python -m py_compile main.py site_store.py rxconfig.py    # all page comps live in main.py; there is NO app/ package
-/web/.venv/bin/python - <<'PY'                                           # imports OK? (bootstraps admin on first run)
-import main; print("routes:", sorted(r.path for r in main.app._api.routes if hasattr(r,"path")))
+/root/.local/bin/uv run --no-sync python -m py_compile main.py webapp/*.py   # all modules
+/root/.local/bin/uv run --no-sync python - <<'PY'                            # imports OK?
+from webapp import db, bot, theme, device
+import main; print("ok")
 PY
 ```
-### B. Restart + HTTP contract (after `/etc/init.d/websiteserver restart`, sleep 9)
+### B. Restart + HTTP contract (after `/etc/init.d/websiteserver restart`, sleep ~9)
 ```bash
-curl -fsS -m6 http://127.0.0.1:8000/ -o /tmp/h
-python3 - <<'PY'
-import re; h=open("/tmp/h").read()
-assert "Agentic Generated Self-Hosted AI Webserver" in h, "big title missing"
-assert h.lower().count("work in progress") == 1, "WIP text duplicated (case-insensitive)"
-assert re.search(r"v0\.1\.0 \([a-f0-9]{7}\)", h), "footer version missing/odd"
-assert "Built with Reflex" not in h, "reflex badge leaked"
-assert "Sign in" in h and "Sign up" in h, "auth menu missing on home"
-print("contract OK: countdown absent =", "Deployment in" not in h)
-PY
-echo "/ -> $(curl -sS -m6 -o /dev/null -w %{http_code} http://127.0.0.1:8000/)"
-for r in /about/ /cv/ /projects/ /contact/ /login/ /signup/ /profile/ /admin/; do
-  printf "%-9s " "$r"; curl -sS -m5 -o /dev/null -w "%{http_code}\n" "http://127.0.0.1:8000$r"
+for p in / /cv/ /timeline/ /robots.txt /sitemap.xml; do
+  printf "%-12s " "$p"; curl -sS -m6 -o /dev/null -w "%{http_code}\n" "http://127.0.0.1:8000$p"
 done
-# admin SSR must NOT leak data to anonymous curl
-curl -fsS -m6 http://127.0.0.1:8000/admin/ | grep -q "Restricted access." \
-  && echo "admin SSR safe" || echo "ADMIN SSR LEAK - fix before commit"
+# prose in SSR
+curl -fsS -m6 http://127.0.0.1:8000/ | grep -q "Frank Escudero" && echo "home ok"
+curl -fsS -m6 http://127.0.0.1:8000/cv/ | grep -qi "curl\|pip\|experience" && echo "cv ok"
+curl -fsS -m6 http://127.0.0.1:8000/timeline/ | grep -qi "timeline" && echo "timeline ok"
+# old funnel domain must 301 to frank-escudero.com
+curl -sS -m6 -o /dev/null -w "old domain -> %{http_code}\n" -H "Host: cv.story-tegu.ts.net" http://127.0.0.1:8000/
 ```
-### C. Tailscale funnel (external) — check after B passes
+### C. Chat + LLM (against the olla proxy)
 ```bash
-tailscale serve status              # Funnel `/` -> http://127.0.0.1:8000  must be listed
-curl -fsS -m8 -o /dev/null -w "%{http_code}\n" https://cv.story-tegu.ts.net/
+curl -s http://100.100.1.10:40114/olla/proxy/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"prism-ml/bonsai-27b","messages":[{"role":"user","content":"say ok"}],"max_tokens":8}'
 ```
 ### D. Log-bomb sentinel (must stay near 0)
 ```bash
 echo "log1 = $(stat -c%s /var/lib/tailscale/tailscaled.log1.txt)B"
 ps -ef | grep -E 'tailscaled.*no-logs-no-support' | grep -v grep || echo "FIX: tailscaled lost its no-log flag"
 ```
-**Red lines:** a non-200 on `/`, `work in progress` count != 1, footer reading `vv…`, `Built with Reflex` present, or log1 growing past a few KB — stop and fix before committing.
+
+**Red lines:** a non-200 on `/`, "Built with Reflex" present, `/:8000` half-bound, or log1 growing past a few KB — stop and fix before committing.
 
 ## Restart flow (no systemd)
 ```bash
@@ -146,30 +160,37 @@ ps -ef | grep -E 'tailscaled.*no-logs-no-support' | grep -v grep || echo "FIX: t
 ```
 Never `reflex run` from a shell — that leaks children and leaves `:8000` half-bound, which is exactly what triggers the tailscaled log bomb (see below).
 
-## Greeting/chat debugging (time-saver #2)
-- The `web` logger has its own INFO StreamHandler (top of `main.py`); without it Reflex
-  suppresses INFO and you'll see nothing in `/var/log/websiteserver.log`. Grep for `greeting:`
-  / `chat backend` to trace the pipeline (raw browser JSON -> ip -> geo -> lang -> weather ->
-  chunks).
-- Funnel visitors on the tailnet resolve to a CGNAT `100.x` IP that ip-api.com can't geolocate
-  (`geo={}`) — that is expected, the greeting degrades gracefully. Do not "fix" it.
-- Never put the raw timezone string in a prompt handed to the LLM — the model repeats it as a
-  location ("Europe/Berlin" -> "you are in Berlin"). Pass only the resolved local time-of-day.
-- Windows browsers can't render flag emoji; when `platform` contains `Win`, the greeting omits
-  the flag and names the country/language in plain text instead. ONLY the flag emoji is blocked
-  on Windows — weather/sun/moon emoji must still be used there.
-- The visitor's collected data (geo, language, locale, time, weather incl. pressure/warnings,
-  sun/moon times) lives in `State.visitor_context` and is re-injected into EVERY chat request
-  via `_system_message(ctx)`. Keep the raw timezone string OUT of any LLM prompt — pass only
-  the resolved local time/time-of-day.
+## Chat/personalization debugging (time-saver #2)
+- Everything relevant to the assistant lives in `/web/webapp/bot.py` (system prompt,
+  chat call), `state.py` (greeting, probe handling), `theme.py` (per-client accent),
+  `blocks.py` (per-client CSS/HTML/JS). Grep `/var/log/websiteserver.log` for
+  `greeting:` / `probe` / `blocks` to trace the pipeline (raw probe JSON -> ip ->
+  device_name -> theme -> blocks -> chat).
+- The greeting degrades gracefully: if geolocation is empty (tailnet/CGNAT/`127.0.0.1`)
+  the starter text just omits location. Do not "fix" it.
+- Never put a raw timezone string in a prompt handed to the LLM — the model repeats
+  it as a location ("Europe/Berlin" -> "you are in Berlin"). Pass only resolved
+  local time-of-day, or the profile fields (`tz`) are fine as raw data for scoring;
+  keep raw TZ out of the LLM prose.
+- Windows browsers can't render flag emoji; the greeting omits the flag on `Win`.
+  ONLY the flag emoji is blocked — weather/sun/moon emoji must still be used.
+- The per-client persona is built in `bot.system_prompt(profile, device_name, history_count)`.
+  The assistant may attach CSS/HTML/JS blocks to a visitor via `extract_theme()` /
+  `db.save_block()`; blocks render from `blocks.for_client(device_id)`.
 
 ## The log-bomb lesson (time-saver #1)
-- Symptom: `/var/lib/tailscale/tailscaled.log1.txt` swelled to 49 GB; disk fell to 0% free; Reflex restarts failed to bind `:8000`; Funnel returned 502.
+- Symptom: `/var/lib/tailscale/tailscaled.log1.txt` swelled to 49 GB; disk fell to 0% free; Reflex restarts failed to bind `:8000`; the old Funnel returned 502.
 - Root cause: `tailscaled` logtail retried `dial 127.0.0.1:8000: connect: connection refused` recursively during a rebuild, while `tailscaled` was started **without** `--no-logs-no-support`.
 - Fix (applied in `/usr/local/bin/start-rdp-server.sh`): `tailscaled --no-logs-no-support ... 2>/dev/null`.
 - Agent rule: if `ps -ef | grep tailscaled` does NOT show `--no-logs-no-support`, the start script was reverted or tailscaled was restarted by hand without the flag — re-apply the flag before doing anything else. log1 must stay ≈0 B.
 
 ## Boot survival (so you don't break it)
-- `/root/.bashrc` -> `start-rdp-server.sh` brings up sshd -> dbus -> xrdp+Plasma -> tailscaled -> ollama-as-frank -> websiteserver.
+- `/root/.bashrc` -> `start-rdp-server.sh` brings up sshd -> dbus -> xrdp+Plasma ->
+  tailscaled -> ollama-as-frank -> cloudflared -> websiteserver.
 - Worker (`/etc/init.d/opencode-worker`) and cron are OFF by design. Do not enable either.
-- On reboot, Funnel + `/` → 200 all recover automatically. After any reboot: `curl https://cv.story-tegu.ts.net/` must be 200 within ~12s; if `:8000` won't bind, run `lsof -iTCP:8000 -sTCP:LISTEN` and restart websiteserver.
+- `cron_improve.py` exists but is **disabled by default** (`ENABLE_CRON_IMPROVE=1`
+  must be set) and imports the old `site_store`/`main.get_chat_client` APIs — it is
+  currently broken on purpose; do not blame regression reports on it.
+- On reboot, `https://frank-escudero.com/` must be 200 within ~15s (cloudflared) and
+  `https://cv.story-tegu.ts.net/` must 301. If `:8000` won't bind after boot, run
+  `lsof -iTCP:8000 -sTCP:LISTEN` and restart websiteserver.
