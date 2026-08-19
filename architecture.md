@@ -5,7 +5,7 @@ This page explains how `frank-escudero.com` actually works end to end.
 ## One site, one container
 
 The whole site runs on a **single Debian 13 LXC container** named `cv` inside
-Frank's home datacenter on the `story-tegu.ts.net` tailnet. There is no
+Frank's home datacenter on a private tailnet. There is no
 systemd — PID 1 is `bash`, and the boot chain is:
 
 ```
@@ -33,8 +33,8 @@ visitor ──https──► Cloudflare Tunnel frank-escudero.com
                            └─► olla LLM proxy 100.100.1.10:40114/olla/proxy/v1
 ```
 
-The old Tailscale Funnel URL `cv.story-tegu.ts.net` still exists and
-**301-redirects** to `frank-escudero.com` (middleware in `main.py`).
+The old Tailscale-hosted URL still exists and **301-redirects** to
+`frank-escudero.com` (middleware in `main.py`); it is not advertised.
 
 Tailnet-origin visitors resolve as CGNAT `100.x` or `127.0.0.1`, so geolocation
 only works for public-IP visitors — the greeting degrades gracefully.

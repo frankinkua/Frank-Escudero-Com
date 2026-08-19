@@ -78,9 +78,8 @@ When you need to compile, run, reload, or debug a Reflex application, follow the
 
 ## Reality check (what this actually is right now)
 - Public site: **`https://frank-escudero.com`** via **Cloudflare Tunnel**
-  (`cloudflared`), terminating on `127.0.0.1:8000`. The old Tailscale Funnel URL
-  `cv.story-tegu.ts.net` still exists but **301-redirects** to `frank-escudero.com`
-  (`RedirectOldDomainMiddleware` in `main.py`).
+  (`cloudflared`), terminating on `127.0.0.1:8000`. (A legacy tailnet URL still
+  exists and **301-redirects** here — do not advertise it.)
 - Stack: Reflex 0.9.7, Python 3.13, `uv`, `--env prod`, `backend_port=8000`, `frontend_port=8000`.
 - Host: systemd-less Debian 13 LXC (`cv`), PID 1 = `bash`; **boot = `/root/.bashrc`**.
 - Code layout: `main.py` is a thin entry point; all real logic lives in the
@@ -137,8 +136,6 @@ done
 curl -fsS -m6 http://127.0.0.1:8000/ | grep -q "Frank Escudero" && echo "home ok"
 curl -fsS -m6 http://127.0.0.1:8000/cv/ | grep -qi "curl\|pip\|experience" && echo "cv ok"
 curl -fsS -m6 http://127.0.0.1:8000/timeline/ | grep -qi "timeline" && echo "timeline ok"
-# old funnel domain must 301 to frank-escudero.com
-curl -sS -m6 -o /dev/null -w "old domain -> %{http_code}\n" -H "Host: cv.story-tegu.ts.net" http://127.0.0.1:8000/
 ```
 ### C. Chat + LLM (against the olla proxy)
 ```bash
@@ -179,7 +176,7 @@ Never `reflex run` from a shell — that leaks children and leaves `:8000` half-
   `db.save_block()`; blocks render from `blocks.for_client(device_id)`.
 
 ## The log-bomb lesson (time-saver #1)
-- Symptom: `/var/lib/tailscale/tailscaled.log1.txt` swelled to 49 GB; disk fell to 0% free; Reflex restarts failed to bind `:8000`; the old Funnel returned 502.
+- Symptom: `/var/lib/tailscale/tailscaled.log1.txt` swelled to 49 GB; disk fell to 0% free; Reflex restarts failed to bind `:8000`; the tailnet ingress returned 502.
 - Root cause: `tailscaled` logtail retried `dial 127.0.0.1:8000: connect: connection refused` recursively during a rebuild, while `tailscaled` was started **without** `--no-logs-no-support`.
 - Fix (applied in `/usr/local/bin/start-rdp-server.sh`): `tailscaled --no-logs-no-support ... 2>/dev/null`.
 - Agent rule: if `ps -ef | grep tailscaled` does NOT show `--no-logs-no-support`, the start script was reverted or tailscaled was restarted by hand without the flag — re-apply the flag before doing anything else. log1 must stay ≈0 B.
@@ -192,5 +189,5 @@ Never `reflex run` from a shell — that leaks children and leaves `:8000` half-
   must be set) and imports the old `site_store`/`main.get_chat_client` APIs — it is
   currently broken on purpose; do not blame regression reports on it.
 - On reboot, `https://frank-escudero.com/` must be 200 within ~15s (cloudflared) and
-  `https://cv.story-tegu.ts.net/` must 301. If `:8000` won't bind after boot, run
+  the legacy tailnet URL must 301. If `:8000` won't bind after boot, run
   `lsof -iTCP:8000 -sTCP:LISTEN` and restart websiteserver.

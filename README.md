@@ -4,7 +4,6 @@ A zero-trust, self-hosted, AI-personalized CV site on a systemd-less Debian 13 L
 published behind a **Cloudflare Tunnel**.
 
 - URL: https://frank-escudero.com/  (Cloudflare Tunnel → 127.0.0.1:8000)
-- Old URL: https://cv.story-tegu.ts.net/ — still works, 301-redirects.
 - Local backend: http://127.0.0.1:8000
 
 ---
@@ -117,7 +116,6 @@ done
 
 # C. public tunnel
 curl -fsS -m8 -o /dev/null -w "public %s\n" https://frank-escudero.com/
-curl -sS -m8 -o /dev/null -w "olddomain %{http_code} %{redirect_url}\n" https://cv.story-tegu.ts.net/
 
 # D. log-bomb sentinel
 echo "log1 = $(stat -c%s /var/lib/tailscale/tailscaled.log1.txt)B"
@@ -143,7 +141,7 @@ Red lines (stop, fix, then commit): non-200 on `/`, "Built with Reflex" present,
 4. **The 49 GB log bomb, root-caused.** `tailscaled` logtail retried
    `dial 127.0.0.1:8000: connect: connection refused` recursively during a rebuild while
    tailscaled ran without `--no-logs-no-support`. Result: `tailscaled.log1.txt` hit 49 GB,
-   disk to 0%, builds failed, Funnel 502. Fixed in `start-rdp-server.sh` via
+   disk to 0%, builds failed, tailnet ingress 502. Fixed in `start-rdp-server.sh` via
    `--no-logs-no-support` + `2>/dev/null`; log1 now sits at 0 B.
 5. **No internet for pip.** Host has no outbound for `pip install`. If a dependency is
    missing, it must be vendored or already vendored under the venv.
@@ -158,5 +156,5 @@ Red lines (stop, fix, then commit): non-200 on `/`, "Built with Reflex" present,
 9. **SSR is not the whole story.** `on_load`-populated state (greeting, probe-triggered
    content, blocks) is absent from `curl`'d HTML; verify such features against the running
    app (chat call, DB rows) or the compiled client bundle.
-10. **Cloudflare Tunnel is the public ingress now** (not Tailscale Funnel). Funnel
-    remains only as `cv.story-tegu.ts.net`, which 301s to `frank-escudero.com`.
+10. **Cloudflare Tunnel is the public ingress.** The tailnet only serves as the
+    private network layer; `frank-escudero.com` is the one public domain.

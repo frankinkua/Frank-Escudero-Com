@@ -7,7 +7,7 @@
 
 ## Current status (2026-08-19, rebuild shipped)
 - Public: ✅ `https://frank-escudero.com` → 200 (Cloudflare Tunnel → `127.0.0.1:8000`)
-- Old Funnel domain: ✅ `https://cv.story-tegu.ts.net` → 301 → `frank-escudero.com`
+- Old tailnet URL: ✅ legacy URL → 301 → `frank-escudero.com` (not advertised)
 - Routes: ✅ `/`, `/cv/`, `/timeline/` + `robots.txt` + `sitemap.xml` all 200
 - Stack: ✅ Reflex 0.9.7, thin `main.py` + `webapp/` package; SQLite store `/web/data/site.db`
 - Per-client: ✅ device fingerprinting, theme accent, CSS/HTML/JS blocks, aggressive chat
@@ -22,7 +22,7 @@
 - [x] **Live personalization**: `theme.py` picks accent/gradient per client (GPU/timezone/language/screen).
 - [x] **Per-client blocks**: CSS/HTML/JS in the `blocks` table + shared `block_pool`.
 - [x] **Aggressive chat**: auto-opens once per session, nudges on idle, greets by learned device; olla proxy backend with deduped system message.
-- [x] **Old-domain redirect**: Starlette middleware 301s `cv.story-tegu.ts.net` → `frank-escudero.com`.
+- [x] **Old-domain redirect**: Starlette middleware 301s the legacy tailnet URL → `frank-escudero.com`.
 
 ## Archive (pre-rebuild, Aug 2026) — what was removed
 - ~~Auth (/login /signup /profile, sessions, pbkdf2)~~ — **dropped in rebuild.**

@@ -1,5 +1,5 @@
 ## Who Frank Escudero is:
-- Full-stack engineer / infrastructure developer living on his own home datacenter ("story-tegu.ts.net" tailnet). Speaks English natively (site content is English); the chatbot greets and answers visitors in their own language when known, switching if the visitor writes in another.
+- Full-stack engineer / infrastructure developer living on his own home datacenter (private tailnet). Speaks English natively (site content is English); the chatbot greets and answers visitors in their own language when known, switching if the visitor writes in another.
 - Runs a systemd-less Debian 13 LXC container (hostname `cv`, tailnet IP 100.115.209.119) that serves this CV site to the public internet.
 - Frank's work is: Python/Bash (fluent), Go (reading), Terraform/HCL; Reflex, FastAPI, ASGI; Tailscale (tailnet), Cloudflare Tunnel, RDP/KDE, git-based rollback, self-hosting, zero-trust ingress, SRE.
 - Notable achievements (all real, on this box): booted the headless container from bare `bash` PID 1 with no systemd and brought up sshd, dbus, xrdp+KDE, Tailscale, the LLM proxy, and the Reflex site; published the site publicly via Cloudflare Tunnel; killed a 49 GB runaway tailscaled log that had filled the disk; and rebuilt this site as a modular, per-visitor-personalized app.
@@ -35,7 +35,7 @@
 ## Services on this machine (hostname: cv)
 - `websiteserver` — `/etc/init.d/websiteserver {start|stop|status|restart}`; runs the Reflex app on port 8000. Log: /var/log/websiteserver.log.
 - `cloudflared` — Cloudflare Tunnel (token-based), exposes `frank-escudero.com` → `127.0.0.1:8000`. Log: /var/log/cloudflared.err.
-- `tailscaled` — required for the tailnet (`--no-logs-no-support`); the old Funnel (`cv.story-tegu.ts.net`) still 301s to the public domain.
+- `tailscaled` — required for the tailnet (`--no-logs-no-support`); a legacy tailnet URL still 301s to the public domain.
 - `opencode-worker` — legacy improvement runner; OFF by default. Do not enable.
 - No systemd (bare `bash` as PID 1); boot chain: `~/.bashrc -> start-rdp-server.sh` restores sshd, dbus, xrdp, Tailscale, cloudflared, and the site.
 
@@ -69,6 +69,6 @@
   bot, state, components, timeline). SQLite store, markdown content.
 - **Per-visitor personalization**: device fingerprinting, per-client accent/theme,
   per-client CSS/HTML/JS blocks, aggressive chat (auto-opens, nudges, greets).
-- **Public ingress**: Cloudflare Tunnel `frank-escudero.com`; old Funnel domain 301s.
+- **Public ingress**: Cloudflare Tunnel `frank-escudero.com` — the one public domain.
 - **LLM**: everything moved to the olla proxy (`100.100.1.10:40114/olla/proxy/v1`),
   model `prism-ml/bonsai-27b`; LM Studio and the old Ollama hub retired.

@@ -29,8 +29,8 @@ root ~/.bashrc  ->  /usr/local/bin/start-rdp-server.sh
                        -> cloudflared -> Reflex websiteserver(:8000)
 ```
 
-- **ingress (zero-trust):** Cloudflare Tunnel. (Legacy Tailscale Funnel
-  `cv.story-tegu.ts.net` still exists and 301-redirects to the public domain.)
+- **ingress (zero-trust):** Cloudflare Tunnel. (A legacy tailnet URL still 301s
+  to the public domain but is not advertised.)
 - **compute (LLM):** remote **olla proxy** `100.100.1.10:40114/olla/proxy/v1`
   (no auth), model `prism-ml/bonsai-27b`. No GPU in this LXC.
 - **app:** Reflex (Python/ASGI) on `:8000`, fronted only by the tunnel.

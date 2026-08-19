@@ -1,5 +1,10 @@
 **Incident log — 2026-08-09: public HTTPS (Tailscale Funnel) outage**
 
+> **Status (Aug 2026): historical.** Dated entry about the pre-rebuild public
+> ingress. The site now publishes through Cloudflare Tunnel at
+> `frank-escudero.com`; the tailnet/Funnel URL is not the public site anymore.
+> Kept as an ops-hygiene record (pin Tailscale versions).
+
 **Symptom:** `https://cv.story-tegu.ts.net` stopped loading for anyone outside the tailnet. External clients (normal networks and Tor) hit a TLS/certificate error: the funnel ingress accepted TCP on 443 and then aborted the handshake (`unexpected eof` / `Broken pipe`). Access through Tailscale itself (`cv.story-tegu.ts.net` via MagicDNS, and other nodes on the tailnet) kept working, which made it look like a DNS/client problem at first.
 
 **Diagnosis:** The box itself was healthy — tailnet path returned 200, DERP `fra` session fine, `tailscale serve status` correct, funnel capability granted. A multi-country check from check-host.net (19 nodes: Brazil, Germany, India, Iran, Spain, ...) showed 19/19 `Broken pipe` on the funnel ingress IPs `185.40.234.x`, proving the fault was at the Tailscale ingress relay, not our side. `tailscale down && up` and a full daemon restart did not help.

@@ -5,11 +5,11 @@ All boot logic lives in `/usr/local/bin/start-rdp-server.sh` (reached from
 `/root/.bashrc`).
 
 ### Access & network
-- **Tailscale** tailnet `story-tegu.ts.net`; this node is `cv` @ `100.115.209.119`,
+- **Tailscale** private tailnet for the home datacenter; node `cv` @ `100.115.209.119`,
   authed as `franke2032@`, operator `frank`.
 - **Public ingress** via **Cloudflare Tunnel** (`cloudflared`, token-based):
   `https://frank-escudero.com` (443) -> `127.0.0.1:8000`. No public web server,
-  no port forwarding. Legacy Funnel `https://cv.story-tegu.ts.net` 301s there.
+  no port forwarding. (A legacy tailnet URL 301s here but is not advertised.)
 - **RDP**: xrdp 0.10.1 + KDE/Plasma (X11 only, no Wayland); NVIDIA GPUs are
   passthrough nodes (chmod 666) but run **AI-only** (GLX disabled in the xrdp
   Xorg config). No GPU passthrough into this LXC.
