@@ -16,7 +16,7 @@ import logging
 
 import reflex as rx
 
-from webapp import db
+from webapp import db, bot
 from webapp.components import chat_widget, cv_body, nav, timeline_body, footer
 from webapp.state import State
 from webapp import timeline as timeline_mod
@@ -31,18 +31,50 @@ def index() -> rx.Component:
         nav(),
         rx.container(
             rx.vstack(
-                rx.badge(State.server_ts, variant="soft", colorScheme="teal"),
-                rx.heading("Frank Escudero", size="5", color="#e8ecf4"),
+                rx.badge(
+                    rx.hstack(
+                        rx.box(width="0.45rem", height="0.45rem", borderRadius="9999px", background="#4ade80"),
+                        rx.text(State.server_ts, color=bot.MUTED, fontSize="0.72rem"),
+                        spacing="2",
+                    ),
+                    variant="soft", colorScheme="teal",
+                ),
+                rx.heading("Frank Escudero", size="6", color="#e8ecf4", marginTop="1.2rem"),
                 rx.text(
                     "Full-stack engineer · infrastructure developer · 5-time startup founder",
-                    color="#9aa4bb", fontSize="0.9rem",
+                    color="#9aa4bb", fontSize="1rem",
                 ),
-                rx.text(State.greeting, color="#5eead4", fontSize="0.9rem", fontStyle="italic"),
+                rx.text(
+                    State.greeting,
+                    color=bot.ACCENT, fontSize="0.92rem", fontStyle="italic", textAlign="center",
+                    maxWidth="560px",
+                ),
                 rx.markdown(State.home_md, color="#c9d2e3"),
-                rx.link("Read the full CV →", href="/cv", color="#5eead4", marginTop="0.5rem"),
+                rx.flex(
+                    rx.link(
+                        "Read the full CV →",
+                        href="/cv",
+                        color="#0b0e14",
+                        background=bot.ACCENT,
+                        padding="0.6rem 1.1rem",
+                        borderRadius="0.5rem",
+                        fontWeight="600",
+                        _hover={"opacity": 0.9},
+                    ),
+                    rx.button(
+                        "Ask the assistant",
+                        on_click=State.open_chat,
+                        variant="soft",
+                        color=bot.ACCENT,
+                        _hover={"background": "rgba(94,234,212,0.12)"},
+                    ),
+                    spacing="3",
+                    marginTop="1rem",
+                ),
             ),
             maxWidth="760px",
             padding="3rem 1rem 1rem",
+            textAlign="center",
         ),
         footer(),
         chat_widget(),

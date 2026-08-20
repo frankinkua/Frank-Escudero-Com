@@ -196,14 +196,15 @@ class State(rx.State):
         self.busy = True
         self.chat_open = True
         self.last_activity = time.time()
-        self.messages.append({"role": "user", "content": text})
+        now = time.time()
+        self.messages.append({"role": "user", "content": text, "ts": now})
         db.log_message(self.device_id, "user", text)
         history = db.recent_messages(self.device_id, 16)
         as_reply = await bot.chat(
             [{"role": m["role"], "content": m["content"]} for m in history],
             self.probe or {}, self.device_name, self.first_time,
         )
-        self.messages.append({"role": "assistant", "content": as_reply})
+        self.messages.append({"role": "assistant", "content": as_reply, "ts": time.time()})
         db.log_message(self.device_id, "assistant", as_reply)
         # opportunistic live restyle if the assistant chose a theme
         bot.extract_theme(self.device_id, as_reply, self.probe or {})
