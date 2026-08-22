@@ -92,32 +92,44 @@ def _message_bubble(m: dict) -> rx.Component:
 
 def chat_panel() -> rx.Component:
     return rx.box(
-        rx.vstack(
-            rx.flex(
-                rx.hstack(
-                    rx.box(
-                        width="0.55rem", height="0.55rem", borderRadius="9999px",
-                        background=bot.ACCENT,
-                    ),
-                    rx.vstack(
-                        rx.text("Frank's site assistant", fontWeight="700", color="#e8ecf4", fontSize="0.92rem"),
-                        rx.text(
-                            rx.cond(State.busy, "thinking…", f"asks about {State.device_name}"),
-                            color=bot.MUTED, fontSize="0.72rem",
-                        ),
-                        spacing="0",
-                        alignItems="start",
-                    ),
-                    spacing="3",
+        rx.el.style(js.CHAT_CSS),
+        rx.el.script(js.CHAT_SETUP_JS),
+        rx.flex(
+            rx.hstack(
+                rx.box(
+                    width="0.55rem", height="0.55rem", borderRadius="9999px",
+                    background=bot.ACCENT,
                 ),
-                justify="start",
-                width="100%",
+                rx.vstack(
+                    rx.text("Frank's site assistant", fontWeight="700", color="#e8ecf4", fontSize="0.92rem"),
+                    rx.text(
+                        rx.cond(State.busy, "thinking…", f"asks about {State.device_name}"),
+                        color=bot.MUTED, fontSize="0.72rem",
+                    ),
+                    spacing="0",
+                    alignItems="start",
+                ),
+                spacing="3",
             ),
-            rx.spacer(),
-            rx.button(
-                "✕", on_click=State.close_chat_popup, size="1", variant="ghost",
-                color=bot.MUTED, _hover={"color": "#fff"},
+            rx.hstack(
+                rx.el.button(
+                    rx.el.span(rx.icon(tag="maximize", size=15), class_name="cv-icon-max"),
+                    rx.el.span(rx.icon(tag="minimize", size=15), class_name="cv-icon-restore"),
+                    id="chat-max",
+                    type="button",
+                    aria_label="Maximize / restore chat",
+                    background="transparent", border="none", color=bot.MUTED,
+                    cursor="pointer", padding="0.2rem", borderRadius="0.35rem",
+                    _hover={"color": "#fff", "background": "rgba(255,255,255,0.08)"},
+                ),
+                rx.button(
+                    "✕", on_click=State.close_chat_popup, size="1", variant="ghost",
+                    color=bot.MUTED, _hover={"color": "#fff"},
+                    aria_label="Close chat",
+                ),
+                spacing="1",
             ),
+            id="chat-header",
             justify="between",
             width="100%",
             paddingBottom="0.6rem",
@@ -170,11 +182,15 @@ def chat_panel() -> rx.Component:
             width="100%",
             marginTop="0.75rem",
         ),
-        id="chat-panel",
+        rx.box(
+            id="chat-resize",
+            aria_label="Resize chat",
+            title="Drag to resize",
+        ),
+        id="chat-window",
         background="#0d1117",
         border="1px solid #2a3247",
         borderRadius="0.9rem",
-        width="min(360px, 92vw)",
         padding="0.9rem",
         boxShadow="0 24px 60px rgba(0,0,0,0.5)",
         display="flex",
@@ -191,10 +207,7 @@ def chat_widget() -> rx.Component:
     return rx.box(
         rx.cond(
             State.chat_open,
-            rx.box(
-                chat_panel(),
-                position="fixed", right="1.5rem", bottom="5.5rem", zIndex="1000",
-            ),
+            chat_panel(),
         ),
         rx.button(
             rx.icon(tag="message-circle", size=20),

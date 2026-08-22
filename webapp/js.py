@@ -73,3 +73,69 @@ def scroll_js() -> str:
         "(async () => { const el=document.getElementById('chat-log');"
         " if(el) el.scrollTop=el.scrollHeight; return 'ok'; })()"
     )
+
+
+# CSS for the chat window: geometry is driven by CSS custom properties so the
+# drag/resize/maximize logic in CHAT_SETUP_JS can move/resize the window purely
+# in the DOM, without React re-renders wiping the position.
+CHAT_CSS = (
+    "#chat-window{position:fixed;z-index:1000;right:1.5rem;bottom:5.5rem;"
+    "width:var(--cv-w,min(360px,92vw));height:var(--cv-h,auto);max-width:92vw;}"
+    "#chat-window.cv-dragged{left:var(--cv-x);top:var(--cv-y);right:auto;bottom:auto;}"
+    "#chat-window.cv-max{left:1rem!important;top:1rem!important;"
+    "right:1rem!important;bottom:1rem!important;width:auto!important;"
+    "height:auto!important;max-width:none!important;}"
+    "#chat-window.cv-max #chat-log{max-height:calc(100vh - 11rem)!important;}"
+    "#chat-header{cursor:move;user-select:none;}"
+    "#chat-resize{position:absolute;right:0;bottom:0;width:18px;height:18px;"
+    "cursor:nwse-resize;}"
+    "#chat-window .cv-icon-restore{display:none;}"
+    "#chat-window.cv-max .cv-icon-restore{display:inline-flex;}"
+    "#chat-window.cv-max .cv-icon-max{display:none;}"
+)
+
+# One-time setup (runs on page load) that wires drag/resize/maximize using
+# event delegation on document, so it works even though the panel mounts later
+# (and survives React re-renders via CSS variables + a class toggle).
+CHAT_SETUP_JS = (
+    "(async () => {"
+    "if(window.__cvchatInit)return 'already';window.__cvchatInit=true;"
+    "var drag=null,sizing=null;"
+    "function win(){return document.getElementById('chat-window');}"
+    "document.addEventListener('pointerdown',function(e){"
+    "var w=win();if(!w)return;"
+    "if(w.classList.contains('cv-max'))return;"
+    "if(e.target.closest('#chat-header')&&!e.target.closest('button')){"
+    "var r=w.getBoundingClientRect();"
+    "drag={dx:e.clientX-r.left,dy:e.clientY-r.top};"
+    "w.style.setProperty('--cv-x',r.left+'px');"
+    "w.style.setProperty('--cv-y',r.top+'px');"
+    "w.classList.add('cv-dragged');e.preventDefault();}"
+    "else if(e.target.closest('#chat-resize')){"
+    "var r2=w.getBoundingClientRect();"
+    "sizing={sx:e.clientX,sy:e.clientY,w:r2.width,h:r2.height};"
+    "e.preventDefault();}"
+    "});"
+    "document.addEventListener('pointermove',function(e){"
+    "var w=win();if(!w)return;"
+    "if(drag){"
+    "var x=e.clientX-drag.dx,y=e.clientY-drag.dy;"
+    "x=Math.max(0,Math.min(window.innerWidth-60,x));"
+    "y=Math.max(0,Math.min(window.innerHeight-40,y));"
+    "w.style.setProperty('--cv-x',x+'px');"
+    "w.style.setProperty('--cv-y',y+'px');}"
+    "else if(sizing){"
+    "var nw=Math.max(260,sizing.w+(e.clientX-sizing.sx));"
+    "var nh=Math.max(200,sizing.h+(e.clientY-sizing.sy));"
+    "w.style.setProperty('--cv-w',nw+'px');"
+    "w.style.setProperty('--cv-h',nh+'px');}"
+    "});"
+    "function stop(){drag=null;sizing=null;}"
+    "document.addEventListener('pointerup',stop);"
+    "document.addEventListener('pointercancel',stop);"
+    "document.addEventListener('click',function(e){"
+    "var b=e.target.closest('#chat-max');"
+    "if(b){var w=win();if(w){w.classList.toggle('cv-max');e.preventDefault();}}"
+    "});"
+    "return 'ok';})()"
+)

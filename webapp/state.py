@@ -68,6 +68,7 @@ class State(rx.State):
         self.messages = db.recent_messages(self.device_id, 12)
         # probe the browser, then if nothing else: restyle to the client.
         return [
+            rx.call_script(js.CHAT_SETUP_JS),
             rx.call_script(js.PROBE_JS, callback=State.on_probe),
             rx.call_script(js.AUTO_OPEN_JS, callback=State.on_auto_open),
             rx.call_script(js.NUDGE_JS, callback=State.on_nudge),
@@ -76,13 +77,15 @@ class State(rx.State):
     def load_cv(self):
         self._start()
         self.cv_md = _read("/web/cv.md")
-        return rx.call_script(js.PROBE_JS, callback=State.on_probe)
+        return [rx.call_script(js.CHAT_SETUP_JS),
+                rx.call_script(js.PROBE_JS, callback=State.on_probe)]
 
     def load_timeline(self):
         from . import timeline
         self._start()
         self.timeline_md = timeline.build()
-        return rx.call_script(js.PROBE_JS, callback=State.on_probe)
+        return [rx.call_script(js.CHAT_SETUP_JS),
+                rx.call_script(js.PROBE_JS, callback=State.on_probe)]
 
     def _start(self) -> None:
         import time
@@ -142,7 +145,10 @@ class State(rx.State):
         db.upsert_visitor(self.device_id, ip, geo, self.device_name, profile,
                           [b["key"] for b in db.get_blocks(self.device_id)])
         db.log_visit(self.device_id, "/", ip, ua, lang, ref)
-        db.log_message(self.device_id, "assistant", self.greeting)
+        if self.first_time:
+            # Only greet (and persist it) the first time we see this device —
+            # not on every page load, so history isn't a wall of greetings.
+            db.log_message(self.device_id, "assistant", self.greeting)
         self.messages = db.recent_messages(self.device_id, 12)
         self.block_injected = True
         # keep the visitor pinned to their device profile
