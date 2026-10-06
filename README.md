@@ -1,7 +1,12 @@
 # Frank Escudero — CV site
 
-A zero-trust, self-hosted, AI-personalized CV site on a systemd-less Debian 13 LXC,
-published behind a **Cloudflare Tunnel**.
+## Purpose
+A zero-trust, self-hosted, AI-personalized CV site.
+
+## Status
+Currently live on a systemd-less Debian 13 LXC (`cv` node in a private tailnet).
+Published behind a **Cloudflare Tunnel**. There is no open public web server or port forwarding.
+The Reflex app binds only to `127.0.0.1:8000` and is reached exclusively through the tunnel.
 
 - URL: https://frank-escudero.com/  (Cloudflare Tunnel → 127.0.0.1:8000)
 - Local backend: http://127.0.0.1:8000
@@ -84,16 +89,24 @@ Ops (ref-only, outside `/web`): `/etc/init.d/websiteserver`, `/etc/init.d/cloudf
 
 ---
 
-## Run / restart / deploy
+## How to run and deploy
+
+### Running and Restarting
 ```bash
 # restart the site (race-free; frees :8000 first)
 /etc/init.d/websiteserver restart
-# tail
+# tail logs
 tail -n 40 /var/log/websiteserver.log
 # local check
 curl -fsS -m6 http://127.0.0.1:8000/
 ```
-There is no CI — "deploy" == `git commit` + push to GitHub (`frankinkua/cv`) + confirm `/` is 200.
+
+### Deployment
+There is no CI pipeline. The deployment model is git-based and self-healing:
+1. "Deploy" means making a `git commit` directly on the `main` branch.
+2. Push the commit to GitHub (`frankinkua/cv`).
+3. Run the restart script `/etc/init.d/websiteserver restart` and confirm `/` returns 200.
+4. Any change can be rolled back using `git checkout` or `git revert`. Supervision is handled via init-script + pgrep idempotency.
 
 ---
 
