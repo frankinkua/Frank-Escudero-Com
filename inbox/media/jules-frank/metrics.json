@@ -1,0 +1,64 @@
+{
+  "metrics": [
+    {
+      "id": "legacy-videos",
+      "definition": "Legacy videos served",
+      "value": 40000000,
+      "unit": "videos",
+      "period": "lifetime",
+      "source_url": "self-reported",
+      "credited_to": "Frank Escudero",
+      "is_self_reported": true
+    },
+    {
+      "id": "legacy-images",
+      "definition": "Legacy images processed",
+      "value": 180000000,
+      "unit": "images",
+      "period": "lifetime",
+      "source_url": "self-reported",
+      "credited_to": "Frank Escudero",
+      "is_self_reported": true
+    },
+    {
+      "id": "voip-baseline-reduction",
+      "definition": "Annual VoIP baseline reduction",
+      "value": 8500000,
+      "unit": "EUR",
+      "period": "annual",
+      "source_url": "self-reported",
+      "credited_to": "Frank Escudero",
+      "is_self_reported": true
+    },
+    {
+      "id": "carlos-vives-campaign-reach-people",
+      "definition": "People reached in Carlos Vives campaign in 12 hours",
+      "value": 204000,
+      "unit": "people",
+      "period": "12 hours",
+      "source_url": "https://www.lanacion.com.ar/economia/los-emprendedores-argentinos-que-venden-asombro-a-empresas-celebrities-y-politicos-nid2139972/",
+      "credited_to": "Asombro Extremo",
+      "is_self_reported": false
+    },
+    {
+      "id": "carlos-vives-campaign-countries",
+      "definition": "Countries reached in Carlos Vives campaign",
+      "value": 83,
+      "unit": "countries",
+      "period": "campaign duration",
+      "source_url": "https://www.lanacion.com.ar/economia/los-emprendedores-argentinos-que-venden-asombro-a-empresas-celebrities-y-politicos-nid2139972/",
+      "credited_to": "Asombro Extremo",
+      "is_self_reported": false
+    },
+    {
+      "id": "carlos-vives-campaign-views",
+      "definition": "Video views in Carlos Vives campaign in week 1",
+      "value": 20000000,
+      "unit": "views",
+      "period": "1 week",
+      "source_url": "https://www.lanacion.com.ar/economia/los-emprendedores-argentinos-que-venden-asombro-a-empresas-celebrities-y-politicos-nid2139972/",
+      "credited_to": "Asombro Extremo",
+      "is_self_reported": false
+    }
+  ]
+}

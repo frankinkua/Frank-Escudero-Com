@@ -1,0 +1,21 @@
+{
+  "aliases": {
+    "InkuA": ["inkua", "InkuA gUG", "inkua gug"],
+    "Custom Group": ["custom group", "Custom Group PR"],
+    "Wilobank": ["wilobank", "Wilobank M&A"],
+    "financial technology": ["fintech", "tecnología financiera"],
+    "volunteer learning": ["voluntariado", "aprendizaje voluntario"],
+    "digital inclusion": ["inclusión digital", "inclusion digital"],
+    "education": ["educación", "educacion"],
+    "technology": ["tecnología", "tecnologia", "tech"],
+    "advisory": ["asesoría", "consulting", "asesoria"],
+    "deep-tech": ["deep tech"],
+    "architecture": ["arquitectura"],
+    "M&A": ["m&a", "mergers and acquisitions", "fusiones y adquisiciones"],
+    "due diligence": ["debida diligencia"],
+    "interview": ["entrevista"],
+    "video": ["vídeo", "video"],
+    "social": ["redes sociales"],
+    "anniversary": ["aniversario"]
+  }
+}

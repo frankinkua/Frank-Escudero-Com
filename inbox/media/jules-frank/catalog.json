@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-11 20:08",
+  "subject": "Frank (Ezequiel) Escudero",
+  "search_queries": [
+    "Frank Escudero InkuA",
+    "Ezequiel Escudero InkuA",
+    "Frank Escudero Custom Group",
+    "Frank Escudero Wilobank",
+    "Frank Escudero financial technology",
+    "Frank Escudero volunteer learning",
+    "Frank Escudero digital inclusion",
+    "Frank Escudero Cannes campaigns",
+    "Asombro Extremo"
+  ],
+  "items": [
+    {
+      "id": "lanacion-asombro-extremo-2018",
+      "type": "news_article",
+      "title": "Los emprendedores argentinos que venden asombro a empresas, celebrities y políticos",
+      "source_url": "https://www.lanacion.com.ar/economia/los-emprendedores-argentinos-que-venden-asombro-a-empresas-celebrities-y-politicos-nid2139972/",
+      "asset_url": null,
+      "local_path": null,
+      "person": "Ezequiel Escudero",
+      "tags": ["Asombro Extremo", "startup", "founder"],
+      "related_tags": ["advertising", "technology", "Carlos Vives"],
+      "publisher": "La Nacion",
+      "date": "2018-06-01",
+      "retrieved_at": "2026-10-11 21:35",
+      "rights_status": "public_reference",
+      "rights_evidence": "Public news article on La Nacion. Republishing media requires permission.",
+      "caption": "Article detailing Ezequiel Escudero's role as CTO and co-founder of Asombro Extremo, and the viral Carlos Vives campaign.",
+      "identity_evidence": "Article explicitly names Ezequiel Escudero as a founder and CTO."
+    }
+  ]
+}
