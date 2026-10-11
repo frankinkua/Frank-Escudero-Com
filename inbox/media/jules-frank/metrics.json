@@ -2,38 +2,45 @@
   "metrics": [
     {
       "id": "legacy-videos",
-      "definition": "Legacy videos served",
+      "definition": "Legacy videos served (lower bound)",
       "value": 40000000,
+      "comparator": ">",
       "unit": "videos",
-      "period": "lifetime",
-      "source_url": "self-reported",
+      "period": "unknown",
+      "source_url": null,
       "credited_to": "Frank Escudero",
-      "is_self_reported": true
+      "is_self_reported": true,
+      "evidence_type": "owner_report"
     },
     {
       "id": "legacy-images",
-      "definition": "Legacy images processed",
+      "definition": "Legacy images processed (lower bound)",
       "value": 180000000,
+      "comparator": ">",
       "unit": "images",
-      "period": "lifetime",
-      "source_url": "self-reported",
+      "period": "unknown",
+      "source_url": null,
       "credited_to": "Frank Escudero",
-      "is_self_reported": true
+      "is_self_reported": true,
+      "evidence_type": "owner_report"
     },
     {
       "id": "voip-baseline-reduction",
-      "definition": "Annual VoIP baseline reduction",
+      "definition": "Annual VoIP baseline reduction (lower bound)",
       "value": 8500000,
+      "comparator": ">",
       "unit": "EUR",
-      "period": "annual",
-      "source_url": "self-reported",
+      "period": "unknown",
+      "source_url": null,
       "credited_to": "Frank Escudero",
-      "is_self_reported": true
+      "is_self_reported": true,
+      "evidence_type": "owner_report"
     },
     {
       "id": "carlos-vives-campaign-reach-people",
-      "definition": "People reached in Carlos Vives campaign in 12 hours",
+      "definition": "People reached in Carlos Vives campaign in 12 hours (lower bound)",
       "value": 204000,
+      "comparator": ">",
       "unit": "people",
       "period": "12 hours",
       "source_url": "https://www.lanacion.com.ar/economia/los-emprendedores-argentinos-que-venden-asombro-a-empresas-celebrities-y-politicos-nid2139972/",
@@ -52,8 +59,9 @@
     },
     {
       "id": "carlos-vives-campaign-views",
-      "definition": "Video views in Carlos Vives campaign in week 1",
+      "definition": "Video views in Carlos Vives campaign in week 1 (lower bound)",
       "value": 20000000,
+      "comparator": ">",
       "unit": "views",
       "period": "1 week",
       "source_url": "https://www.lanacion.com.ar/economia/los-emprendedores-argentinos-que-venden-asombro-a-empresas-celebrities-y-politicos-nid2139972/",

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-11 20:08",
+  "generated_at": "2026-10-11",
   "subject": "Frank (Ezequiel) Escudero",
   "search_queries": [
     "Frank Escudero InkuA",
@@ -11,7 +11,8 @@
     "Frank Escudero volunteer learning",
     "Frank Escudero digital inclusion",
     "Frank Escudero Cannes campaigns",
-    "Asombro Extremo"
+    "Asombro Extremo",
+    "SETOFF project workshop"
   ],
   "items": [
     {
@@ -26,11 +27,47 @@
       "related_tags": ["advertising", "technology", "Carlos Vives"],
       "publisher": "La Nacion",
       "date": "2018-06-01",
-      "retrieved_at": "2026-10-11 21:35",
+      "retrieved_at": "2026-10-11",
       "rights_status": "public_reference",
       "rights_evidence": "Public news article on La Nacion. Republishing media requires permission.",
       "caption": "Article detailing Ezequiel Escudero's role as CTO and co-founder of Asombro Extremo, and the viral Carlos Vives campaign.",
       "identity_evidence": "Article explicitly names Ezequiel Escudero as a founder and CTO."
+    },
+    {
+      "id": "lanacion-asombro-extremo-2019",
+      "type": "news_article",
+      "title": "Ideas millonarias. Son magos y montaron un negocio para empresas de todo el mundo",
+      "source_url": "https://www.lanacion.com.ar/lifestyle/ideas-millonarias-son-magos-montaron-negocio-empresas-nid2309906/",
+      "asset_url": null,
+      "local_path": null,
+      "person": "Ezequiel Escudero",
+      "tags": ["Asombro Extremo", "startup", "founder"],
+      "related_tags": ["advertising", "technology"],
+      "publisher": "La Nacion",
+      "date": "2019-11-26",
+      "retrieved_at": "2026-10-11",
+      "rights_status": "public_reference",
+      "rights_evidence": "Public news article on La Nacion. Republishing media requires permission.",
+      "caption": "Profile of Asombro Extremo founders, highlighting their corporate magic and digital campaigns.",
+      "identity_evidence": "Article explicitly names Ezequiel Escudero as a founder and CTO."
+    },
+    {
+      "id": "setoff-workshop-2023",
+      "type": "document",
+      "title": "SETOFF Project 3rd Workshop",
+      "source_url": "https://setoff-project.eu/wp-content/uploads/2023/07/PR_3RD_WORKSHOP_June2023.pdf",
+      "asset_url": null,
+      "local_path": null,
+      "person": "Frank Escudero",
+      "tags": ["SETOFF", "workshop", "participation"],
+      "related_tags": ["project", "training"],
+      "publisher": "SETOFF Project",
+      "date": "2023-07",
+      "retrieved_at": "2026-10-11",
+      "rights_status": "public_reference",
+      "rights_evidence": "Publicly available PDF from the project website.",
+      "caption": "Press release/report for the 3rd SETOFF Workshop.",
+      "identity_evidence": "Associated with Frank Escudero's activities."
     }
   ]
 }
