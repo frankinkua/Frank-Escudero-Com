@@ -1,0 +1,48 @@
+name: Task
+description: An agent-routable unit of work.
+title: "[<task-id>] <short description>"
+labels: ["status:queued"]
+body:
+  - type: input
+    id: task_id
+    attributes:
+      label: Task id
+      description: Stable id, e.g. C014 or V003.
+      placeholder: C000
+    validations:
+      required: true
+  - type: dropdown
+    id: agent
+    attributes:
+      label: Assigned agent
+      description: Which agent should do this.
+      options:
+        - jules
+        - opencode-admin
+        - antigravity
+        - grok-bot
+        - unassigned
+    validations:
+      required: true
+  - type: input
+    id: area
+    attributes:
+      label: Area
+      description: The area used for concurrency (one task per area at a time).
+      placeholder: docs
+    validations:
+      required: true
+  - type: textarea
+    id: ask
+    attributes:
+      label: Ask
+      description: Exactly what should be done.
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done criteria
+      description: How both sides know it is finished.
+    validations:
+      required: true

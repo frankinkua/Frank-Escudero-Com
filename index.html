@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frank Escudero — Full-Stack Engineer, Infrastructure Architect & Founder</title>
+  <meta name="description" content="Official personal site & CV of Frank Escudero. Full-stack engineer, infrastructure architect, 5-time startup founder, and Founder of InkuA gUG.">
+  
+  <meta property="og:title" content="Frank Escudero — Engineering & Infrastructure">
+  <meta property="og:description" content="Full-stack engineer, infrastructure developer, 5-time startup founder building self-hosted, self-healing systems.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://frank-escudero.com">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    .glass-nav {
+      background: rgba(11, 14, 20, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .hero-glow {
+      background: radial-gradient(circle at 50% 15%, rgba(56, 189, 248, 0.12) 0%, rgba(11, 14, 20, 1) 70%);
+    }
+    .card-hover {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-3px);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+  </style>
+</head>
+<body class="bg-[#0b0e14] text-slate-100 font-sans antialiased selection:bg-sky-500 selection:text-black">
+
+  <!-- NAV -->
+  <header class="sticky top-0 z-50 glass-nav">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-4 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-sky-500 text-slate-950 flex items-center justify-center font-display font-bold text-lg shadow-lg shadow-sky-500/20">
+          FE
+        </div>
+        <div>
+          <span class="font-display font-bold text-lg text-white tracking-tight">Frank Escudero</span>
+          <span class="text-xs text-sky-400 font-medium block">Frankfurt am Main · Engineer & Founder</span>
+        </div>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-7 text-sm font-medium text-slate-400">
+        <a href="#about" class="hover:text-sky-400 transition-colors">Profile</a>
+        <a href="#experience" class="hover:text-sky-400 transition-colors">Experience</a>
+        <a href="#projects" class="hover:text-sky-400 transition-colors">Projects</a>
+        <a href="#stack" class="hover:text-sky-400 transition-colors">Stack</a>
+        <a href="#contact" class="hover:text-sky-400 transition-colors">Contact</a>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <a href="https://www.linkedin.com/in/frankeee/" target="_blank" rel="noopener noreferrer" class="p-2 text-slate-400 hover:text-sky-400 transition-colors">
+          <i data-lucide="linkedin" class="w-5 h-5"></i>
+        </a>
+        <a href="https://github.com/frankinkua" target="_blank" rel="noopener noreferrer" class="p-2 text-slate-400 hover:text-sky-400 transition-colors">
+          <i data-lucide="github" class="w-5 h-5"></i>
+        </a>
+        <a href="mailto:frank@inkua.eu" class="bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold px-4 py-2 rounded-lg text-xs transition-all shadow-md shadow-sky-500/20">
+          Get in Touch
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="relative pt-20 pb-20 hero-glow">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6">
+      
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-400 text-xs font-mono">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>frank-escudero.com · Self-hosted & Autonomous</span>
+      </div>
+
+      <h1 class="font-display text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-tight">
+        Frank Escudero
+      </h1>
+
+      <p class="text-xl sm:text-2xl text-slate-300 font-light max-w-2xl mx-auto">
+        Full-stack engineer · Infrastructure architect · 5-time startup founder
+      </p>
+
+      <p class="text-sm text-slate-400 max-w-xl mx-auto leading-relaxed">
+        Building self-hosted, self-healing systems, sovereign AI agent swarms, and high-scale platforms from a home datacenter. Founder & Managing Director of <strong class="text-sky-400">InkuA gUG</strong>.
+      </p>
+
+      <div class="flex flex-wrap items-center justify-center gap-4 pt-4">
+        <a href="#experience" class="bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold px-6 py-3 rounded-xl transition-all shadow-lg shadow-sky-500/20 text-sm">
+          View Experience & Track Record
+        </a>
+        <a href="https://github.com/frankinkua" target="_blank" rel="noopener noreferrer" class="bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 px-6 py-3 rounded-xl transition-all text-sm flex items-center gap-2">
+          <i data-lucide="github" class="w-4 h-4"></i>
+          <span>GitHub Projects</span>
+        </a>
+      </div>
+
+      <!-- Quick Metrics -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-10 border-t border-slate-800/80 max-w-3xl mx-auto">
+        <div>
+          <div class="font-display text-2xl font-bold text-white">5x</div>
+          <div class="text-xs text-slate-400">Startup Founder</div>
+        </div>
+        <div>
+          <div class="font-display text-2xl font-bold text-sky-400">75k+</div>
+          <div class="text-xs text-slate-400">InkuA Volunteers Pool</div>
+        </div>
+        <div>
+          <div class="font-display text-2xl font-bold text-white">100M+</div>
+          <div class="text-xs text-slate-400">Viral Users Reached</div>
+        </div>
+        <div>
+          <div class="font-display text-2xl font-bold text-white">20+ yrs</div>
+          <div class="text-xs text-slate-400">Engineering & C-Level</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT & HIGHLIGHTS -->
+  <section id="about" class="py-20 bg-slate-950/60 border-t border-slate-800/60">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6">
+      <div class="grid md:grid-cols-12 gap-10 items-start">
+        
+        <div class="md:col-span-5 space-y-4">
+          <span class="text-sky-400 text-xs font-semibold uppercase tracking-wider block">Profile Overview</span>
+          <h2 class="font-display text-3xl font-bold text-white">Bridging Deep Tech with Founder Execution</h2>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            German-Argentine software engineer and systems architect based in Frankfurt am Main. Over two decades of solving mission-critical engineering, cybersecurity, and M&A challenges for enterprises, governments, and NGOs.
+          </p>
+          <div class="space-y-2 pt-2 text-xs text-slate-300">
+            <div class="flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4 text-sky-400"></i> Frankfurt am Main, Germany</div>
+            <div class="flex items-center gap-2"><i data-lucide="languages" class="w-4 h-4 text-sky-400"></i> Spanish (Native) · English (Fluent) · German (B1)</div>
+            <div class="flex items-center gap-2"><i data-lucide="award" class="w-4 h-4 text-sky-400"></i> Cannes Lions Winner · German Sustainability Hackathon</div>
+          </div>
+        </div>
+
+        <div class="md:col-span-7 grid sm:grid-cols-2 gap-4">
+          
+          <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl card-hover">
+            <div class="w-9 h-9 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center mb-3">
+              <i data-lucide="server" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-bold text-white text-base mb-1">Infrastructure & Datacenter</h3>
+            <p class="text-slate-400 text-xs leading-relaxed">
+              Autonomous home datacenter, Tailscale zero-trust networking, Proxmox hypervisors, and multi-GPU cluster orchestration (ASUS GX10s, Ray).
+            </p>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl card-hover">
+            <div class="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-3">
+              <i data-lucide="bot" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-bold text-white text-base mb-1">AI Swarms & Edge Ops</h3>
+            <p class="text-slate-400 text-xs leading-relaxed">
+              100% Local-First multi-agent orchestration. Local LLM endpoints, deterministic systemd reflexes, and automated GitHub CI/CD review swarms.
+            </p>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl card-hover">
+            <div class="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center mb-3">
+              <i data-lucide="shield" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-bold text-white text-base mb-1">Security & M&A Due Diligence</h3>
+            <p class="text-slate-400 text-xs leading-relaxed">
+              Technical advisor for Wilobank M&A through Ualá acquisition. Forensic cyber-advisory for 2 presidents. Due diligence logic flaw discovery.
+            </p>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl card-hover">
+            <div class="w-9 h-9 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center mb-3">
+              <i data-lucide="heart-handshake" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-bold text-white text-base mb-1">Non-Profit & Social Impact</h3>
+            <p class="text-slate-400 text-xs leading-relaxed">
+              Founder & MD of InkuA gUG. "Portales InkuA" social-integration initiative using VR, 3D printing, and robotics for underprivileged youth.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section id="experience" class="py-20 bg-slate-950">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-16">
+        <span class="text-sky-400 text-xs font-semibold uppercase tracking-wider block mb-2">Track Record</span>
+        <h2 class="font-display text-3xl font-bold text-white">Selected Experience</h2>
+      </div>
+
+      <div class="space-y-8 relative before:absolute before:inset-0 before:left-3 sm:before:left-5 before:w-0.5 before:bg-slate-800">
+        
+        <!-- Role 1 -->
+        <div class="relative pl-10 sm:pl-14">
+          <div class="absolute left-1.5 sm:left-3.5 top-1.5 w-3 h-3 rounded-full bg-sky-400 ring-4 ring-slate-950"></div>
+          <div class="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+              <h3 class="font-bold text-white text-lg">InkuA gUG — Founder & Managing Director</h3>
+              <span class="text-xs text-sky-400 font-mono">2021 — Present · Frankfurt</span>
+            </div>
+            <p class="text-slate-400 text-xs mb-3">Non-profit global education & technology community empowering youth and professionals.</p>
+            <ul class="text-xs text-slate-300 space-y-1.5 list-disc list-inside">
+              <li>Built a global tech/education community with 50k+ followers, 75k+ volunteer pipeline, and 50+ active contributors.</li>
+              <li>Engineered an AI onboarding stack integrating local and cloud coding agents.</li>
+              <li>Directed flagship initiative "Portales InkuA" (~$330k) leveraging VR, 3D printing, and robotics for vulnerable youth.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Role 2 -->
+        <div class="relative pl-10 sm:pl-14">
+          <div class="absolute left-1.5 sm:left-3.5 top-1.5 w-3 h-3 rounded-full bg-sky-400 ring-4 ring-slate-950"></div>
+          <div class="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+              <h3 class="font-bold text-white text-lg">Custom Group — Technical Founder & Lead Advisor</h3>
+              <span class="text-xs text-sky-400 font-mono">2018 — 2026</span>
+            </div>
+            <p class="text-slate-400 text-xs mb-3">Strategic advisory and deep-tech architecture for C-level executives and governments.</p>
+            <ul class="text-xs text-slate-300 space-y-1.5 list-disc list-inside">
+              <li>Technical advisor for Wilobank M&A due diligence leading to its acquisition by Ualá.</li>
+              <li>Built personalized high-scale video rendering platform delivering 40M+ videos and 180M images.</li>
+              <li>Rebuilt global FMCG leader's VoIP failover network, reducing annual infrastructure costs from €9M to &lt;€0.5M.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Role 3 -->
+        <div class="relative pl-10 sm:pl-14">
+          <div class="absolute left-1.5 sm:left-3.5 top-1.5 w-3 h-3 rounded-full bg-slate-600 ring-4 ring-slate-950"></div>
+          <div class="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+              <h3 class="font-bold text-white text-lg">Cybersecurity, Viral Platforms & Deep Tech</h3>
+              <span class="text-xs text-slate-500 font-mono">2010 — 2021</span>
+            </div>
+            <ul class="text-xs text-slate-300 space-y-1.5 list-disc list-inside">
+              <li>Viral hit "Santa's Call" reaching 100M+ users across 17 countries.</li>
+              <li>Delivered 50+ enterprise fintech solutions for Visa, Mastercard, Santander, and BBVA.</li>
+              <li>Hardware & cyber security advisor to national institutions and presidential campaigns (2010–2018).</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- STACK & TOOLS -->
+  <section id="stack" class="py-20 bg-slate-950/80 border-t border-slate-800">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-12">
+        <span class="text-sky-400 text-xs font-semibold uppercase tracking-wider block mb-2">Core Competencies</span>
+        <h2 class="font-display text-3xl font-bold text-white">Technical Arsenal</h2>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
+          <div class="text-sky-400 font-bold mb-1">Languages</div>
+          <div class="text-slate-300">Python, Rust, PHP, Bash, C, JS, SQL, Go</div>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
+          <div class="text-emerald-400 font-bold mb-1">Infrastructure</div>
+          <div class="text-slate-300">Debian, Proxmox, Tailscale, Linux SRE, Ray</div>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
+          <div class="text-amber-400 font-bold mb-1">AI & Swarms</div>
+          <div class="text-slate-300">Ollama, vLLM, Agentic CI, Local Swarm Mesh</div>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
+          <div class="text-purple-400 font-bold mb-1">Security & Ops</div>
+          <div class="text-slate-300">Zero-Trust, M&A Due Diligence, GDPR, Cloudflare</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="py-20 bg-slate-950 border-t border-slate-800">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 text-center space-y-6">
+      <span class="text-sky-400 text-xs font-semibold uppercase tracking-wider block">Get in Touch</span>
+      <h2 class="font-display text-3xl font-bold text-white">Let's Connect</h2>
+      <p class="text-slate-400 text-sm max-w-lg mx-auto">
+        Available for high-impact advisory, engineering leadership, and strategic collaboration across deep tech and social impact.
+      </p>
+
+      <div class="flex flex-wrap items-center justify-center gap-4 pt-4">
+        <a href="mailto:frank@inkua.eu" class="bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-sky-500/20 text-sm flex items-center gap-2">
+          <i data-lucide="mail" class="w-4 h-4"></i>
+          <span>frank@inkua.eu</span>
+        </a>
+        <a href="https://www.linkedin.com/in/frankeee/" target="_blank" rel="noopener noreferrer" class="bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 px-6 py-3 rounded-xl transition-all text-sm flex items-center gap-2">
+          <i data-lucide="linkedin" class="w-4 h-4"></i>
+          <span>LinkedIn Profile</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-slate-950 border-t border-slate-900 py-8 text-slate-500 text-xs text-center">
+    <p>© 2026 Frank Escudero · frank-escudero.com · Self-hosted & Autonomous</p>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
