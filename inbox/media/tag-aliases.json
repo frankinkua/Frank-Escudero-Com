@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "normalization": "lowercase, accent-insensitive, hyphen/underscore to spaces",
+  "canonical": {
+    "portrait": [
+      "portraits",
+      "retrato",
+      "retratos",
+      "photo",
+      "foto",
+      "fotografia"
+    ],
+    "personal": [
+      "dog",
+      "perro"
+    ],
+    "video": [
+      "videos",
+      "charla",
+      "charlas",
+      "talk",
+      "talks",
+      "youtube"
+    ],
+    "creative-technology": [
+      "technology",
+      "tecnologia",
+      "personalizacion",
+      "personalization"
+    ],
+    "social-impact": [
+      "impacto social",
+      "humanitarian",
+      "humanitario"
+    ],
+    "community": [
+      "comunidad",
+      "comunidades",
+      "encuentro"
+    ],
+    "inclusion": [
+      "inclusión",
+      "incluir",
+      "puentes",
+      "bridges"
+    ],
+    "poverty": [
+      "pobreza"
+    ],
+    "music": [
+      "musica",
+      "música",
+      "piano"
+    ],
+    "press": [
+      "prensa",
+      "interview",
+      "entrevista"
+    ],
+    "entrepreneurship": [
+      "emprendimiento",
+      "founder",
+      "fundador"
+    ],
+    "cybersecurity": [
+      "ciberseguridad",
+      "security"
+    ],
+    "energy": [
+      "energia",
+      "solar",
+      "balcony",
+      "balcon"
+    ],
+    "robotics": [
+      "robotica",
+      "robótica",
+      "3d printing",
+      "impresion 3d"
+    ],
+    "medtech": [
+      "medical technology",
+      "tecnologia medica"
+    ]
+  },
+  "related": [
+    [
+      "community",
+      "social-impact",
+      "inclusion"
+    ],
+    [
+      "creative-technology",
+      "video",
+      "entrepreneurship"
+    ],
+    [
+      "robotics",
+      "medtech",
+      "entrepreneurship"
+    ],
+    [
+      "energy",
+      "entrepreneurship"
+    ]
+  ],
+  "constraints": [
+    "Related topics are not identity aliases.",
+    "La Cava and Bajo Boulogne must not be merged as geographic synonyms.",
+    "A tag does not prove a claim or grant media rights."
+  ]
+}
