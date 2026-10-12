@@ -1,0 +1,90 @@
+[
+  {
+    "query": "\"Ezequiel Escudero\" \"Asombro Extremo\" interview OR entrevista",
+    "tool": "Google Search",
+    "accessed_at": "2026-10-12 06:40",
+    "url": null,
+    "outcome": "No results",
+    "rejection_reason": "No high-quality results matching the query were found."
+  },
+  {
+    "query": "\"Frank Escudero\" \"Asombro Extremo\" interview OR entrevista",
+    "tool": "Google Search",
+    "accessed_at": "2026-10-12 06:40",
+    "url": null,
+    "outcome": "No results",
+    "rejection_reason": "No high-quality results matching the query were found."
+  },
+  {
+    "query": "\"Asombro Extremo\" entrevista CTO",
+    "tool": "Google Search",
+    "accessed_at": "2026-10-12 06:40",
+    "url": null,
+    "outcome": "No results",
+    "rejection_reason": "No high-quality results matching the query were found."
+  },
+  {
+    "query": "\"Asombro Extremo\" entrevista \"Marcos Amadeo\" OR \"Julián Ávila\" OR \"Ezequiel Escudero\"",
+    "tool": "Google Search",
+    "accessed_at": "2026-10-12 06:40",
+    "url": null,
+    "outcome": "No results",
+    "rejection_reason": "No high-quality results matching the query were found."
+  },
+  {
+    "query": "\"Asombro Extremo\" entrevista",
+    "tool": "Google Search",
+    "accessed_at": "2026-10-12 06:40",
+    "url": null,
+    "outcome": "No results",
+    "rejection_reason": "No high-quality results matching the query were found."
+  },
+  {
+    "query": "\"Asombro Extremo\" \"Ezequiel Escudero\"",
+    "tool": "Google Search",
+    "accessed_at": "2026-10-12 06:40",
+    "url": null,
+    "outcome": "No results",
+    "rejection_reason": "No high-quality results matching the query were found."
+  },
+  {
+    "query": "\"Asombro Extremo\" site:youtube.com",
+    "tool": "Google Search",
+    "accessed_at": "2026-10-12 06:40",
+    "url": null,
+    "outcome": "No results",
+    "rejection_reason": "No high-quality results matching the query were found."
+  },
+  {
+    "query": "\"Asombro Extremo\" CTO Ezequiel Escudero",
+    "tool": "Google Search",
+    "accessed_at": "2026-10-12 06:40",
+    "url": null,
+    "outcome": "No results",
+    "rejection_reason": "No high-quality results matching the query were found."
+  },
+  {
+    "query": "\"Ezequiel Escudero\" \"Asombro Extremo\"",
+    "tool": "Google Search",
+    "accessed_at": "2026-10-12 06:40",
+    "url": null,
+    "outcome": "No results",
+    "rejection_reason": "No high-quality results matching the query were found."
+  },
+  {
+    "query": "\"Asombro Extremo\" \"Samsung\" \"La Casa de Papel\"",
+    "tool": "Google Search",
+    "accessed_at": "2026-10-12 06:40",
+    "url": null,
+    "outcome": "No results",
+    "rejection_reason": "No high-quality results matching the query were found."
+  },
+  {
+    "query": "\"Asombro Extremo\" \"Carlos Vives\" \"Robarte un beso\"",
+    "tool": "Google Search",
+    "accessed_at": "2026-10-12 06:40",
+    "url": null,
+    "outcome": "No results",
+    "rejection_reason": "No high-quality results matching the query were found."
+  }
+]

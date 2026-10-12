@@ -1,0 +1,6 @@
+# Research Lessons Observed
+
+* **Homonym & Identity Matching:** Searching for "Frank Escudero" alongside "Asombro Extremo" generated very few hits, reflecting that his recognized public identity in older press for this organization is almost exclusively "Ezequiel Escudero".
+* **Lack of Independent Citations:** Extensive searches for Ezequiel Escudero's technical role during Asombro Extremo's key campaigns (such as Samsung's "La Casa de Papel" and Carlos Vives's "Robarte un beso") did not return specific interviews where he is the primary subject detailing his engineering or creative input, indicating that public press typically focused on the organization (Asombro Extremo) as a whole or its other founders/magicians.
+* **Tool Limitation:** Relying on simple exact-match queries for CTO/interviews might be filtering out more organic mentions within longer press articles.
+* **Improved Prompt Clause:** "When researching older technical roles in creative agencies, utilize broader project or campaign names (e.g. 'Robarte un beso') combined with 'tecnología' or 'programador', rather than just filtering by exact job titles like CTO, as media may use varying nomenclature for non-traditional roles."
