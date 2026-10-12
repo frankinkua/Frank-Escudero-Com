@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "task_id": "r05",
+  "subject": "Frank / Ezequiel Escudero",
+  "topic": "SETOFF and institutional documents",
+  "retrieved_at": "2026-10-12",
+  "items": [
+    {
+      "id": "setoff-video-2023",
+      "type": "video",
+      "title": "Third event of the European SETOFF project",
+      "canonical_url": "https://www.youtube.com/watch?v=vN9MpTM5Tuo",
+      "publisher": "FINNOVA",
+      "published_at": "2023-06",
+      "language": "en",
+      "identity_evidence": "Referenced in SETOFF press release as speaker Frank Escudero, CEO of InkuA.",
+      "supported_claim": "Speaker on cybersecurity, offering tips on how to avoid online scams.",
+      "evidence_locator": "https://setoff-project.eu/wp-content/uploads/2023/07/PR_3RD_WORKSHOP_June2023.pdf page 3",
+      "tags": [
+        "cybersecurity",
+        "video"
+      ],
+      "related_project": "SETOFF",
+      "confidence": "high (explicit name and title in official press release)",
+      "verification_status": "verified",
+      "rights_status": "restricted",
+      "rights_evidence_url": null,
+      "local_path": null,
+      "duplicate_of": null
+    }
+  ]
+}

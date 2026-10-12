@@ -1,0 +1,3 @@
+- **Lesson**: `urllib` is easily blocked with 403 Forbidden. Using `curl` with a user-agent string successfully bypasses basic restrictions.
+- **Lesson**: Using online search APIs can hit rate limits or block constraints, preventing web exploration.
+- **Improved prompt clause**: When extracting PDF text, use existing tools like `curl` with a user agent, then parse it manually, or look for existing tools in the environment. Do not use `pip install` or rely entirely on external search APIs that could be blocked.

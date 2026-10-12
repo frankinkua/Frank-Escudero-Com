@@ -1,0 +1,26 @@
+[
+  {
+    "query": "exact URL from setoff2.pdf",
+    "tool": "view_text_website",
+    "url": "https://www.youtube.com/watch?v=vN9MpTM5Tuo&ab_channel=FINNOVA",
+    "access_time": "2026-10-12",
+    "outcome": "blocked",
+    "rejection_reason": "YouTube blocked automated fetch. Recovered video ID vN9MpTM5Tuo from URL."
+  },
+  {
+    "query": "extract PDF text",
+    "tool": "PyMuPDF text extraction",
+    "url": "https://setoff-project.eu/wp-content/uploads/2023/07/PR_3RD_WORKSHOP_June2023.pdf",
+    "access_time": "2026-10-12",
+    "outcome": "verified",
+    "rejection_reason": null
+  },
+  {
+    "query": "SETOFF project Frank Escudero",
+    "tool": "duckduckgo",
+    "url": "https://api.duckduckgo.com/?q=SETOFF+project+Frank+Escudero",
+    "access_time": "2026-10-12",
+    "outcome": "unavailable",
+    "rejection_reason": "Search endpoint unavailable / rate limited."
+  }
+]
