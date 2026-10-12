@@ -24,6 +24,8 @@
     />
     <link rel="stylesheet" href="styles.css" />
     <script src="site.js" defer></script>
+    <link rel="stylesheet" href="assets/explorer.css" />
+    <script src="assets/explorer.js" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -305,12 +307,18 @@
             or Spanish.
           </p>
         </div>
+        <div class="project-shortcuts" role="group" aria-label="Explore by project">
+          <button type="button" data-project-query="Asombro Extremo" aria-pressed="false"><small>01 / Creative technology</small><strong>Asombro Extremo ↗</strong></button>
+          <button type="button" data-project-query="InkuA" aria-pressed="false"><small>02 / People & learning</small><strong>InkuA ↗</strong></button>
+          <button type="button" data-project-query="Portrait" aria-pressed="false"><small>03 / Off the clock</small><strong>Portrait ↗</strong></button>
+        </div>
         <div class="media-tools">
           <label for="media-search"
             >Find a topic
             <input
               id="media-search"
               type="search"
+              maxlength="120"
               placeholder="Try: videos, retrato, comunidad…"
               autocomplete="off"
           /></label>
@@ -325,9 +333,9 @@
             </button>
           </div>
         </div>
-        <p class="result-count" role="status" aria-live="polite"></p>
-        <div class="media-grid">
-          <article class="media-card" data-tags="portrait personal">
+        <div class="explorer-status"><p class="result-count" role="status" aria-live="polite"></p><div class="explorer-actions"><button type="button" data-media-reset>Reset filters</button><a href="#media" data-media-permalink>Link to this view ↗</a></div></div>
+        <div class="media-grid media-grid-pairs">
+          <article class="media-card" data-media-id="frank-dog" data-keywords="Frank Ezequiel Escudero perro dog" data-tags="portrait personal">
             <img
               src="inbox/media/images/frank-with-dog.png"
               alt="Frank and his dog on a patio."
@@ -343,7 +351,7 @@
             </div>
           </article>
           <article
-            class="media-card"
+            class="media-card" data-media-id="asombro-2019" data-keywords="Asombro Extremo personalization campaigns"
             data-tags="press creative-technology video entrepreneurship"
           >
             <a
@@ -364,7 +372,7 @@
             </div>
           </article>
           <article
-            class="media-card"
+            class="media-card" data-media-id="setoff-2023" data-keywords="InkuA SETOFF workshop cybersecurity"
             data-tags="social-impact cybersecurity community"
           >
             <a
@@ -386,7 +394,20 @@
               >
             </div>
           </article>
+          <article class="media-card" data-media-id="asombro-2018" data-keywords="Asombro Extremo Carlos Vives Robarte un beso campaign campaña" data-tags="press creative-technology video entrepreneurship">
+            <a class="media-art press-art campaign-cover" href="https://www.lanacion.com.ar/economia/los-emprendedores-argentinos-que-venden-asombro-a-empresas-celebrities-y-politicos-nid2139972/">
+              <span>CARLOS VIVES / ASOMBRO EXTREMO</span>
+              <strong>A personal call.<br /><em>83 countries.</em></strong>
+              <span>CAMPAIGN REPORT / JUNE 2018 ↗</span>
+            </a>
+            <div><span class="eyebrow">Case study / Published team results</span>
+              <h3>The story behind the scale.</h3>
+              <p>The “Robarte un beso” campaign: more than 204,000 people reached by calls in 12 hours. Explore the reporting behind the numbers.</p>
+              <span class="tags">Asombro Extremo · Campaigns · Personalization</span>
+            </div>
+          </article>
         </div>
+        <p data-source-note>Open “Source & context” on each item to see where it comes from.</p>
         <p class="no-results" hidden>
           No matching items. Try “video”, “portrait” or “community”.
         </p>

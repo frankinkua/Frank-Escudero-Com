@@ -22,6 +22,7 @@
   --line: #d3d5ca;
   --lime: #d9ec8d;
 }
+.campaign-cover { background: #d9ec8d; color: #162425; }
 * {
   box-sizing: border-box;
 }

@@ -27,3 +27,7 @@ GitHub Pages uses `.github/workflows/pages.yml`. `node scripts/build.cjs` create
 The existing `CNAME` is preserved. As checked on 11 October 2026, HTTP works at http://frank-escudero.com/ but the HTTPS certificate does not match the hostname. This pre-existing hosting issue is separate from the site build; do not bypass certificate warnings.
 
 DM Sans and Instrument Serif are bundled under their SIL Open Font Licenses. User-supplied photography is not relicensed by this code repository.
+
+## Project discovery update
+
+The media section includes the sourced Carlos Vives campaign and project shortcuts for Asombro Extremo and InkuA. Filters are shareable with #media?q=...&type=..., restore through browser history, and can be reset. Every card links to an approved catalogue ID and exposes readable source/date/use details. No Jules draft is read at runtime.
