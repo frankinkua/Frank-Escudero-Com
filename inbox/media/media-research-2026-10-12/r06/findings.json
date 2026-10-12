@@ -3,7 +3,7 @@
   "task_id": "R06",
   "subject": "Frank Escudero",
   "topic": "Portrait and project image provenance",
-  "retrieved_at": "2026-10-12T12:00:00Z",
+  "retrieved_at": "2026-10-12T07:17:48Z",
   "items": [
     {
       "id": "asombro-2018-portrait",
@@ -16,7 +16,11 @@
       "identity_evidence": "Found in LA NACION article that names Ezequiel Escudero as founder and CTO.",
       "supported_claim": "Portrait of founders",
       "evidence_locator": "Lead image of the article",
-      "tags": ["portrait", "entrepreneurship", "creative-technology"],
+      "tags": [
+        "portrait",
+        "entrepreneurship",
+        "creative-technology"
+      ],
       "related_project": "Asombro Extremo",
       "confidence": "high",
       "verification_status": "verified",
@@ -28,15 +32,19 @@
     {
       "id": "asombro-2019-portrait",
       "type": "image",
-      "title": "Julián Avila, Marcos Amadeo y Ezequiel Escudero - 2019",
+      "title": "Juli\u00e1n Avila, Marcos Amadeo y Ezequiel Escudero - 2019",
       "canonical_url": "https://www.lanacion.com.ar/resizer/v2/julian-avila-marcos-amadeo-y-ezequiel-escudero-55RVC2Z6XFHXRGDVRDB7FFHGM4.jpg?auth=85435ba6144b8d93d037a418d5ed7e0231f72e3e91bd1eab7b9e2359e73b1a31&width=1200&height=800&quality=70&smart=true",
       "publisher": "LA NACION",
       "published_at": "2019-11-26",
       "language": "es",
-      "identity_evidence": "Image caption specifically names Julián Avila, Marcos Amadeo y Ezequiel Escudero, fundadores de Asombro Extremo.",
-      "supported_claim": "Portrait of founders",
+      "identity_evidence": "Image caption specifically names Juli\u00e1n Avila, Marcos Amadeo y Ezequiel Escudero, fundadores de Asombro Extremo.",
+      "supported_claim": "Portrait of founders, creator evidence: Ignacio S\u00e1nchez - Brando, dimensions: 1200x800",
       "evidence_locator": "Lead image of the article",
-      "tags": ["portrait", "entrepreneurship", "creative-technology"],
+      "tags": [
+        "portrait",
+        "entrepreneurship",
+        "creative-technology"
+      ],
       "related_project": "Asombro Extremo",
       "confidence": "high",
       "verification_status": "verified",
