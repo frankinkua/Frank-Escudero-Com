@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "task_id": "R06",
+  "subject": "Frank Escudero",
+  "topic": "Portrait and project image provenance",
+  "retrieved_at": "2026-10-12T12:00:00Z",
+  "items": [
+    {
+      "id": "asombro-2018-portrait",
+      "type": "image",
+      "title": "Asombro Extremo founders - 2018",
+      "canonical_url": "https://www.lanacion.com.ar/resizer/v2/los-emprendedores-argentinos-que-venden-asombro-a-SRLWMTVCZ5D6NKQV2G2ND75BDA.jpg?auth=71fc37994f0f6a5989d768128d1f149d3d567aaffa0fe0f0bfe84c98efd02140&width=1200&height=800&quality=70&smart=true",
+      "publisher": "LA NACION",
+      "published_at": "2018-06-01",
+      "language": "es",
+      "identity_evidence": "Found in LA NACION article that names Ezequiel Escudero as founder and CTO.",
+      "supported_claim": "Portrait of founders",
+      "evidence_locator": "Lead image of the article",
+      "tags": ["portrait", "entrepreneurship", "creative-technology"],
+      "related_project": "Asombro Extremo",
+      "confidence": "high",
+      "verification_status": "verified",
+      "rights_status": "reference_only",
+      "rights_evidence_url": "https://www.lanacion.com.ar/economia/los-emprendedores-argentinos-que-venden-asombro-a-empresas-celebrities-y-politicos-nid2139972/",
+      "local_path": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "asombro-2019-portrait",
+      "type": "image",
+      "title": "Julián Avila, Marcos Amadeo y Ezequiel Escudero - 2019",
+      "canonical_url": "https://www.lanacion.com.ar/resizer/v2/julian-avila-marcos-amadeo-y-ezequiel-escudero-55RVC2Z6XFHXRGDVRDB7FFHGM4.jpg?auth=85435ba6144b8d93d037a418d5ed7e0231f72e3e91bd1eab7b9e2359e73b1a31&width=1200&height=800&quality=70&smart=true",
+      "publisher": "LA NACION",
+      "published_at": "2019-11-26",
+      "language": "es",
+      "identity_evidence": "Image caption specifically names Julián Avila, Marcos Amadeo y Ezequiel Escudero, fundadores de Asombro Extremo.",
+      "supported_claim": "Portrait of founders",
+      "evidence_locator": "Lead image of the article",
+      "tags": ["portrait", "entrepreneurship", "creative-technology"],
+      "related_project": "Asombro Extremo",
+      "confidence": "high",
+      "verification_status": "verified",
+      "rights_status": "reference_only",
+      "rights_evidence_url": "https://www.lanacion.com.ar/lifestyle/ideas-millonarias-son-magos-montaron-negocio-empresas-nid2309906/",
+      "local_path": null,
+      "duplicate_of": null
+    }
+  ]
+}
