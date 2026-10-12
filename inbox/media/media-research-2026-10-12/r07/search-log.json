@@ -1,90 +1,34 @@
 [
   {
-    "query": "Ezequiel Escudero Asombro Extremo",
+    "query": "Asombro Extremo Ezequiel Escudero",
     "tool": "google_search",
     "url": null,
     "access_time": "2026-10-12 06:40",
     "outcome": "rejected",
     "rejection_reason": "Tool provided no results of sufficient quality."
-  },
-  {
-    "query": "Frank Escudero InkuA",
-    "tool": "google_search",
-    "url": null,
-    "access_time": "2026-10-12 06:40",
-    "outcome": "rejected",
-    "rejection_reason": "Tool provided no results of sufficient quality."
-  },
-  {
-    "query": "Frank Escudero SETOFF",
-    "tool": "google_search",
-    "url": null,
-    "access_time": "2026-10-12 06:40",
-    "outcome": "rejected",
-    "rejection_reason": "Tool provided no results of sufficient quality."
-  },
-  {
-    "query": "Ezequiel Escudero",
-    "tool": "google_search",
-    "url": null,
-    "access_time": "2026-10-12 06:41",
-    "outcome": "rejected",
-    "rejection_reason": "Tool provided no results of sufficient quality."
-  },
-  {
-    "query": "Ezequiel Escudero Asombro Extremo",
-    "tool": "DuckDuckGo HTML search",
-    "url": "https://html.duckduckgo.com/html/?q=Ezequiel+Escudero+Asombro+Extremo",
-    "access_time": "2026-10-12 06:45",
-    "outcome": "blocked",
-    "rejection_reason": "Search engine returns anomaly/bot challenge form."
-  },
-  {
-    "query": "Frank Escudero InkuA",
-    "tool": "DuckDuckGo HTML search",
-    "url": "https://html.duckduckgo.com/html/?q=Frank+Escudero+InkuA",
-    "access_time": "2026-10-12 06:45",
-    "outcome": "blocked",
-    "rejection_reason": "Search engine returns anomaly/bot challenge form."
   },
   {
     "query": "Asombro Extremo",
-    "tool": "Wikipedia API (es)",
-    "url": "https://es.wikipedia.org/w/api.php?action=query&prop=extracts&titles=Asombro%20Extremo",
-    "access_time": "2026-10-12 06:50",
+    "tool": "Wikipedia API (es) externallinks",
+    "url": "https://es.wikipedia.org/w/api.php?action=parse&page=Asombro_Extremo&format=json&prop=externallinks",
+    "access_time": "2026-10-12 08:55",
     "outcome": "verified",
     "rejection_reason": null
   },
   {
-    "query": "SETOFF PR_3RD_WORKSHOP_June2023.pdf",
-    "tool": "PyPDF2 text extraction",
-    "url": "https://setoff-project.eu/wp-content/uploads/2023/07/PR_3RD_WORKSHOP_June2023.pdf",
-    "access_time": "2026-10-12 06:46",
-    "outcome": "verified",
-    "rejection_reason": null
-  },
-  {
-    "query": "Ezequiel Escudero Asombro Extremo",
-    "tool": "Wikipedia API (de)",
-    "url": "https://de.wikipedia.org/w/api.php?action=query&list=search&srsearch=Ezequiel%20Escudero%20Asombro%20Extremo",
-    "access_time": "2026-10-12 06:52",
-    "outcome": "rejected",
-    "rejection_reason": "No relevant pages found in German Wikipedia."
-  },
-  {
-    "query": "Asombro Extremo Ezequiel Escudero",
-    "tool": "DuckDuckGo HTML search via BeautifulSoup",
-    "url": "https://html.duckduckgo.com/html/?q=Asombro+Extremo+Ezequiel+Escudero",
-    "access_time": "2026-10-12 06:55",
-    "outcome": "blocked",
-    "rejection_reason": "Search engine returns anomaly/bot challenge form."
-  },
-  {
-    "query": "https://www.lanacion.com.ar/economia/los-emprendedores-argentinos-que-venden-asombro-a-empresas-celebrities-y-politicos-nid2139972/",
+    "query": "https://news.samsung.com/ar/samsung-lanza-el-plan-perfecto-la-campana-personalizada-para-sorprender-a-amigos-y-seres-queridos",
     "tool": "BeautifulSoup fetch",
-    "url": "https://www.lanacion.com.ar/economia/los-emprendedores-argentinos-que-venden-asombro-a-empresas-celebrities-y-politicos-nid2139972/",
-    "access_time": "2026-10-12 06:56",
-    "outcome": "duplicate",
-    "rejection_reason": "This source is already cataloged in the main catalog.json"
+    "url": "https://news.samsung.com/ar/samsung-lanza-el-plan-perfecto-la-campana-personalizada-para-sorprender-a-amigos-y-seres-queridos",
+    "access_time": "2026-10-12 09:00",
+    "outcome": "verified",
+    "rejection_reason": null
+  },
+  {
+    "query": "https://www.elconfidencialdigital.com/articulo/an/campanas-personalizadas-asombro-extremo-acercan-grandes-musicos-fans/20220728103304432767.html",
+    "tool": "BeautifulSoup fetch",
+    "url": "https://www.elconfidencialdigital.com/articulo/an/campanas-personalizadas-asombro-extremo-acercan-grandes-musicos-fans/20220728103304432767.html",
+    "access_time": "2026-10-12 09:00",
+    "outcome": "verified",
+    "rejection_reason": null
   }
 ]
