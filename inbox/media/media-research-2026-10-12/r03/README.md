@@ -1,7 +1,7 @@
 # R03 Research Packet: Campaign and award media
 
 ## Overview
-This packet investigates campaign and award media connected to Frank / Ezequiel Escudero and Asombro Extremo (now Amaze / Asombro Extremo LLC). Initial open-web searches were blocked by tool limitations, so direct reviewer-supplied fallbacks were utilized.
+This packet investigates campaign and award media connected to Frank / Ezequiel Escudero and Asombro Extremo (now Amaze / Asombro Extremo LLC). Initial open-web searches were inconclusive, so direct reviewer-supplied fallbacks were utilized.
 
 ## Findings
 * **Amaze (Asombro Extremo LLC):** Discovered the corporate continuity to weareamaze.com. Their Terms & Conditions (Section 6.3) strictly prohibit copying/reproduction without express written consent. Consequently, zero local downloads were made; all assets are tracked as `reference_only`.
@@ -11,12 +11,13 @@ This packet investigates campaign and award media connected to Frank / Ezequiel 
 Because of strict rights limitations, the catalogue entries contain exact canonical references and zero local assets.
 
 ## Limitations
-* Open web searches for specific campaigns and "Cannes Lions" failed completely.
-* The Iberia case study page and embedded YouTube video were throttled/blocked from direct retrieval.
+* Open web searches for specific campaigns and "Cannes Lions" yielded no results / inconclusive results.
+* The Iberia case study page and embedded YouTube video were throttled/blocked from direct programmatic retrieval and required manual/reviewer fallback.
 * All assets found are under strict copyright (reference-only), preventing direct incorporation into the website's local assets.
 
 ## Exact Validation Commands
 ```bash
+python3 -m json.tool inbox/media/media-research-2026-10-12/r03/keyword-map.json
 python3 -m json.tool inbox/media/media-research-2026-10-12/r03/findings.json
 python3 -m json.tool inbox/media/media-research-2026-10-12/r03/search-log.json
 node --test tests/*.test.cjs

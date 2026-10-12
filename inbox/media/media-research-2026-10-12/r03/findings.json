@@ -16,14 +16,19 @@
       "identity_evidence": "Associated with Asombro Extremo LLC. No direct Frank Escudero attribution.",
       "supported_claim": "Campaign execution by Amaze (Asombro Extremo LLC).",
       "evidence_locator": "weareamaze.com case studies",
-      "tags": ["campaigns", "creative-technology", "video"],
+      "tags": [
+        "campaigns",
+        "creative-technology",
+        "video"
+      ],
       "related_project": "Iberia Three Wise Men",
-      "confidence": "high",
-      "verification_status": "verified",
+      "confidence": "high (reviewer-supplied lead)",
+      "verification_status": "reviewer-supplied",
       "rights_status": "reference_only",
       "rights_evidence_url": "https://www.weareamaze.com/en/terms-and-conditions",
       "local_path": null,
-      "duplicate_of": null
+      "duplicate_of": null,
+      "proposed_placement": "Contextual link in case studies (no local asset)."
     },
     {
       "id": "clarin-awards-2015",
@@ -36,54 +41,71 @@
       "identity_evidence": "Mentions Asombro Extremo as winner. No direct Frank Escudero attribution.",
       "supported_claim": "Asombro Extremo won Gold in Digital Campaigns and Silver in Mobile for Coca Cola El llamado de Papá Noel.",
       "evidence_locator": "Section: Campañas digitales / Mobile",
-      "tags": ["press", "campaigns", "creative-technology"],
+      "tags": [
+        "press",
+        "campaigns",
+        "creative-technology"
+      ],
       "related_project": "El llamado de Papá Noel",
-      "confidence": "high",
+      "confidence": "high (verified article content)",
       "verification_status": "verified",
       "rights_status": "reference_only",
-      "rights_evidence_url": "https://www.adlatina.com/terminos-y-condiciones",
+      "rights_evidence_url": null,
+      "rights_evidence_note": "No explicit reuse license found for publisher Adlatina.",
       "local_path": null,
-      "duplicate_of": null
+      "duplicate_of": null,
+      "proposed_placement": "Reference link to clarify Clarín awards versus Cannes."
     },
     {
       "id": "cannes-awards-content",
       "type": "image",
       "title": "Cannes Lions Awards Content Context Imagery",
-      "canonical_url": "https://images.ctfassets.net/vjs6vfoxg7y6/4ebvULThPImBdwI5ChdKxb/b3c5682f93d00d1f1ecc0724cb3e78e9/awards7.webp?fm=webp&q=75&w=576",
+      "canonical_url": "https://www.canneslions.com/awards/winners-spotlight/awards-content-at-the-festival",
+      "direct_asset_url": "https://images.ctfassets.net/vjs6vfoxg7y6/4ebvULThPImBdwI5ChdKxb/b3c5682f93d00d1f1ecc0724cb3e78e9/awards7.webp?fm=webp&q=75&w=576",
       "publisher": "Cannes Lions",
       "published_at": null,
       "language": "en",
       "identity_evidence": "Context imagery only. No Frank Escudero attribution.",
       "supported_claim": "Cannes Lions festival context.",
       "evidence_locator": "Image from awards content page",
-      "tags": ["community", "press"],
+      "tags": [
+        "community",
+        "press"
+      ],
       "related_project": "Cannes Lions",
-      "confidence": "high",
+      "confidence": "high (verified image on official page)",
       "verification_status": "verified",
       "rights_status": "reference_only",
-      "rights_evidence_url": "https://www.canneslions.com/website-terms-of-use",
+      "rights_evidence_url": null,
+      "rights_evidence_note": "No reuse license found on Cannes Lions site. Terms page exists but exact reuse grants not stated.",
       "local_path": null,
-      "duplicate_of": null
+      "duplicate_of": null,
+      "proposed_placement": "Contextual imagery only. No Frank award or attendance claim."
     },
     {
       "id": "amaze-iberia-video",
       "type": "video",
       "title": "Iberia Three Wise Men Video (Amaze)",
-      "canonical_url": "https://www.youtube.com/embed/CKyqcQEUV_4",
+      "canonical_url": "https://www.youtube.com/watch?v=CKyqcQEUV_4",
       "publisher": "YouTube (Amaze)",
       "published_at": null,
       "language": "es",
       "identity_evidence": "Associated with Asombro Extremo LLC case study. No direct Frank attribution.",
       "supported_claim": "Amaze executed the Iberia Three Wise Men campaign.",
       "evidence_locator": "Linked from Iberia case page",
-      "tags": ["campaigns", "creative-technology", "video"],
+      "tags": [
+        "campaigns",
+        "creative-technology",
+        "video"
+      ],
       "related_project": "Iberia Three Wise Men",
-      "confidence": "medium",
-      "verification_status": "blocked",
+      "confidence": "medium (reviewer-supplied fallback)",
+      "verification_status": "reviewer-supplied",
       "rights_status": "reference_only",
       "rights_evidence_url": "https://www.weareamaze.com/en/terms-and-conditions",
       "local_path": null,
-      "duplicate_of": null
+      "duplicate_of": null,
+      "proposed_placement": "Video reference link on case study page."
     }
   ]
 }
