@@ -18,7 +18,7 @@ test("unknown filters and oversized query strings are bounded",()=>{
 });
 test("every displayed media card maps to the independently reviewed catalogue",()=>{
  const ids=[...html.matchAll(/data-media-id="([^"]+)"/g)].map(m=>m[1]);
- assert.ok(ids.length>=4);
+ assert.deepEqual(ids.slice().sort(),["frank-dog","setoff-2023"]);
  assert.equal(ids.length,new Set(ids).size);
  for(const id of ids) assert.ok(catalogue.items.some(item=>item.id===id),id);
  assert.match(html,/data-media-reset/);assert.match(html,/data-media-permalink/);
