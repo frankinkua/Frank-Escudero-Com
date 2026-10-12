@@ -25,6 +25,41 @@
       "transformations": "None; responsive display only."
     },
     {
+      "id": "frank-portrait-studio",
+      "type": "image",
+      "title": "Frank studio portrait",
+      "source_url": null,
+      "local_path": "inbox/media/images/frank-portrait-studio.jpg",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied source photo PXL_20230316_202612489.jpg and approved Gemini stylized studio portrait for the site on 2026-10-12.",
+      "tags": [
+        "portrait",
+        "personal"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "93e6963975eff97d555961d84e3253df51333bb4b46197ab23bcbe250cad8ef1",
+      "identity_evidence": "Confirmed as Frank by the owner.",
+      "transformations": "Gemini-enhanced studio backdrop and color grading matching portfolio aesthetic."
+    },
+    {
+      "id": "mobile-metrics-ui",
+      "type": "image",
+      "title": "System metrics mobile telemetry card",
+      "source_url": null,
+      "local_path": "inbox/media/images/mobile-metrics-ui.jpg",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied telemetry screenshot Screenshot_20160718-102754.jpg and approved Gemini stylized Apple-HIG interface card on 2026-10-12.",
+      "tags": [
+        "creative-technology"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "3c9d465ee764613371faa7e0cd1d14ae6214f0d0189401d1885a54196e7797cc",
+      "identity_evidence": "Architectural telemetry visualization approved by Frank.",
+      "transformations": "Gemini-rendered Apple HIG dark card with stencil motif."
+    },
+    {
       "id": "setoff-2023",
       "type": "document",
       "title": "SETOFF third workshop press release",

@@ -110,7 +110,7 @@ test("canonical video sources and numerical bounds remain explicit", () => {
 });
 
 test("public catalogue contains only the owner's current approved references", () => {
-  assert.deepEqual(catalog.items.map((item) => item.id).sort(), ["frank-dog", "setoff-2023"]);
+  assert.deepEqual(catalog.items.map((item) => item.id).sort(), ["frank-dog", "frank-portrait-studio", "mobile-metrics-ui", "setoff-2023"]);
   assert.deepEqual(catalog.metrics.map((item) => item.id).sort(), ["images", "videos", "voip-after", "voip-before"]);
   assert.ok(catalog.metrics.every((metric) => metric.evidence_type === "owner_report"));
   const approvedHosts = new Set(["github.com", "www.linkedin.com", "setoff-project.eu"]);
