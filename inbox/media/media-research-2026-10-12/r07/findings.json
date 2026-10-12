@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "task_id": "R07",
+  "subject": "Frank / Ezequiel Escudero",
+  "topic": "Multilingual media discovery",
+  "retrieved_at": "2026-10-12",
+  "items": [
+    {
+      "id": "asombro-wikipedia-es",
+      "type": "article",
+      "title": "Asombro Extremo",
+      "canonical_url": "https://es.wikipedia.org/wiki/Asombro_Extremo",
+      "publisher": "Wikipedia",
+      "published_at": null,
+      "language": "es",
+      "identity_evidence": "Names Marcos Amadeo and Julián Ávila as founders in 2009. Mentioned in context with Asombro Extremo which is Ezequiel Escudero's company.",
+      "supported_claim": "Information about Asombro Extremo, its founding, and its digital campaigns.",
+      "evidence_locator": "First paragraph: 'Asombro Extremo (fundada en 2009 por los empresarios Marcos Amadeo y Julián Ávila)'",
+      "tags": ["creative-technology"],
+      "related_project": "Asombro Extremo",
+      "confidence": "high",
+      "verification_status": "verified",
+      "rights_status": "reference_only",
+      "rights_evidence_url": "https://es.wikipedia.org/wiki/Wikipedia:Derechos_de_autor",
+      "local_path": null,
+      "duplicate_of": null
+    }
+  ]
+}
