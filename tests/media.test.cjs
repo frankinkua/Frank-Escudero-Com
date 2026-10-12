@@ -118,3 +118,22 @@ test("public catalogue contains only the owner's current approved references", (
     assert.ok(approvedHosts.has(new URL(url).hostname), "External sources require owner approval");
   }
 });
+
+test("withdrawn stencil artwork stays off the site", () => {
+  // Frank asked on 2026-10-12 to remove the Banksy-style stencils (Girl with
+  // Balloon on the telemetry card, a stencil bird on the studio portrait).
+  // These are the checksums of the original files that carried them.
+  const withdrawn = [
+    "93e6963975eff97d555961d84e3253df51333bb4b46197ab23bcbe250cad8ef1",
+    "3c9d465ee764613371faa7e0cd1d14ae6214f0d0189401d1885a54196e7797cc",
+  ];
+  assert.ok(catalog.items.every((item) => !withdrawn.includes(item.sha256)));
+  const dir = path.join(root, "inbox/media/images");
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (!entry.isFile()) continue;
+    const buf = fs.readFileSync(path.join(dir, entry.name));
+    const sum = crypto.createHash("sha256").update(buf).digest("hex");
+    assert.ok(!withdrawn.includes(sum), entry.name);
+  }
+  assert.doesNotMatch(html, /stencil|street[- ]art|banksy/i);
+});

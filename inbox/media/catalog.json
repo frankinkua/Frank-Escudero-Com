@@ -29,7 +29,7 @@
       "type": "image",
       "title": "Frank studio portrait",
       "source_url": null,
-      "local_path": "inbox/media/images/frank-portrait-studio.jpg",
+      "local_path": "inbox/media/images/frank-portrait-studio.webp",
       "rights_status": "user_supplied",
       "rights_evidence": "User supplied source photo PXL_20230316_202612489.jpg and approved Gemini stylized studio portrait for the site on 2026-10-12.",
       "tags": [
@@ -38,16 +38,16 @@
       ],
       "related_tags": [],
       "retrieved_at": "2026-10-11",
-      "sha256": "93e6963975eff97d555961d84e3253df51333bb4b46197ab23bcbe250cad8ef1",
+      "sha256": "fd121b156cfe2f884416f364972e84845de42a33e89e2ea529c05f217dc19e80",
       "identity_evidence": "Confirmed as Frank by the owner.",
-      "transformations": "Gemini-enhanced studio backdrop and color grading matching portfolio aesthetic."
+      "transformations": "Gemini-enhanced studio backdrop and color grading matching portfolio aesthetic. On 2026-10-12, at the owner's request, a decorative stencil graphic was retouched out of the background wall and the file was re-encoded as WebP (quality 85, same 1024x1024 size)."
     },
     {
       "id": "mobile-metrics-ui",
       "type": "image",
       "title": "System metrics mobile telemetry card",
       "source_url": null,
-      "local_path": "inbox/media/images/mobile-metrics-ui.jpg",
+      "local_path": "inbox/media/images/mobile-metrics-ui.webp",
       "rights_status": "user_supplied",
       "rights_evidence": "User supplied telemetry screenshot Screenshot_20160718-102754.jpg and approved Gemini stylized Apple-HIG interface card on 2026-10-12.",
       "tags": [
@@ -55,9 +55,9 @@
       ],
       "related_tags": [],
       "retrieved_at": "2026-10-11",
-      "sha256": "3c9d465ee764613371faa7e0cd1d14ae6214f0d0189401d1885a54196e7797cc",
+      "sha256": "ec94c4ebce4ef92fa9f5f4a604308c2ab01a7cadf052414bc4e4394e0bc0332f",
       "identity_evidence": "Architectural telemetry visualization approved by Frank.",
-      "transformations": "Gemini-rendered Apple HIG dark card with stencil motif."
+      "transformations": "Gemini-rendered Apple HIG dark card. On 2026-10-12, at the owner's request, cropped from 1376x768 to the 1024x768 area around the device to remove a decorative stencil graphic, and re-encoded as WebP (quality 85)."
     },
     {
       "id": "setoff-2023",
