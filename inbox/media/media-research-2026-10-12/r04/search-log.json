@@ -8,14 +8,6 @@
     "rejection_reason": "No results with good enough quality found."
   },
   {
-    "query": "\"InkuA\" \"Ezequiel Escudero\"",
-    "tool": "Google Search API",
-    "url": "Google Search",
-    "access_time": "2026-10-12 06:41",
-    "outcome": "No results",
-    "rejection_reason": "No results with good enough quality found."
-  },
-  {
     "query": "\"InkuA\" \"Frank Escudero\"",
     "tool": "curl HTTP duckduckgo",
     "url": "https://duckduckgo.com/html/?q=\"InkuA\"+\"Frank+Escudero\"",
@@ -24,28 +16,12 @@
     "rejection_reason": "DuckDuckGo requires CAPTCHA validation for HTML interface."
   },
   {
-    "query": "\"InkuA\" \"Frank Escudero\"",
-    "tool": "Wikipedia API",
-    "url": "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=%22InkuA%22%20%22Frank%20Escudero%22&utf8=&format=json",
-    "access_time": "2026-10-12 06:41",
-    "outcome": "Blocked",
-    "rejection_reason": "HTTP Error 403: Forbidden"
-  },
-  {
     "query": "repo:inkua/information-technology-it-workspace type:pr",
     "tool": "GitHub API",
     "url": "https://api.github.com/search/issues?q=repo:inkua/information-technology-it-workspace+type:pr",
     "access_time": "2026-10-12 06:42",
-    "outcome": "Verified",
-    "rejection_reason": null
-  },
-  {
-    "query": "InkuA Frank Escudero",
-    "tool": "YouTube Search",
-    "url": "https://youtube.com/results?search_query=InkuA+Frank+Escudero",
-    "access_time": "2026-10-12 06:42",
-    "outcome": "Unrelated",
-    "rejection_reason": "Results did not explicitly mention InkuA upon text check."
+    "outcome": "Rejected",
+    "rejection_reason": "Identified as agent-generated content, not independent media coverage or proof of personal authorship."
   },
   {
     "query": "repo:inkua/information-technology-it-workspace ezequiel",
@@ -53,6 +29,14 @@
     "url": "https://api.github.com/search/issues?q=repo:inkua/information-technology-it-workspace+ezequiel",
     "access_time": "2026-10-12 06:43",
     "outcome": "Wrong person",
-    "rejection_reason": "Found Ezequiel Vega, not Escudero, though good community context."
+    "rejection_reason": "Found Ezequiel Vega, not Escudero."
+  },
+  {
+    "query": "Frank Escudero / Ezequiel Escudero",
+    "tool": "curl HTTP inkua.de/member-benefits",
+    "url": "https://inkua.de/member-benefits",
+    "access_time": "2026-10-12 08:58",
+    "outcome": "Verified",
+    "rejection_reason": null
   }
 ]
