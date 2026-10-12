@@ -1,14 +1,14 @@
 # R03 Research Packet: Campaign and award media
 
 ## Overview
-This packet investigates campaign and award media connected to Frank / Ezequiel Escudero and Asombro Extremo (now Amaze / Asombro Extremo LLC). Initial open-web searches were inconclusive, so direct reviewer-supplied fallbacks were utilized.
+This packet investigates campaign and award media connected to Frank / Ezequiel Escudero and Asombro Extremo (now Amaze / Asombro Extremo LLC). Initial open-web searches were inconclusive, so direct reviewer-supplied fallbacks and explicitly provided leads were utilized.
 
 ## Findings
 * **Amaze (Asombro Extremo LLC):** Discovered the corporate continuity to weareamaze.com. Their Terms & Conditions (Section 6.3) strictly prohibit copying/reproduction without express written consent. Consequently, zero local downloads were made; all assets are tracked as `reference_only`.
 * **Clarín Creativity Awards 2015:** Asombro Extremo won Gold in Digital Campaigns and Silver in Mobile for the Coca-Cola "El llamado de Papá Noel" campaign. The article clarifies that Blue Hive (for Ford) won the Cannes Lions trip, explicitly removing a Cannes Lions link from Asombro Extremo in this context.
-* **Cannes Lions:** Contextual imagery is present on the official site, but no specific attribution to Frank or rights grants for republication were found.
+* **Personal Attribution:** While many awards target the agency, an article on AleTecno explicitly credits Ezequiel Escudero with "Desarrollo Digital" for the Samsung "El Plan Perfecto" campaign, distinguishing his personal work.
 
-Because of strict rights limitations, the catalogue entries contain exact canonical references and zero local assets.
+Because of strict rights limitations, the catalogue entries contain exact canonical references and zero local assets. Generic Cannes Lions context imagery was rejected as a finding as it provided no proof of agency/personal involvement.
 
 ## Limitations
 * Open web searches for specific campaigns and "Cannes Lions" yielded no results / inconclusive results.

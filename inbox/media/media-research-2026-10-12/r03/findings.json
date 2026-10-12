@@ -39,7 +39,7 @@
       "published_at": "2015-12-15",
       "language": "es",
       "identity_evidence": "Mentions Asombro Extremo as winner. No direct Frank Escudero attribution.",
-      "supported_claim": "Asombro Extremo won Gold in Digital Campaigns and Silver in Mobile for Coca Cola El llamado de Papá Noel.",
+      "supported_claim": "Asombro Extremo won Gold in Digital Campaigns and Silver in Mobile for Coca Cola El llamado de Papá Noel. (Agency award)",
       "evidence_locator": "Section: Campañas digitales / Mobile",
       "tags": [
         "press",
@@ -54,33 +54,7 @@
       "rights_evidence_note": "No explicit reuse license found for publisher Adlatina.",
       "local_path": null,
       "duplicate_of": null,
-      "proposed_placement": "Reference link to clarify Clarín awards versus Cannes."
-    },
-    {
-      "id": "cannes-awards-content",
-      "type": "image",
-      "title": "Cannes Lions Awards Content Context Imagery",
-      "canonical_url": "https://www.canneslions.com/awards/winners-spotlight/awards-content-at-the-festival",
-      "direct_asset_url": "https://images.ctfassets.net/vjs6vfoxg7y6/4ebvULThPImBdwI5ChdKxb/b3c5682f93d00d1f1ecc0724cb3e78e9/awards7.webp?fm=webp&q=75&w=576",
-      "publisher": "Cannes Lions",
-      "published_at": null,
-      "language": "en",
-      "identity_evidence": "Context imagery only. No Frank Escudero attribution.",
-      "supported_claim": "Cannes Lions festival context.",
-      "evidence_locator": "Image from awards content page",
-      "tags": [
-        "community",
-        "press"
-      ],
-      "related_project": "Cannes Lions",
-      "confidence": "high (verified image on official page)",
-      "verification_status": "verified",
-      "rights_status": "reference_only",
-      "rights_evidence_url": null,
-      "rights_evidence_note": "No reuse license found on Cannes Lions site. Terms page exists but exact reuse grants not stated.",
-      "local_path": null,
-      "duplicate_of": null,
-      "proposed_placement": "Contextual imagery only. No Frank award or attendance claim."
+      "proposed_placement": "Reference link to clarify Clarín agency awards versus Cannes."
     },
     {
       "id": "amaze-iberia-video",
@@ -106,6 +80,32 @@
       "local_path": null,
       "duplicate_of": null,
       "proposed_placement": "Video reference link on case study page."
+    },
+    {
+      "id": "aletecno-samsung-plan-perfecto",
+      "type": "article",
+      "title": "Samsung lanza la campaña personalizada para sorprender a amigos y seres queridos",
+      "canonical_url": "https://www.aletecno.com.ar/samsung-lanza-la-campana-personalizada-para-sorprender-a-amigos-y-seres-queridos/",
+      "publisher": "AleTecno",
+      "published_at": null,
+      "language": "es",
+      "identity_evidence": "Explicitly names Ezequiel Escudero in the campaign credits.",
+      "supported_claim": "Ezequiel Escudero performed 'Desarrollo Digital' for the Samsung 'El Plan Perfecto' campaign by agency Asombro Extremo. (Personal credit)",
+      "evidence_locator": "DATOS DE LA CAMPAÑA section at the bottom of the article.",
+      "tags": [
+        "campaigns",
+        "creative-technology",
+        "personalization"
+      ],
+      "related_project": "Samsung El Plan Perfecto",
+      "confidence": "high (verified explicit personal credit)",
+      "verification_status": "verified",
+      "rights_status": "reference_only",
+      "rights_evidence_url": null,
+      "rights_evidence_note": "No explicit reuse license found for AleTecno article.",
+      "local_path": null,
+      "duplicate_of": null,
+      "proposed_placement": "Reference link citing personal technical attribution for a major campaign."
     }
   ]
 }

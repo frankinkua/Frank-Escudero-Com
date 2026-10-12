@@ -108,7 +108,14 @@
     "query": "https://www.canneslions.com/awards/winners-spotlight/awards-content-at-the-festival",
     "tool": "view_text_website",
     "accessed_at": "2026-10-12",
+    "outcome": "rejected",
+    "reason": "Cannes Lions context imagery moved to rejected/context-only leads because it provides no proof of Frank/Asombro involvement or attendance."
+  },
+  {
+    "query": "https://www.aletecno.com.ar/samsung-lanza-la-campana-personalizada-para-sorprender-a-amigos-y-seres-queridos/",
+    "tool": "view_text_website",
+    "accessed_at": "2026-10-12",
     "outcome": "verified",
-    "reason": "Verified Cannes Lions context imagery. No specific Frank attribution or rights grant, recorded as reference_only."
+    "reason": "Verified article explicitly crediting 'Desarrollo Digital' to Ezequiel Escudero for the Samsung 'El Plan Perfecto' campaign by Asombro Extremo."
   }
 ]
