@@ -4,5 +4,27 @@
   "subject": "Ezequiel Escudero / Frank Escudero",
   "topic": "Asombro Extremo interviews",
   "retrieved_at": "2026-10-12",
-  "items": []
+  "items": [
+    {
+      "id": "asombro-2019-propinas",
+      "type": "article",
+      "title": "Juntaba propinas siendo mago en Plaza Serrano y hoy es reconocido en el mundo",
+      "canonical_url": "https://www.lanacion.com.ar/lifestyle/juntaba-propinas-siendo-mago-plaza-serrano-hoy-nid2236305/",
+      "publisher": "LA NACION",
+      "published_at": "2019-04-08",
+      "language": "es",
+      "identity_evidence": "Names Ezequiel Escudero as a technological genius who joined in 2014, and was later incorporated as a partner.",
+      "supported_claim": "Ezequiel Escudero provided a notable technological impulse to their shows, 'making true miracles on stage'.",
+      "evidence_locator": "Section 'Un paso más allá de la magia'",
+      "tags": ["press", "creative-technology"],
+      "related_project": "Asombro Extremo",
+      "confidence": "high",
+      "verification_status": "verified",
+      "rights_status": "reference_only",
+      "rights_evidence_url": "https://www.lanacion.com.ar/lifestyle/juntaba-propinas-siendo-mago-plaza-serrano-hoy-nid2236305/",
+      "local_path": null,
+      "duplicate_of": null,
+      "conflict_note": "Timeline states Ezequiel Escudero was met in 2014 and incorporated as a partner later, which conflicts with other catalog articles stating they created the company in 2012 together."
+    }
+  ]
 }
