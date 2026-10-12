@@ -637,7 +637,7 @@ nav a:hover,
 }
 .media-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
 .media-card[hidden] {

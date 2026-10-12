@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "discovered_image_count": 1,
+  "downloaded_image_count": 0,
+  "permission_pending_count": 1,
+  "access_failed_count": 0,
+  "items": [
+    {
+      "id": "frank_european_parliament_2023",
+      "canonical_url": "https://inkua.eu/web/image/1610-ad273c2c/image.png",
+      "source_page": "https://inkua.de/member-benefits",
+      "local_path": null,
+      "retrieved_at_utc": "2026-10-12 09:19:43",
+      "byte_count": 516310,
+      "sha256": "79f94bed280bad18e28b115a956e226093edaa8b8b5a0babb3f57365807d0edc",
+      "mime_type": "image/png",
+      "dimensions": "713x449",
+      "rights_evidence": "No explicit reuse license found on source page or imprint. Rights remain unknown.",
+      "delivery_status": "permission_pending",
+      "blocker": "Waiting on explicit owner/organization permission to publish the binary. Local copy deleted."
+    }
+  ]
+}

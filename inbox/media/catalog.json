@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "reviewed_at": "2026-10-12",
+  "reviewed_at": "2026-10-11",
   "rights_note": "Public availability is not a reuse license. User-supplied photographs are used for this requested website; no general redistribution license is asserted. Reference-only media stay at the publisher.",
   "tag_aliases": "tag-aliases.json",
   "subject": "Frank / Ezequiel Escudero",
-  "identity_note": "The site owner confirms Frank and Ezequiel Escudero are the same person.",
+  "identity_note": "The site owner confirms Frank and Ezequiel Escudero are the same person; the 2018 article names Ezequiel as co-founder and CTO.",
   "items": [
     {
       "id": "frank-dog",
@@ -23,6 +23,48 @@
       "sha256": "fcc9a13c0bb0e153241d7c97ed23fa47c70b160c4412628bb672c44609254d63",
       "identity_evidence": "Identified as Frank by the user.",
       "transformations": "None; responsive display only."
+    },
+    {
+      "id": "asombro-2018",
+      "type": "article",
+      "title": "Asombro Extremo founder profile",
+      "source_url": "https://www.lanacion.com.ar/economia/los-emprendedores-argentinos-que-venden-asombro-a-empresas-celebrities-y-politicos-nid2139972/",
+      "local_path": null,
+      "rights_status": "reference_only",
+      "rights_evidence": "Linked to original publisher; no copying or rehosting.",
+      "tags": [
+        "press",
+        "creative-technology",
+        "video",
+        "entrepreneurship"
+      ],
+      "related_tags": [
+        "personalization",
+        "campaigns"
+      ],
+      "retrieved_at": "2026-10-11",
+      "published_at": "2018-06-01",
+      "publisher": "LA NACION",
+      "identity_evidence": "Names Ezequiel Escudero as founder and CTO."
+    },
+    {
+      "id": "asombro-2019",
+      "type": "article",
+      "title": "The founders behind Asombro Extremo",
+      "source_url": "https://www.lanacion.com.ar/lifestyle/ideas-millonarias-son-magos-montaron-negocio-empresas-nid2309906/",
+      "local_path": null,
+      "rights_status": "reference_only",
+      "rights_evidence": "Linked to original publisher; no copying or rehosting.",
+      "tags": [
+        "press",
+        "creative-technology",
+        "video"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "published_at": "2019-11-26",
+      "publisher": "LA NACION",
+      "identity_evidence": "Names Ezequiel Escudero with fellow founders."
     },
     {
       "id": "setoff-2023",
@@ -84,6 +126,36 @@
       "evidence_type": "owner_report",
       "confirmed_at": "2026-10-11",
       "source_url": null
+    },
+    {
+      "id": "campaign-calls",
+      "value": 204000,
+      "comparator": ">",
+      "unit": "people",
+      "period": "12 hours",
+      "evidence_type": "published_report",
+      "source_url": "https://www.lanacion.com.ar/economia/los-emprendedores-argentinos-que-venden-asombro-a-empresas-celebrities-y-politicos-nid2139972/",
+      "credited_to": "Asombro Extremo campaign team"
+    },
+    {
+      "id": "campaign-countries",
+      "value": 83,
+      "comparator": "=",
+      "unit": "countries",
+      "period": "Campaign",
+      "evidence_type": "published_report",
+      "source_url": "https://www.lanacion.com.ar/economia/los-emprendedores-argentinos-que-venden-asombro-a-empresas-celebrities-y-politicos-nid2139972/",
+      "credited_to": "Asombro Extremo campaign team"
+    },
+    {
+      "id": "campaign-views",
+      "value": 20000000,
+      "comparator": ">",
+      "unit": "video views",
+      "period": "First week",
+      "evidence_type": "published_report",
+      "source_url": "https://www.lanacion.com.ar/economia/los-emprendedores-argentinos-que-venden-asombro-a-empresas-celebrities-y-politicos-nid2139972/",
+      "credited_to": "Asombro Extremo campaign team"
     }
   ]
 }

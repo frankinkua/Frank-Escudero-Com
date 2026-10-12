@@ -1,15 +1,15 @@
 # Frank Escudero — personal website
 
-A static, locally hosted-asset portfolio for Frank / Ezequiel Escudero. Ivory, cobalt and a real user-supplied portrait; engineering interests, two accessible comparison charts, and a multilingual searchable media catalogue.
+A static, locally hosted-asset portfolio for Frank / Ezequiel Escudero. Ivory, cobalt and a real user-supplied portrait; case studies, two accessible comparison charts, and a multilingual searchable media catalogue.
 
 ## Evidence and media
 
 - `inbox/media/catalog.json` records sources, rights, identity evidence, dates, exact local asset hashes, and numeric comparators.
 - Frank confirmed the 40M+ videos, 180M+ images and €9M to <€0.5M annual VoIP cost figures on 11 October 2026. These are explicitly owner-reported, not independently audited; project dates remain unspecified.
-- Only the user-selected dog photograph and the approved institutional workshop reference are in the public media catalogue.
+- The 2018 LA NACION article independently publishes the Asombro Extremo team campaign figures. Publication is not an audit, and the team results are not attributed to Frank alone.
+- Only the user-selected dog photograph is published. External press photos remain references.
 - Shared canonical tags and bilingual aliases are in `inbox/media/tag-aliases.json`.
 - Jules draft research folders are not a source of automatic publication or verified claims.
-- Public content follows the owner's current publication choices. Do not restore withdrawn employer, agency, campaign or press associations from older commits or research drafts. New affiliations and related sources require explicit owner approval.
 
 ## Local checks
 

@@ -3,7 +3,7 @@
   "task_id": "R04",
   "subject": "Frank / Ezequiel Escudero",
   "topic": "InkuA project and community media",
-  "retrieved_at": "2026-10-12 09:00",
+  "retrieved_at": "2026-10-12 09:19",
   "items": [
     {
       "id": "inkua-european-parliament-2023",
@@ -11,10 +11,10 @@
       "title": "InkuA Member Benefits & European Parliament Visit",
       "canonical_url": "https://inkua.de/member-benefits",
       "publisher": "InkuA gUG",
-      "published_at": "2024",
+      "published_at": null,
       "language": "English",
       "identity_evidence": "Image caption specifically stating 'Frank Escudero visiting the European Parliament representing InkuA in 2023'.",
-      "supported_claim": "Frank Escudero represents InkuA at institutional levels, such as the European Parliament.",
+      "supported_claim": "Frank Escudero represented InkuA at the European Parliament in 2023.",
       "evidence_locator": "Image caption midway through the page.",
       "tags": [
         "community",

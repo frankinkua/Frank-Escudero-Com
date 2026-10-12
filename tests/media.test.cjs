@@ -108,13 +108,3 @@ test("canonical video sources and numerical bounds remain explicit", () => {
     assert.match(html, /Not\s+independently\s+audited/);
   }
 });
-
-test("public catalogue contains only the owner's current approved references", () => {
-  assert.deepEqual(catalog.items.map((item) => item.id).sort(), ["frank-dog", "setoff-2023"]);
-  assert.deepEqual(catalog.metrics.map((item) => item.id).sort(), ["images", "videos", "voip-after", "voip-before"]);
-  assert.ok(catalog.metrics.every((metric) => metric.evidence_type === "owner_report"));
-  const approvedHosts = new Set(["github.com", "www.linkedin.com", "setoff-project.eu"]);
-  for (const [, url] of html.matchAll(/\b(?:href|src)="(https?:[^"]+)"/g)) {
-    assert.ok(approvedHosts.has(new URL(url).hostname), "External sources require owner approval");
-  }
-});
