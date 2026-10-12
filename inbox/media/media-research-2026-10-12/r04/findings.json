@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "task_id": "R04",
+  "subject": "Frank / Ezequiel Escudero",
+  "topic": "InkuA project and community media",
+  "retrieved_at": "2026-10-12 06:45",
+  "items": [
+    {
+      "id": "inkua-github-dashboard-pr",
+      "type": "website",
+      "title": "Add Inkua GitHub dashboard",
+      "canonical_url": "https://github.com/inkua/information-technology-it-workspace/pull/460",
+      "publisher": "GitHub / InkuA",
+      "published_at": "2026-10-11",
+      "language": "English/Spanish",
+      "identity_evidence": "PR created by frankinkua to the inkua organization repository adding a dashboard.",
+      "supported_claim": "Frank Escudero actively contributes to InkuA's IT workspace.",
+      "evidence_locator": "PR author and description.",
+      "tags": [
+        "community",
+        "social-impact"
+      ],
+      "related_project": "InkuA",
+      "confidence": "high (Direct contribution to official InkuA repository by verified GitHub account.)",
+      "verification_status": "verified",
+      "rights_status": "reference_only",
+      "rights_evidence_url": null,
+      "local_path": null,
+      "duplicate_of": null
+    }
+  ]
+}
