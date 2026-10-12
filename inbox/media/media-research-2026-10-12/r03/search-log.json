@@ -1,0 +1,51 @@
+[
+  {
+    "query": "\"Asombro Extremo\" \"Cannes Lions\"",
+    "tool": "google_search",
+    "accessed_at": "2026-10-12",
+    "outcome": "blocked",
+    "reason": "Search engine returned 'No results with good enough quality found.', effectively blocking retrieval of public leads for Cannes Lions."
+  },
+  {
+    "query": "https://somosasombro.com/ -> https://www.weareamaze.com/en",
+    "tool": "view_text_website",
+    "accessed_at": "2026-10-12",
+    "outcome": "verified",
+    "reason": "Successfully accessed the Amaze website, identifying it as Asombro Extremo LLC."
+  },
+  {
+    "query": "https://www.weareamaze.com/en/terms-and-conditions",
+    "tool": "view_text_website",
+    "accessed_at": "2026-10-12",
+    "outcome": "verified",
+    "reason": "Confirmed Section 6.3 prohibits copying without express written consent. All assets from this site must remain reference_only."
+  },
+  {
+    "query": "https://www.weareamaze.com/en/case-studies/iberia-three-wise-men",
+    "tool": "view_text_website",
+    "accessed_at": "2026-10-12",
+    "outcome": "blocked",
+    "reason": "Fetch throttled/blocked. Trawler fallback rejected."
+  },
+  {
+    "query": "https://www.youtube.com/embed/CKyqcQEUV_4",
+    "tool": "view_text_website",
+    "accessed_at": "2026-10-12",
+    "outcome": "blocked",
+    "reason": "Unable to execute JavaScript. Fetch failed."
+  },
+  {
+    "query": "https://www.adlatina.com/publicidad/todos-los-ganadores-de-los-premios-clar%C3%ADn-creatividad-2015",
+    "tool": "view_text_website",
+    "accessed_at": "2026-10-12",
+    "outcome": "verified",
+    "reason": "Article verified: Asombro Extremo won Gold in Digital Campaigns and Silver in Mobile for 'El llamado de Papá Noel'. Blue Hive won the Cannes Lions trip for Ford, not Asombro."
+  },
+  {
+    "query": "https://www.canneslions.com/awards/winners-spotlight/awards-content-at-the-festival",
+    "tool": "view_text_website",
+    "accessed_at": "2026-10-12",
+    "outcome": "verified",
+    "reason": "Verified Cannes Lions context imagery. No specific Frank attribution or rights grant, recorded as reference_only."
+  }
+]
