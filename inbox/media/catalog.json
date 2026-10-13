@@ -140,5 +140,14 @@
       "confirmed_at": "2026-10-13",
       "source_url": null
     }
+  ],
+  "brand_marks": [
+    {
+      "id": "coca-cola-wordmark",
+      "used_on": "Highlights slide: Christmas campaigns",
+      "source": "Simple Icons 13.21.0 (cocacola.svg), traced from https://commons.wikimedia.org/wiki/File:Coca-Cola_logo.svg",
+      "rights": "Trademark of The Coca-Cola Company, shown only to name the campaigns Frank managed",
+      "approved_by_owner": "2026-10-13"
+    }
   ]
 }
