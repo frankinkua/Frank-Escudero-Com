@@ -137,3 +137,17 @@ test("withdrawn stencil artwork stays off the site", () => {
   }
   assert.doesNotMatch(html, /stencil|street[- ]art|banksy/i);
 });
+
+test("projects section is numbered, labelled and keeps owner-reported figures qualified", () => {
+  const section = html.match(/<section id="projects"[\s\S]*?<\/section>/);
+  assert.ok(section, "projects section exists");
+  assert.match(html, /<a href="#projects">/);
+  const cards = section[0].match(/<li class="project-card/g) || [];
+  const numbers = [...section[0].matchAll(/project-number">(\d+) \//g)].map((m) => Number(m[1]));
+  assert.equal(numbers.length, cards.length);
+  assert.deepEqual(numbers, numbers.map((_, i) => i + 1));
+  for (const card of section[0].split('<li class="project-card').slice(1)) {
+    assert.match(card, /class="project-proof"/, "every story says what backs it");
+    if (/40 million|€9/.test(card)) assert.match(card, /Owner-reported, not independently audited/);
+  }
+});
