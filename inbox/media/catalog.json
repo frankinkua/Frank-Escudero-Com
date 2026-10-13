@@ -119,6 +119,56 @@
       "evidence_type": "owner_report",
       "confirmed_at": "2026-10-11",
       "source_url": null
+    },
+    {
+      "id": "christmas-countries",
+      "value": 17,
+      "comparator": "<=",
+      "unit": "countries running Coca-Cola Christmas campaigns at the same time",
+      "period": "Peak simultaneous reach; exact years not supplied",
+      "evidence_type": "owner_report",
+      "confirmed_at": "2026-10-13",
+      "source_url": null
+    },
+    {
+      "id": "christmas-years",
+      "value": 6,
+      "comparator": "=",
+      "unit": "years managing Coca-Cola Christmas campaigns",
+      "period": "Duration; exact years not supplied",
+      "evidence_type": "owner_report",
+      "confirmed_at": "2026-10-13",
+      "source_url": null
+    }
+  ],
+  "brand_marks": [
+    {
+      "id": "coca-cola-wordmark",
+      "used_on": "Highlights slide: Christmas campaigns",
+      "source": "Simple Icons 13.21.0 (cocacola.svg), traced from https://commons.wikimedia.org/wiki/File:Coca-Cola_logo.svg",
+      "rights": "Trademark of The Coca-Cola Company, shown only to name the campaigns Frank managed",
+      "approved_by_owner": "2026-10-13"
+    },
+    {
+      "id": "visa-wordmark",
+      "used_on": "Highlights slide: banks and payments",
+      "source": "Simple Icons 13.21.0 (visa.svg), from https://merchantsignageeu.visa.com/product.asp?dptID=696",
+      "rights": "Trademark of Visa, shown only to name a client Frank designed custom solutions for",
+      "approved_by_owner": "2026-10-13"
+    },
+    {
+      "id": "mastercard-mark",
+      "used_on": "Highlights slide: banks and payments",
+      "source": "Simple Icons 13.21.0 (mastercard.svg), from https://brand.mastercard.com/brandcenter/mastercard-brand-mark/downloads.html",
+      "rights": "Trademark of Mastercard, shown only to name a client Frank designed custom solutions for",
+      "approved_by_owner": "2026-10-13"
+    },
+    {
+      "id": "santander-bbva-names",
+      "used_on": "Highlights slide: banks and payments",
+      "source": "Names set in the site's DM Sans; official logo files not yet supplied",
+      "rights": "Names of Banco Santander and BBVA, shown only to name clients",
+      "approved_by_owner": "2026-10-13"
     }
   ]
 }
