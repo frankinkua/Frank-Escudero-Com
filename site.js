@@ -134,6 +134,116 @@ if (typeof document !== "undefined") {
     );
     render();
   }
+  const show = document.querySelector(".highlights");
+  if (show) {
+    const track = show.querySelector(".slide-track"),
+      slides = [...track.children],
+      dotsBox = show.querySelector(".slide-dots"),
+      count = show.querySelector(".slide-count"),
+      play = show.querySelector(".slide-play"),
+      reduce = window.matchMedia("(prefers-reduced-motion: reduce)"),
+      live = document.createElement("p");
+    live.className = "visually-hidden";
+    live.setAttribute("aria-live", "polite");
+    show.append(live);
+    let index = 0,
+      playing = !reduce.matches,
+      held = false,
+      onScreen = false,
+      timer = null;
+    const dots = slides.map((slide, i) => {
+      const dot = document.createElement("button");
+      dot.type = "button";
+      dot.setAttribute("aria-label", "Slide " + (i + 1) + ": " + slide.querySelector("h3").textContent);
+      dot.addEventListener("click", () => {
+        stop();
+        go(i, true);
+      });
+      dotsBox.append(dot);
+      return dot;
+    });
+    const step = () =>
+      slides.length > 1 ? slides[1].offsetLeft - slides[0].offsetLeft : 1;
+    const mark = (i) => {
+      index = i;
+      dots.forEach((dot, d) => dot.setAttribute("aria-current", String(d === i)));
+      count.textContent = i + 1 + " / " + slides.length;
+    };
+    const go = (i, announce) => {
+      i = (i + slides.length) % slides.length;
+      track.scrollTo({
+        left: i * step(),
+        behavior: reduce.matches ? "auto" : "smooth",
+      });
+      mark(i);
+      if (announce)
+        live.textContent =
+          "Slide " + (i + 1) + " of " + slides.length + ": " + slides[i].querySelector("h3").textContent;
+    };
+    const tick = () => {
+      clearInterval(timer);
+      timer =
+        playing && !held && onScreen && !document.hidden
+          ? setInterval(() => go(index + 1, false), 7000)
+          : null;
+    };
+    const setPlaying = (on) => {
+      playing = on;
+      play.textContent = on ? "Pause" : "Play";
+      play.setAttribute("aria-label", on ? "Pause slideshow" : "Play slideshow");
+      tick();
+    };
+    const stop = () => setPlaying(false);
+    play.addEventListener("click", () => setPlaying(!playing));
+    show.querySelector(".slide-prev").addEventListener("click", () => {
+      stop();
+      go(index - 1, true);
+    });
+    show.querySelector(".slide-next").addEventListener("click", () => {
+      stop();
+      go(index + 1, true);
+    });
+    show.addEventListener("keydown", (e) => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      e.preventDefault();
+      stop();
+      go(index + (e.key === "ArrowRight" ? 1 : -1), true);
+    });
+    track.addEventListener("pointerdown", stop);
+    track.addEventListener("wheel", (e) => {
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) stop();
+    }, { passive: true });
+    let queued = false;
+    track.addEventListener("scroll", () => {
+      if (queued) return;
+      queued = true;
+      window.requestAnimationFrame(() => {
+        queued = false;
+        const i = Math.round(track.scrollLeft / step());
+        if (i !== index && i >= 0 && i < slides.length) mark(i);
+      });
+    }, { passive: true });
+    const hold = (on) => {
+      held = on;
+      tick();
+    };
+    show.addEventListener("pointerenter", () => hold(true));
+    show.addEventListener("pointerleave", () => hold(show.contains(document.activeElement)));
+    show.addEventListener("focusin", () => hold(true));
+    show.addEventListener("focusout", (e) => {
+      if (!show.contains(e.relatedTarget)) hold(false);
+    });
+    document.addEventListener("visibilitychange", tick);
+    reduce.addEventListener("change", () => setPlaying(!reduce.matches && playing));
+    if ("IntersectionObserver" in window)
+      new IntersectionObserver((entries) => {
+        onScreen = entries[0].isIntersecting;
+        tick();
+      }, { threshold: 0.5 }).observe(track);
+    else onScreen = true;
+    mark(0);
+    setPlaying(playing);
+  }
   const journey = document.querySelector(".journey");
   if (journey) {
     const steps = [...document.querySelectorAll(".story-step")],

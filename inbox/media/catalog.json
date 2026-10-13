@@ -119,6 +119,26 @@
       "evidence_type": "owner_report",
       "confirmed_at": "2026-10-11",
       "source_url": null
+    },
+    {
+      "id": "christmas-countries",
+      "value": 17,
+      "comparator": "<=",
+      "unit": "countries running Coca-Cola Christmas campaigns at the same time",
+      "period": "Peak simultaneous reach; exact years not supplied",
+      "evidence_type": "owner_report",
+      "confirmed_at": "2026-10-13",
+      "source_url": null
+    },
+    {
+      "id": "christmas-years",
+      "value": 6,
+      "comparator": "=",
+      "unit": "years managing Coca-Cola Christmas campaigns",
+      "period": "Duration; exact years not supplied",
+      "evidence_type": "owner_report",
+      "confirmed_at": "2026-10-13",
+      "source_url": null
     }
   ]
 }

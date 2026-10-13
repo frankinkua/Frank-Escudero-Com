@@ -111,7 +111,7 @@ test("canonical video sources and numerical bounds remain explicit", () => {
 
 test("public catalogue contains only the owner's current approved references", () => {
   assert.deepEqual(catalog.items.map((item) => item.id).sort(), ["frank-dog", "frank-portrait-studio", "mobile-metrics-ui", "setoff-2023"]);
-  assert.deepEqual(catalog.metrics.map((item) => item.id).sort(), ["images", "videos", "voip-after", "voip-before"]);
+  assert.deepEqual(catalog.metrics.map((item) => item.id).sort(), ["christmas-countries", "christmas-years", "images", "videos", "voip-after", "voip-before"]);
   assert.ok(catalog.metrics.every((metric) => metric.evidence_type === "owner_report"));
   const approvedHosts = new Set(["github.com", "www.linkedin.com", "setoff-project.eu"]);
   for (const [, url] of html.matchAll(/\b(?:href|src)="(https?:[^"]+)"/g)) {
@@ -150,4 +150,25 @@ test("projects section is numbered, labelled and keeps owner-reported figures qu
     assert.match(card, /class="project-proof"/, "every story says what backs it");
     if (/40 million|€9/.test(card)) assert.match(card, /Owner-reported, not independently audited/);
   }
+});
+
+test("highlights slideshow is accessible vector art with qualified figures", () => {
+  const show = html.match(/<div\s+class="highlights"[\s\S]*?<\/ol>/);
+  assert.ok(show, "slideshow exists inside the page");
+  assert.match(show[0], /aria-roledescription="carousel"/);
+  assert.match(show[0], /aria-label="Pause slideshow"/);
+  const slides = show[0].split('<li class="slide"').slice(1);
+  assert.ok(slides.length >= 5);
+  slides.forEach((slide, i) => {
+    assert.match(slide, new RegExp(`aria-label="${i + 1} of ${slides.length}"`));
+    assert.match(slide, /<svg class="slide-art" viewBox="0 0 960 540" aria-hidden="true"/);
+    assert.doesNotMatch(slide, /<img\b|<image\b|xlink:href|data:/, "slides are drawn, not raster");
+    assert.match(slide, /<h3>[^<]+<\/h3>/, "the facts are readable as text too");
+    assert.match(slide, /class="project-proof"/);
+    if (/17 countries|40 million|€9M|drones-navales/.test(slide)) assert.match(slide, /Owner-reported/);
+  });
+  // The drone prototype year is unconfirmed; don't publish one until Frank does.
+  const drone = slides.find((slide) => /drones-navales/.test(slide));
+  assert.ok(drone);
+  assert.doesNotMatch(drone, /\b(?:19|20)\d\d\b/);
 });
