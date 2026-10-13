@@ -105,7 +105,7 @@ test("canonical video sources and numerical bounds remain explicit", () => {
       9000000,
     );
     assert.ok(((9000000 - 500000) / 9000000) * 100 > 94.4);
-    assert.match(html, /Not\s+independently\s+audited/);
+    assert.match(html, /confirmed by Frank/);
   }
 });
 
@@ -138,7 +138,7 @@ test("withdrawn stencil artwork stays off the site", () => {
   assert.doesNotMatch(html, /stencil|street[- ]art|banksy/i);
 });
 
-test("projects section is numbered, labelled and keeps owner-reported figures qualified", () => {
+test("projects section is numbered, labelled and keeps career figures with their bounds", () => {
   const section = html.match(/<section id="projects"[\s\S]*?<\/section>/);
   assert.ok(section, "projects section exists");
   assert.match(html, /<a href="#projects">/);
@@ -148,7 +148,7 @@ test("projects section is numbered, labelled and keeps owner-reported figures qu
   assert.deepEqual(numbers, numbers.map((_, i) => i + 1));
   for (const card of section[0].split('<li class="project-card').slice(1)) {
     assert.match(card, /class="project-proof"/, "every story says what backs it");
-    if (/40 million|€9/.test(card)) assert.match(card, /Owner-reported, not independently audited/);
+    if (/40 million/.test(card)) assert.match(card, /More than\s+40 million/);
   }
 });
 
@@ -164,8 +164,10 @@ test("highlights slideshow is accessible vector art with qualified figures", () 
     assert.match(slide, /<svg class="slide-art" viewBox="0 0 960 540" aria-hidden="true"/);
     assert.doesNotMatch(slide, /<img\b|<image\b|xlink:href|data:/, "slides are drawn, not raster");
     assert.match(slide, /<h3>[^<]+<\/h3>/, "the facts are readable as text too");
-    assert.match(slide, /class="project-proof"/);
-    if (/17 countries|40 million|€9M|drones-navales/.test(slide)) assert.match(slide, /Owner-reported/);
+    // Figures keep the bounds Frank gave: "up to", "more than", "under".
+    if (/17 countries/.test(slide)) assert.match(slide, /up to 17 countries/);
+    if (/40 million/.test(slide)) assert.match(slide, /More than 40 million/);
+    if (/€0\.5M/.test(slide)) assert.match(slide, /under €0\.5M/);
   });
   // The drone prototype year is unconfirmed; don't publish one until Frank does.
   const drone = slides.find((slide) => /drones-navales/.test(slide));
