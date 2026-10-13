@@ -6,7 +6,7 @@ A static, locally hosted-asset portfolio for Frank / Ezequiel Escudero. Ivory, c
 
 - `inbox/media/catalog.json` records sources, rights, identity evidence, dates, exact local asset hashes, and numeric comparators.
 - Frank confirmed the 40M+ videos, 180M+ images and €9M to <€0.5M annual VoIP cost figures on 11 October 2026. These are explicitly owner-reported, not independently audited; project dates remain unspecified.
-- Only the user-selected dog photograph and the approved institutional workshop reference are in the public media catalogue.
+- Only the user-selected dog photograph, the owner-approved studio portrait and system metrics telemetry card, and the approved institutional workshop reference are in the public media catalogue.
 - Shared canonical tags and bilingual aliases are in `inbox/media/tag-aliases.json`.
 - Jules draft research folders are not a source of automatic publication or verified claims.
 - Public content follows the owner's current publication choices. Do not restore withdrawn employer, agency, campaign or press associations from older commits or research drafts. New affiliations and related sources require explicit owner approval.
