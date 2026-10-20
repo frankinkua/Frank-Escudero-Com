@@ -145,24 +145,139 @@ if (typeof document !== "undefined") {
       .matchMedia("(min-width: 701px)")
       .addEventListener("change", closeMenu);
   }
-  const projectCards = [
-      ...document.querySelectorAll(".project-card[data-category]"),
-    ],
-    projectButtons = [...document.querySelectorAll("[data-project-filter]")];
-  if (projectCards.length && projectButtons.length) {
-    projectButtons.forEach((button) => {
-      button.addEventListener("click", () => {
-        const selected = button.dataset.projectFilter;
-        projectButtons.forEach((b) =>
-          b.setAttribute("aria-pressed", String(b === button)),
-        );
-        projectCards.forEach((card) => {
-          const cats = (card.dataset.category || "").split(" ");
-          card.hidden = selected !== "all" && !cats.includes(selected);
+
+  // 30-Picture Pass-Through Gallery & Theater
+  const theater = document.querySelector(".gallery-theater");
+  if (theater) {
+    const mainImg = theater.querySelector(".theater-main-img"),
+      counter = theater.querySelector(".theater-counter"),
+      titleEl = theater.querySelector(".theater-title"),
+      descEl = theater.querySelector(".theater-desc"),
+      categoryEl = theater.querySelector(".theater-category"),
+      proofEl = theater.querySelector(".theater-proof"),
+      prevBtn = theater.querySelector(".theater-prev"),
+      nextBtn = theater.querySelector(".theater-next"),
+      thumbs = [...theater.querySelectorAll(".theater-thumb")],
+      cards = [...document.querySelectorAll(".project-card")],
+      filterBtns = [...document.querySelectorAll("[data-project-filter]")];
+
+    let currentIndex = 0;
+    const slides = thumbs.map((btn) => ({
+      src: btn.dataset.src,
+      alt: btn.dataset.alt,
+      width: btn.dataset.width,
+      height: btn.dataset.height,
+      title: btn.dataset.title,
+      desc: btn.dataset.desc,
+      category: btn.dataset.category,
+      proof: btn.dataset.proof,
+      number: btn.dataset.number,
+    }));
+
+    function showSlide(index) {
+      if (!slides.length) return;
+      if (index < 0) index = slides.length - 1;
+      if (index >= slides.length) index = 0;
+      currentIndex = index;
+      const s = slides[currentIndex];
+
+      if (mainImg) {
+        mainImg.style.opacity = "0.7";
+        setTimeout(() => {
+          mainImg.src = s.src;
+          mainImg.alt = s.alt;
+          mainImg.width = s.width;
+          mainImg.height = s.height;
+          mainImg.style.opacity = "1";
+        }, 80);
+      }
+      if (counter) counter.textContent = `${s.number} / ${slides.length}`;
+      if (titleEl) titleEl.textContent = s.title;
+      if (descEl) descEl.textContent = s.desc;
+      if (categoryEl) categoryEl.textContent = s.category;
+      if (proofEl) proofEl.textContent = s.proof;
+
+      thumbs.forEach((th, i) => {
+        const isActive = i === currentIndex;
+        th.setAttribute("aria-current", String(isActive));
+        if (isActive) {
+          th.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+            inline: "center",
+          });
+        }
+      });
+    }
+
+    if (prevBtn) prevBtn.addEventListener("click", () => showSlide(currentIndex - 1));
+    if (nextBtn) nextBtn.addEventListener("click", () => showSlide(currentIndex + 1));
+
+    thumbs.forEach((th, i) => {
+      th.addEventListener("click", () => showSlide(i));
+    });
+
+    // Keyboard navigation when user is looking at gallery or page
+    document.addEventListener("keydown", (e) => {
+      const activeTag = document.activeElement ? document.activeElement.tagName : "";
+      if (activeTag === "INPUT" || activeTag === "TEXTAREA") return;
+      if (e.key === "ArrowLeft") {
+        showSlide(currentIndex - 1);
+      } else if (e.key === "ArrowRight") {
+        showSlide(currentIndex + 1);
+      }
+    });
+
+    // Simple touch swipe for theater
+    let touchStartX = 0;
+    const stage = theater.querySelector(".theater-stage");
+    if (stage) {
+      stage.addEventListener(
+        "touchstart",
+        (e) => {
+          touchStartX = e.changedTouches[0].clientX;
+        },
+        { passive: true },
+      );
+      stage.addEventListener(
+        "touchend",
+        (e) => {
+          const touchEndX = e.changedTouches[0].clientX;
+          if (touchStartX - touchEndX > 45) {
+            showSlide(currentIndex + 1);
+          } else if (touchEndX - touchStartX > 45) {
+            showSlide(currentIndex - 1);
+          }
+        },
+        { passive: true },
+      );
+    }
+
+    // Category filter for both cards and thumbs
+    if (filterBtns.length) {
+      filterBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const filter = btn.dataset.projectFilter;
+          filterBtns.forEach((b) =>
+            b.setAttribute("aria-pressed", String(b === btn)),
+          );
+          cards.forEach((card) => {
+            const cats = (card.dataset.category || "").split(" ");
+            card.hidden = filter !== "all" && !cats.includes(filter);
+          });
+          thumbs.forEach((thumb) => {
+            const cats = (thumb.dataset.category || "").toLowerCase();
+            thumb.hidden = filter !== "all" && !cats.includes(filter);
+          });
         });
       });
-    });
+    }
+
+    // Initialize first slide
+    showSlide(0);
   }
+
+  // Media Search & Filter in #media section
   const cards = [...document.querySelectorAll(".media-card[data-tags]")],
     search = document.querySelector("#media-search");
   const filters = [...document.querySelectorAll("[data-filter]")],

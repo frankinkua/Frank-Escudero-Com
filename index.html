@@ -325,276 +325,550 @@
         </div>
       </section>
 
-      <section id="projects" class="section shell projects-section">
+            <section id="projects" class="section shell projects-section">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">03 / Big project gallery</p>
-            <h2>Things I helped<br /><em>bring to life.</em></h2>
+            <p class="eyebrow">03 / Interactive visual archive</p>
+            <h2>Pass through<br /><em>projects &amp; systems.</em></h2>
           </div>
           <p>
-            Twelve systems, prototypes, and stories spanning enterprise banking,
-            AI automation, carrier telephony, autonomous watercraft, and
-            European civic innovation.
+            Browse through 30 verified pictures and short field notes. Use Next / Prev, click any thumbnail, or swipe on mobile.
           </p>
+        </div>
+
+        <!-- 30-Picture Pass-Through Gallery Theater -->
+        <div class="gallery-theater" aria-label="30-Picture Project Visual Gallery">
+          <div class="theater-top-bar">
+            <div class="theater-status">
+              <span class="status-dot"></span>
+              <span class="theater-counter">01 / 30</span>
+              <span class="theater-hint">(Use ← / → arrow keys or swipe)</span>
+            </div>
+            <div class="theater-nav-controls">
+              <button type="button" class="theater-nav-btn theater-prev" aria-label="Previous picture">← Prev</button>
+              <button type="button" class="theater-nav-btn theater-next" aria-label="Next picture">Next →</button>
+            </div>
+          </div>
+          <div class="theater-stage">
+            <img class="theater-main-img" src="inbox/media/images/santander-video-case.webp" width="894" height="530" alt="Personalized Video Pipelines at Multi-Million Scale" />
+            <div class="theater-caption">
+              <div class="theater-info">
+                <div class="theater-category">Banking & Scale / Santander</div>
+                <div class="theater-title">Personalized Video Pipelines at Multi-Million Scale</div>
+                <div class="theater-desc">High-throughput dynamic video rendering engine transforming complex retail and commercial account data into millions of individual video touchpoints.</div>
+              </div>
+              <div class="theater-proof">Case Study · 40 million+ videos delivered (Owner-reported, not independently audited)</div>
+            </div>
+          </div>
+          <div class="theater-thumbs-strip" aria-label="All 30 gallery thumbnails">
+            <div class="theater-thumbs" role="group">
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/santander-video-case.webp" data-alt="Personalized Video Pipelines at Multi-Million Scale" data-width="894" data-height="530" data-title="Personalized Video Pipelines at Multi-Million Scale" data-desc="High-throughput dynamic video rendering engine transforming complex retail and commercial account data into millions of individual video touchpoints." data-category="Banking & Scale / Santander" data-proof="Case Study · 40 million+ videos delivered (Owner-reported, not independently audited)" data-number="01" aria-label="Jump to picture 01: Personalized Video Pipelines at Multi-Million Scale">
+                <img src="inbox/media/images/santander-video-case.webp" width="894" height="530" alt="Personalized Video Pipelines at Multi-Million Scale" loading="lazy" />
+                <span>01</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/mobile-metrics-ui.webp" data-alt="Carrier-Grade Telephony & SIP Re-Architecture" data-width="1024" data-height="768" data-title="Carrier-Grade Telephony & SIP Re-Architecture" data-desc="Re-engineered high-volume enterprise SIP telephony infrastructure, driving annual spend from €9 million to under €0.5 million (>94% cost reduction)." data-category="Infrastructure / Enterprise Telephony" data-proof="Infrastructure · €9M to <€0.5M (Owner-reported, not independently audited)" data-number="02" aria-label="Jump to picture 02: Carrier-Grade Telephony & SIP Re-Architecture">
+                <img src="inbox/media/images/mobile-metrics-ui.webp" width="1024" height="768" alt="Carrier-Grade Telephony & SIP Re-Architecture" loading="lazy" />
+                <span>02</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/drones-navales-vessel.webp" data-alt="Drones Navales Autonomous Surface Vessel" data-width="1280" data-height="720" data-title="Drones Navales Autonomous Surface Vessel" data-desc="Unmanned surface watercraft combining solar endurance, GPS waypoint navigation, and environmental telemetry for river logistics." data-category="Robotics & Hardware / Autonomous Vessel" data-proof="R&D · Autonomous watercraft concept" data-number="03" aria-label="Jump to picture 03: Drones Navales Autonomous Surface Vessel">
+                <img src="inbox/media/images/drones-navales-vessel.webp" width="1280" height="720" alt="Drones Navales Autonomous Surface Vessel" loading="lazy" />
+                <span>03</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/drones-navales-hull.webp" data-alt="Marine Propulsion & Hull Mechanical Integration" data-width="552" data-height="414" data-title="Marine Propulsion & Hull Mechanical Integration" data-desc="Hands-on workshop fabrication: mounting propulsion engines, drive shafts, couplings, and rudder linkages inside the prototype hull." data-category="Robotics & Hardware / Workshop Prototype" data-proof="Hardware · Physical hull prototype" data-number="04" aria-label="Jump to picture 04: Marine Propulsion & Hull Mechanical Integration">
+                <img src="inbox/media/images/drones-navales-hull.webp" width="552" height="414" alt="Marine Propulsion & Hull Mechanical Integration" loading="lazy" />
+                <span>04</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/drones-navales-electronics.webp" data-alt="Autonomous Telemetry & Embedded Guidance Bus" data-width="351" data-height="419" data-title="Autonomous Telemetry & Embedded Guidance Bus" data-desc="Custom edge controllers, sensor buses, and telemetry transceivers engineered for remote autonomous vessel navigation." data-category="Robotics & Hardware / Embedded Electronics" data-proof="Electronics · Embedded edge telemetry" data-number="05" aria-label="Jump to picture 05: Autonomous Telemetry & Embedded Guidance Bus">
+                <img src="inbox/media/images/drones-navales-electronics.webp" width="351" height="419" alt="Autonomous Telemetry & Embedded Guidance Bus" loading="lazy" />
+                <span>05</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/drones-navales-water.webp" data-alt="Hydrodynamic & River Navigation Simulation" data-width="1280" data-height="720" data-title="Hydrodynamic & River Navigation Simulation" data-desc="Hydrodynamic simulation modeling vessel stability, tidal drift, and waypoint routing in coastal and inland waterways." data-category="Robotics & Hardware / Marine Simulation" data-proof="Simulation · Marine hydrodynamic modeling" data-number="06" aria-label="Jump to picture 06: Hydrodynamic & River Navigation Simulation">
+                <img src="inbox/media/images/drones-navales-water.webp" width="1280" height="720" alt="Hydrodynamic & River Navigation Simulation" loading="lazy" />
+                <span>06</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/campaign-studio-set.webp" data-alt="Interactive Campaign Physical Production Set" data-width="939" data-height="704" data-title="Interactive Campaign Physical Production Set" data-desc="Theatrical studio set with mechanical clockwork built for synchronized multi-channel personalized video and telephony campaigns." data-category="Studio & Creative / Campaign Craft" data-proof="Production · Studio set craft" data-number="07" aria-label="Jump to picture 07: Interactive Campaign Physical Production Set">
+                <img src="inbox/media/images/campaign-studio-set.webp" width="939" height="704" alt="Interactive Campaign Physical Production Set" loading="lazy" />
+                <span>07</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/campaign-telephony-dashboard.webp" data-alt="Real-Time Telephony Routing & Telemetry Dashboard" data-width="750" data-height="1280" data-title="Real-Time Telephony Routing & Telemetry Dashboard" data-desc="Mission-critical telemetry monitoring thousands of concurrent outbound voice calls and automated personalized responses." data-category="Systems & Infra / Live Telephony" data-proof="Systems · Live telephony telemetry" data-number="08" aria-label="Jump to picture 08: Real-Time Telephony Routing & Telemetry Dashboard">
+                <img src="inbox/media/images/campaign-telephony-dashboard.webp" width="750" height="1280" alt="Real-Time Telephony Routing & Telemetry Dashboard" loading="lazy" />
+                <span>08</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/campaign-video-render.webp" data-alt="Automated Dynamic Video Synthesis Pipeline" data-width="1200" data-height="674" data-title="Automated Dynamic Video Synthesis Pipeline" data-desc="High-throughput cloud rendering queue generating bespoke personalized video frames at tens of millions of outputs." data-category="Creative Scale / Video Synthesis" data-proof="Rendering · Automated cloud pipeline" data-number="09" aria-label="Jump to picture 09: Automated Dynamic Video Synthesis Pipeline">
+                <img src="inbox/media/images/campaign-video-render.webp" width="1200" height="674" alt="Automated Dynamic Video Synthesis Pipeline" loading="lazy" />
+                <span>09</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/frank-workstation.webp" data-alt="High-Density Systems Architecture Workstation" data-width="1280" data-height="960" data-title="High-Density Systems Architecture Workstation" data-desc="Frank’s multi-display architecture hub for Linux kernel tuning, SIP trunks, Proxmox virtualization, and Kubernetes clusters." data-category="Systems & Infra / Core Engineering Hub" data-proof="Environment · Systems architecture hub" data-number="10" aria-label="Jump to picture 10: High-Density Systems Architecture Workstation">
+                <img src="inbox/media/images/frank-workstation.webp" width="1280" height="960" alt="High-Density Systems Architecture Workstation" loading="lazy" />
+                <span>10</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/frank-speaking-stage.webp" data-alt="Keynote Advisory: IT Advisor & Tech Expert" data-width="960" data-height="1280" data-title="Keynote Advisory: IT Advisor & Tech Expert" data-desc="Advising institutional leadership, founders, and engineering teams across Europe on AI adoption, systems resilience, and unit economics." data-category="Leadership & Stage / European Keynote" data-proof="Keynote · Live European stage" data-number="11" aria-label="Jump to picture 11: Keynote Advisory: IT Advisor & Tech Expert">
+                <img src="inbox/media/images/frank-speaking-stage.webp" width="960" height="1280" alt="Keynote Advisory: IT Advisor & Tech Expert" loading="lazy" />
+                <span>11</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/frank-founder-frankfurt.webp" data-alt="Frankfurt Founders & TechQuartier Ecosystem" data-width="1280" data-height="797" data-title="Frankfurt Founders & TechQuartier Ecosystem" data-desc="Representing InkuA and cross-border tech ventures at the Frankfurt International Founders and TechQuartier innovation ecosystem." data-category="Leadership & Stage / Founders Ecosystem" data-proof="Ecosystem · Frankfurt founders summit" data-number="12" aria-label="Jump to picture 12: Frankfurt Founders & TechQuartier Ecosystem">
+                <img src="inbox/media/images/frank-founder-frankfurt.webp" width="1280" height="797" alt="Frankfurt Founders & TechQuartier Ecosystem" loading="lazy" />
+                <span>12</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/frank-eu-parliament.webp" data-alt="European Institutional Dialogue in Brussels" data-width="713" data-height="449" data-title="European Institutional Dialogue in Brussels" data-desc="Participating in European institutional sessions in Brussels on digital policy, cybersecurity preparedness, and social innovation." data-category="Leadership & Stage / Brussels Institutions" data-proof="Policy · Brussels institutional chamber" data-number="13" aria-label="Jump to picture 13: European Institutional Dialogue in Brussels">
+                <img src="inbox/media/images/frank-eu-parliament.webp" width="713" height="449" alt="European Institutional Dialogue in Brussels" loading="lazy" />
+                <span>13</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/setoff-brussels-workshop.webp" data-alt="SETOFF European Crisis & Resilience Workshop" data-width="1280" data-height="786" data-title="SETOFF European Crisis & Resilience Workshop" data-desc="Invited speaker on cybersecurity and institutional preparedness at the third SETOFF European workshop in Brussels." data-category="Leadership & Stage / European Research" data-proof="SETOFF · European Commission Erasmus+" data-number="14" aria-label="Jump to picture 14: SETOFF European Crisis & Resilience Workshop">
+                <img src="inbox/media/images/setoff-brussels-workshop.webp" width="1280" height="786" alt="SETOFF European Crisis & Resilience Workshop" loading="lazy" />
+                <span>14</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/setoff-expert-panel.webp" data-alt="Institutional Security & Preparedness Panel" data-width="1024" data-height="577" data-title="Institutional Security & Preparedness Panel" data-desc="Collaborating with international researchers and civil protection agencies on operational resilience and crisis simulations." data-category="Leadership & Stage / Security Panel" data-proof="Panel · Security research collaboration" data-number="15" aria-label="Jump to picture 15: Institutional Security & Preparedness Panel">
+                <img src="inbox/media/images/setoff-expert-panel.webp" width="1024" height="577" alt="Institutional Security & Preparedness Panel" loading="lazy" />
+                <span>15</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/santander-dynamic-message.webp" data-alt="Santander Dynamic Customer Messaging Engine" data-width="600" data-height="662" data-title="Santander Dynamic Customer Messaging Engine" data-desc="Automated dynamic personalized visual communication pipeline transforming account lifecycle milestones into high-engagement touchpoints." data-category="Banking & Scale / Santander" data-proof="Fintech · Dynamic financial messaging" data-number="16" aria-label="Jump to picture 16: Santander Dynamic Customer Messaging Engine">
+                <img src="inbox/media/images/santander-dynamic-message.webp" width="600" height="662" alt="Santander Dynamic Customer Messaging Engine" loading="lazy" />
+                <span>16</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/banco-galicia-onboarding.webp" data-alt="Banco Galicia Digital Onboarding Journey" data-width="503" data-height="671" data-title="Banco Galicia Digital Onboarding Journey" data-desc="Interactive customer acquisition and credit card onboarding journeys engineered for digital retail banking." data-category="Banking & Scale / Banco Galicia" data-proof="Banking · Interactive onboarding" data-number="17" aria-label="Jump to picture 17: Banco Galicia Digital Onboarding Journey">
+                <img src="inbox/media/images/banco-galicia-onboarding.webp" width="503" height="671" alt="Banco Galicia Digital Onboarding Journey" loading="lazy" />
+                <span>17</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/banco-azteca-scale.webp" data-alt="Banco Azteca Mass-Market Banking Architecture" data-width="1280" data-height="720" data-title="Banco Azteca Mass-Market Banking Architecture" data-desc="High-throughput mobile visual communication architecture designed for mass financial inclusion across millions of account holders." data-category="Banking & Scale / Banco Azteca" data-proof="Architecture · High-throughput mobile messaging" data-number="18" aria-label="Jump to picture 18: Banco Azteca Mass-Market Banking Architecture">
+                <img src="inbox/media/images/banco-azteca-scale.webp" width="1280" height="720" alt="Banco Azteca Mass-Market Banking Architecture" loading="lazy" />
+                <span>18</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/amex-personalized-card.webp" data-alt="American Express Member Engagement Flows" data-width="1280" data-height="720" data-title="American Express Member Engagement Flows" data-desc="Personalized digital invitations and member loyalty communication journeys for premium cardholders." data-category="Banking & Scale / American Express" data-proof="Payments · Personalized member journey" data-number="19" aria-label="Jump to picture 19: American Express Member Engagement Flows">
+                <img src="inbox/media/images/amex-personalized-card.webp" width="1280" height="720" alt="American Express Member Engagement Flows" loading="lazy" />
+                <span>19</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/wilobank-cloud-monitoring.webp" data-alt="Wilobank Cloud-Native Neobank Telemetry" data-width="1280" data-height="400" data-title="Wilobank Cloud-Native Neobank Telemetry" data-desc="Uptime monitoring, QA pipelines, and cloud infrastructure telemetry for 100% digital neobank banking operations." data-category="Banking & Scale / Wilobank" data-proof="Cloud · Neobank telemetry infrastructure" data-number="20" aria-label="Jump to picture 20: Wilobank Cloud-Native Neobank Telemetry">
+                <img src="inbox/media/images/wilobank-cloud-monitoring.webp" width="1280" height="400" alt="Wilobank Cloud-Native Neobank Telemetry" loading="lazy" />
+                <span>20</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/emood-dashboard.webp" data-alt="e-mood Organizational Wellbeing Analytics" data-width="985" data-height="576" data-title="e-mood Organizational Wellbeing Analytics" data-desc="B2B SaaS analytics platform visualizing team engagement, pulse metrics, and sentiment trends for distributed companies." data-category="AI & Analytics / e-mood SaaS" data-proof="SaaS · People analytics UI" data-number="21" aria-label="Jump to picture 21: e-mood Organizational Wellbeing Analytics">
+                <img src="inbox/media/images/emood-dashboard.webp" width="985" height="576" alt="e-mood Organizational Wellbeing Analytics" loading="lazy" />
+                <span>21</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/emood-platform.webp" data-alt="e-mood Sentiment Data Pipeline Architecture" data-width="939" data-height="657" data-title="e-mood Sentiment Data Pipeline Architecture" data-desc="Data collection and aggregation pipeline converting lightweight team feedback into executive wellbeing signals." data-category="AI & Analytics / Data Architecture" data-proof="Product · Wellbeing analytics framework" data-number="22" aria-label="Jump to picture 22: e-mood Sentiment Data Pipeline Architecture">
+                <img src="inbox/media/images/emood-platform.webp" width="939" height="657" alt="e-mood Sentiment Data Pipeline Architecture" loading="lazy" />
+                <span>22</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/pardo-videocall-platform.webp" data-alt="Interactive Nationwide Retail Video Platform" data-width="1280" data-height="720" data-title="Interactive Nationwide Retail Video Platform" data-desc="Synchronized desktop and mobile video platform connecting thousands of families through personalized live interactive calls." data-category="Creative Scale / Live Video Platform" data-proof="Platform · High-scale consumer video" data-number="23" aria-label="Jump to picture 23: Interactive Nationwide Retail Video Platform">
+                <img src="inbox/media/images/pardo-videocall-platform.webp" width="1280" height="720" alt="Interactive Nationwide Retail Video Platform" loading="lazy" />
+                <span>23</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/inkua-copilot-training.webp" data-alt="Applied AI & Developer Pair-Programming Workshops" data-width="1280" data-height="724" data-title="Applied AI & Developer Pair-Programming Workshops" data-desc="Conducting hands-on masterclasses on AI agent workflows, Copilot pairing, and deterministic automation for software teams." data-category="AI & Analytics / Developer Masterclasses" data-proof="AI Training · Developer masterclasses" data-number="24" aria-label="Jump to picture 24: Applied AI & Developer Pair-Programming Workshops">
+                <img src="inbox/media/images/inkua-copilot-training.webp" width="1280" height="724" alt="Applied AI & Developer Pair-Programming Workshops" loading="lazy" />
+                <span>24</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/inkua-tech-workshop.webp" data-alt="InkuA Digital Skills & Talent Acceleration" data-width="1280" data-height="384" data-title="InkuA Digital Skills & Talent Acceleration" data-desc="Civic technology initiative bridging international talent and young developers into tech careers through real-world projects." data-category="Leadership & Stage / Digital Skills" data-proof="Social Impact · Youth technology training" data-number="25" aria-label="Jump to picture 25: InkuA Digital Skills & Talent Acceleration">
+                <img src="inbox/media/images/inkua-tech-workshop.webp" width="1280" height="384" alt="InkuA Digital Skills & Talent Acceleration" loading="lazy" />
+                <span>25</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/inkua-startup-pitch.webp" data-alt="Global Startup Pitching & Mentorship Sprints" data-width="1280" data-height="960" data-title="Global Startup Pitching & Mentorship Sprints" data-desc="Evaluating and mentoring early-stage technology founders on pitch mechanics, system architecture, and go-to-market execution." data-category="Leadership & Stage / Startup Pitch" data-proof="Mentorship · International startup pitch" data-number="26" aria-label="Jump to picture 26: Global Startup Pitching & Mentorship Sprints">
+                <img src="inbox/media/images/inkua-startup-pitch.webp" width="1280" height="960" alt="Global Startup Pitching & Mentorship Sprints" loading="lazy" />
+                <span>26</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/inkua-digital-launch.webp" data-alt="Cross-Border Digital Publication & Initiatives" data-width="1024" data-height="1280" data-title="Cross-Border Digital Publication & Initiatives" data-desc="Launching international civic technology programs, publications, and open-source learning repositories." data-category="Leadership & Stage / Digital Launch" data-proof="Community · Digital publication milestone" data-number="27" aria-label="Jump to picture 27: Cross-Border Digital Publication & Initiatives">
+                <img src="inbox/media/images/inkua-digital-launch.webp" width="1024" height="1280" alt="Cross-Border Digital Publication & Initiatives" loading="lazy" />
+                <span>27</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/frank-team-portrait.webp" data-alt="Cross-Functional Engineering Collaboration" data-width="500" data-height="500" data-title="Cross-Functional Engineering Collaboration" data-desc="Building alongside engineers, designers, and systems architects to turn complex constraints into reliable production reality." data-category="Systems & Infra / Team Collaboration" data-proof="Team · Collaborative engineering sprint" data-number="28" aria-label="Jump to picture 28: Cross-Functional Engineering Collaboration">
+                <img src="inbox/media/images/frank-team-portrait.webp" width="500" height="500" alt="Cross-Functional Engineering Collaboration" loading="lazy" />
+                <span>28</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/frank-horse-portrait.webp" data-alt="Grounded Perspective Off the Terminal" data-width="615" data-height="617" data-title="Grounded Perspective Off the Terminal" data-desc="Recharging outdoors—cultivating the calm discipline, patience, and perspective required to navigate high-stakes systems." data-category="Personal / Grounded Discipline" data-proof="Personal · Grounded discipline" data-number="29" aria-label="Jump to picture 29: Grounded Perspective Off the Terminal">
+                <img src="inbox/media/images/frank-horse-portrait.webp" width="615" height="617" alt="Grounded Perspective Off the Terminal" loading="lazy" />
+                <span>29</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/frank-portrait-studio.webp" data-alt="Strategic Systems Architect & Builder" data-width="1024" data-height="1024" data-title="Strategic Systems Architect & Builder" data-desc="Frank Escudero: 40M+ personalized videos, >94% infrastructure cost reductions, and mission-critical solutions for tier-1 institutions." data-category="Founder & Advisor / Systems Architecture" data-proof="Founder · Strategic systems architecture" data-number="30" aria-label="Jump to picture 30: Strategic Systems Architect & Builder">
+                <img src="inbox/media/images/frank-portrait-studio.webp" width="1024" height="1024" alt="Strategic Systems Architect & Builder" loading="lazy" />
+                <span>30</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="project-filters" role="group" aria-label="Filter projects by domain">
           <button type="button" data-project-filter="all" aria-pressed="true">
-            All projects (12)
+            All 30 pictures
           </button>
           <button type="button" data-project-filter="banking" aria-pressed="false">
             Banking &amp; Scale
           </button>
-          <button type="button" data-project-filter="ai" aria-pressed="false">
-            AI &amp; SaaS
+          <button type="button" data-project-filter="hardware" aria-pressed="false">
+            Robotics &amp; Hardware
           </button>
           <button type="button" data-project-filter="infra" aria-pressed="false">
-            Systems &amp; Infra
+            Systems &amp; Telephony
           </button>
-          <button type="button" data-project-filter="hardware" aria-pressed="false">
-            Hardware &amp; Drones
+          <button type="button" data-project-filter="ai" aria-pressed="false">
+            AI &amp; Analytics
+          </button>
+          <button type="button" data-project-filter="creative" aria-pressed="false">
+            Studio &amp; Creative
           </button>
           <button type="button" data-project-filter="leadership" aria-pressed="false">
-            Leadership &amp; Impact
+            Leadership &amp; Stage
           </button>
         </div>
 
         <ol class="project-list">
-          <li class="project-card project-wide" data-category="banking ai">
-            <a class="project-media art-scale" href="#numbers"
-              ><span>Banking · Video · Voice · Dynamic Visuals</span
-              ><strong>40M<em>+</em><br />180M<em>+</em></strong
-              ><span>See the verified bounds ↘</span></a
-            >
+          <li class="project-card" data-category="banking">
+            <figure class="project-media">
+              <img src="inbox/media/images/santander-video-case.webp" width="894" height="530" alt="Personalized Video Pipelines at Multi-Million Scale" loading="lazy" />
+            </figure>
             <div class="project-body">
               <span class="project-number">01 /</span>
-              <p class="eyebrow">Financial Services &amp; Enterprise / Personalization</p>
-              <h3>A message that feels like it’s only for you.</h3>
-              <p>
-                Architected high-throughput dynamic video and visual engines for major retail banks, card networks, and global brands—surpassing 40 million personalized videos and 180 million personalized images.
-              </p>
-              <span class="project-proof"
-                >Chart · Owner-reported, not independently audited</span
-              >
+              <p class="eyebrow">Banking & Scale / Santander</p>
+              <h3>Personalized Video Pipelines at Multi-Million Scale</h3>
+              <p>High-throughput dynamic video rendering engine transforming complex retail and commercial account data into millions of individual video touchpoints.</p>
+              <span class="project-proof">Case Study · 40 million+ videos delivered (Owner-reported, not independently audited)</span>
             </div>
           </li>
-
-          <li class="project-card" data-category="infra banking">
-            <a class="project-media art-cost" href="#numbers"
-              ><span>Infrastructure economics</span
-              ><strong>€9M <i>→</i><br />&lt;€0.5M</strong
-              ><span>Annual VoIP spend ↘</span></a
-            >
+          <li class="project-card" data-category="infra">
+            <figure class="project-media">
+              <img src="inbox/media/images/mobile-metrics-ui.webp" width="1024" height="768" alt="Carrier-Grade Telephony & SIP Re-Architecture" loading="lazy" />
+            </figure>
             <div class="project-body">
               <span class="project-number">02 /</span>
-              <p class="eyebrow">Infrastructure / Carrier Telephony</p>
-              <h3>Less overhead. More room.</h3>
-              <p>
-                Re-engineered carrier-grade enterprise SIP routing and VoIP architecture, cutting annual telephony spend from €9 million to under €0.5 million (&gt;94% reduction).
-              </p>
-              <span class="project-proof"
-                >Chart · Owner-reported, not independently audited</span
-              >
+              <p class="eyebrow">Infrastructure / Enterprise Telephony</p>
+              <h3>Carrier-Grade Telephony & SIP Re-Architecture</h3>
+              <p>Re-engineered high-volume enterprise SIP telephony infrastructure, driving annual spend from €9 million to under €0.5 million (>94% cost reduction).</p>
+              <span class="project-proof">Infrastructure · €9M to <€0.5M (Owner-reported, not independently audited)</span>
             </div>
           </li>
-
-          <li class="project-card" data-category="hardware ai">
-            <figure class="project-media project-photo">
-              <img
-                src="inbox/media/images/drones-navales-vessel.webp"
-                alt="Autonomous solar-assisted surface vessel concept navigating a river channel."
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
+          <li class="project-card" data-category="hardware">
+            <figure class="project-media">
+              <img src="inbox/media/images/drones-navales-vessel.webp" width="1280" height="720" alt="Drones Navales Autonomous Surface Vessel" loading="lazy" />
             </figure>
             <div class="project-body">
               <span class="project-number">03 /</span>
-              <p class="eyebrow">Autonomous Hardware / Drones Navales</p>
-              <h3>Unmanned vessels for rivers and coastlines.</h3>
-              <p>
-                Designed autonomous surface vessel (USV) concepts integrating solar endurance, GPS waypoint navigation, and environmental telemetry for waterway logistics.
-              </p>
-              <span class="project-proof">Photo · Autonomous vessel R&amp;D</span>
+              <p class="eyebrow">Robotics & Hardware / Autonomous Vessel</p>
+              <h3>Drones Navales Autonomous Surface Vessel</h3>
+              <p>Unmanned surface watercraft combining solar endurance, GPS waypoint navigation, and environmental telemetry for river logistics.</p>
+              <span class="project-proof">R&D · Autonomous watercraft concept</span>
             </div>
           </li>
-
           <li class="project-card" data-category="hardware">
-            <figure class="project-media project-photo">
-              <img
-                src="inbox/media/images/drones-navales-hull.webp"
-                alt="Internal marine propulsion engine, drive shaft and propeller assembly mounted inside an autonomous vessel hull."
-                width="552"
-                height="414"
-                loading="lazy"
-              />
+            <figure class="project-media">
+              <img src="inbox/media/images/drones-navales-hull.webp" width="552" height="414" alt="Marine Propulsion & Hull Mechanical Integration" loading="lazy" />
             </figure>
             <div class="project-body">
               <span class="project-number">04 /</span>
-              <p class="eyebrow">Hardware Prototyping / Marine Propulsion</p>
-              <h3>From software architecture to the drive shaft.</h3>
-              <p>
-                Hands-on mechanical engineering and electrical integration inside the prototype hull—mounting propulsion, couplings, and telemetry buses.
-              </p>
-              <span class="project-proof">Photo · Physical hull prototype</span>
+              <p class="eyebrow">Robotics & Hardware / Workshop Prototype</p>
+              <h3>Marine Propulsion & Hull Mechanical Integration</h3>
+              <p>Hands-on workshop fabrication: mounting propulsion engines, drive shafts, couplings, and rudder linkages inside the prototype hull.</p>
+              <span class="project-proof">Hardware · Physical hull prototype</span>
             </div>
           </li>
-
-          <li class="project-card" data-category="banking ai">
-            <figure class="project-media project-photo">
-              <img
-                src="inbox/media/images/campaign-studio-set.webp"
-                alt="Production studio set with wooden mechanical gears, warm stage lighting and world time-zone clocks."
-                width="939"
-                height="704"
-                loading="lazy"
-              />
+          <li class="project-card" data-category="hardware">
+            <figure class="project-media">
+              <img src="inbox/media/images/drones-navales-electronics.webp" width="351" height="419" alt="Autonomous Telemetry & Embedded Guidance Bus" loading="lazy" />
             </figure>
             <div class="project-body">
               <span class="project-number">05 /</span>
-              <p class="eyebrow">Creative Scale / Studio + Cloud</p>
-              <h3>Where film sets meet real-time cloud assembly.</h3>
-              <p>
-                Bridged physical studio production with real-time video assembly and outbound telephony for tier-1 global consumer campaigns.
-              </p>
-              <span class="project-proof">Photo · Campaign production set</span>
+              <p class="eyebrow">Robotics & Hardware / Embedded Electronics</p>
+              <h3>Autonomous Telemetry & Embedded Guidance Bus</h3>
+              <p>Custom edge controllers, sensor buses, and telemetry transceivers engineered for remote autonomous vessel navigation.</p>
+              <span class="project-proof">Electronics · Embedded edge telemetry</span>
             </div>
           </li>
-
-          <li class="project-card" data-category="ai infra">
-            <a class="project-media art-flow" href="https://github.com/frankinkua"
-              ><span>AI &amp; automation</span
-              ><strong>Understand.<br />Build.<br /><em>Measure.</em></strong
-              ><span>Public work on GitHub ↗</span></a
-            >
+          <li class="project-card" data-category="hardware">
+            <figure class="project-media">
+              <img src="inbox/media/images/drones-navales-water.webp" width="1280" height="720" alt="Hydrodynamic & River Navigation Simulation" loading="lazy" />
+            </figure>
             <div class="project-body">
               <span class="project-number">06 /</span>
-              <p class="eyebrow">AI / Multi-Agent Workflows</p>
-              <h3>Systems that give people time back.</h3>
-              <p>
-                Applied AI agent orchestration and deterministic automation pipelines engineered for high reliability in daily operations.
-              </p>
-              <span class="project-proof">Code · Public repositories</span>
+              <p class="eyebrow">Robotics & Hardware / Marine Simulation</p>
+              <h3>Hydrodynamic & River Navigation Simulation</h3>
+              <p>Hydrodynamic simulation modeling vessel stability, tidal drift, and waypoint routing in coastal and inland waterways.</p>
+              <span class="project-proof">Simulation · Marine hydrodynamic modeling</span>
             </div>
           </li>
-
-          <li class="project-card" data-category="infra">
-            <figure class="project-media project-photo">
-              <img
-                src="inbox/media/images/mobile-metrics-ui.webp"
-                alt="System metrics dashboard on a tablet: CPU load, memory usage, network traffic and active nodes."
-                width="1024"
-                height="768"
-                loading="lazy"
-              />
+          <li class="project-card" data-category="creative">
+            <figure class="project-media">
+              <img src="inbox/media/images/campaign-studio-set.webp" width="939" height="704" alt="Interactive Campaign Physical Production Set" loading="lazy" />
             </figure>
             <div class="project-body">
               <span class="project-number">07 /</span>
-              <p class="eyebrow">Systems / Telemetry Interface</p>
-              <h3>Telemetry that speaks clearly.</h3>
-              <p>
-                High-contrast telemetry UI displaying cluster load, memory pressure, and node health for mission-critical operations.
-              </p>
-              <span class="project-proof">Photo · Interface design</span>
+              <p class="eyebrow">Studio & Creative / Campaign Craft</p>
+              <h3>Interactive Campaign Physical Production Set</h3>
+              <p>Theatrical studio set with mechanical clockwork built for synchronized multi-channel personalized video and telephony campaigns.</p>
+              <span class="project-proof">Production · Studio set craft</span>
             </div>
           </li>
-
-          <li class="project-card" data-category="ai">
-            <figure class="project-media project-photo">
-              <img
-                src="inbox/media/images/emood-dashboard.webp"
-                alt="Analytics dashboard displaying team wellbeing metrics, participation gauges and sentiment trend charts."
-                width="985"
-                height="576"
-                loading="lazy"
-              />
+          <li class="project-card" data-category="infra">
+            <figure class="project-media">
+              <img src="inbox/media/images/campaign-telephony-dashboard.webp" width="750" height="1280" alt="Real-Time Telephony Routing & Telemetry Dashboard" loading="lazy" />
             </figure>
             <div class="project-body">
               <span class="project-number">08 /</span>
-              <p class="eyebrow">SaaS Product / People Analytics</p>
-              <h3>Organizational pulse, quantified with care.</h3>
-              <p>
-                Executive analytics platform visualizing team engagement, participation, and sentiment across distributed organizations.
-              </p>
-              <span class="project-proof">Photo · SaaS dashboard UI</span>
+              <p class="eyebrow">Systems & Infra / Live Telephony</p>
+              <h3>Real-Time Telephony Routing & Telemetry Dashboard</h3>
+              <p>Mission-critical telemetry monitoring thousands of concurrent outbound voice calls and automated personalized responses.</p>
+              <span class="project-proof">Systems · Live telephony telemetry</span>
             </div>
           </li>
-
-          <li class="project-card" data-category="leadership ai">
-            <figure class="project-media project-photo">
-              <img
-                src="inbox/media/images/frank-speaking-stage.webp"
-                alt="Frank Escudero speaking on stage with a microphone in front of a presentation screen reading IT-Advisor, Consultant, Tech Expert."
-                width="960"
-                height="1280"
-                loading="lazy"
-              />
+          <li class="project-card" data-category="creative">
+            <figure class="project-media">
+              <img src="inbox/media/images/campaign-video-render.webp" width="1200" height="674" alt="Automated Dynamic Video Synthesis Pipeline" loading="lazy" />
             </figure>
             <div class="project-body">
               <span class="project-number">09 /</span>
-              <p class="eyebrow">Advisory / Keynote Speaking</p>
-              <h3>Making complex architecture actionable.</h3>
-              <p>
-                Advising institutional leadership, founders, and technical executives on AI strategy, systems resilience, and execution.
-              </p>
-              <span class="project-proof">Photo · Live keynote stage</span>
+              <p class="eyebrow">Creative Scale / Video Synthesis</p>
+              <h3>Automated Dynamic Video Synthesis Pipeline</h3>
+              <p>High-throughput cloud rendering queue generating bespoke personalized video frames at tens of millions of outputs.</p>
+              <span class="project-proof">Rendering · Automated cloud pipeline</span>
             </div>
           </li>
-
-          <li class="project-card" data-category="leadership infra">
-            <figure class="project-media project-photo">
-              <img
-                src="inbox/media/images/setoff-brussels-workshop.webp"
-                alt="Participants and speakers gathered at the SETOFF European workshop in Brussels."
-                width="1280"
-                height="786"
-                loading="lazy"
-              />
+          <li class="project-card" data-category="infra">
+            <figure class="project-media">
+              <img src="inbox/media/images/frank-workstation.webp" width="1280" height="960" alt="High-Density Systems Architecture Workstation" loading="lazy" />
             </figure>
             <div class="project-body">
               <span class="project-number">10 /</span>
-              <p class="eyebrow">Cybersecurity / European Cooperation</p>
-              <h3>Cybersecurity in conversation in Brussels.</h3>
-              <p>
-                Invited speaker on cybersecurity and institutional resilience at the third SETOFF European workshop in Brussels (June 2023).
-              </p>
-              <span class="project-proof">Photo &amp; PDF · Published by SETOFF</span>
+              <p class="eyebrow">Systems & Infra / Core Engineering Hub</p>
+              <h3>High-Density Systems Architecture Workstation</h3>
+              <p>Frank’s multi-display architecture hub for Linux kernel tuning, SIP trunks, Proxmox virtualization, and Kubernetes clusters.</p>
+              <span class="project-proof">Environment · Systems architecture hub</span>
             </div>
           </li>
-
           <li class="project-card" data-category="leadership">
-            <div class="project-media art-people" aria-hidden="true">
-              <span>InkuA · Europe &amp; Americas</span>
-              <strong>People<br /><em>+</em> possibility.</strong>
-              <span>Social innovation &amp; mentorship</span>
-            </div>
+            <figure class="project-media">
+              <img src="inbox/media/images/frank-speaking-stage.webp" width="960" height="1280" alt="Keynote Advisory: IT Advisor & Tech Expert" loading="lazy" />
+            </figure>
             <div class="project-body">
               <span class="project-number">11 /</span>
-              <p class="eyebrow">Social Innovation / InkuA</p>
-              <h3>Useful technology. Human context.</h3>
-              <p>
-                Connecting international talent, collaborative learning, and civic innovation across Europe and the Americas.
-              </p>
-              <span class="project-proof">Story · In my own words</span>
+              <p class="eyebrow">Leadership & Stage / European Keynote</p>
+              <h3>Keynote Advisory: IT Advisor & Tech Expert</h3>
+              <p>Advising institutional leadership, founders, and engineering teams across Europe on AI adoption, systems resilience, and unit economics.</p>
+              <span class="project-proof">Keynote · Live European stage</span>
             </div>
           </li>
-
-          <li class="project-card" data-category="infra">
-            <a
-              class="project-media art-site"
-              href="https://github.com/frankinkua/Frank-Escudero-Com"
-              ><span>frank-escudero.com</span
-              ><strong>Sources<br />first.</strong
-              ><span>View the code ↗</span></a
-            >
+          <li class="project-card" data-category="leadership">
+            <figure class="project-media">
+              <img src="inbox/media/images/frank-founder-frankfurt.webp" width="1280" height="797" alt="Frankfurt Founders & TechQuartier Ecosystem" loading="lazy" />
+            </figure>
             <div class="project-body">
               <span class="project-number">12 /</span>
-              <p class="eyebrow">Web / Open-Source Engineering</p>
-              <h3>This site, built in the open.</h3>
-              <p>
-                High-performance static architecture where every metric, image, and SHA-256 digest is tested and verified prior to deployment.
-              </p>
-              <span class="project-proof">Code · Public repository</span>
+              <p class="eyebrow">Leadership & Stage / Founders Ecosystem</p>
+              <h3>Frankfurt Founders & TechQuartier Ecosystem</h3>
+              <p>Representing InkuA and cross-border tech ventures at the Frankfurt International Founders and TechQuartier innovation ecosystem.</p>
+              <span class="project-proof">Ecosystem · Frankfurt founders summit</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="leadership">
+            <figure class="project-media">
+              <img src="inbox/media/images/frank-eu-parliament.webp" width="713" height="449" alt="European Institutional Dialogue in Brussels" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">13 /</span>
+              <p class="eyebrow">Leadership & Stage / Brussels Institutions</p>
+              <h3>European Institutional Dialogue in Brussels</h3>
+              <p>Participating in European institutional sessions in Brussels on digital policy, cybersecurity preparedness, and social innovation.</p>
+              <span class="project-proof">Policy · Brussels institutional chamber</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="leadership">
+            <figure class="project-media">
+              <img src="inbox/media/images/setoff-brussels-workshop.webp" width="1280" height="786" alt="SETOFF European Crisis & Resilience Workshop" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">14 /</span>
+              <p class="eyebrow">Leadership & Stage / European Research</p>
+              <h3>SETOFF European Crisis & Resilience Workshop</h3>
+              <p>Invited speaker on cybersecurity and institutional preparedness at the third SETOFF European workshop in Brussels.</p>
+              <span class="project-proof">SETOFF · European Commission Erasmus+</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="leadership">
+            <figure class="project-media">
+              <img src="inbox/media/images/setoff-expert-panel.webp" width="1024" height="577" alt="Institutional Security & Preparedness Panel" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">15 /</span>
+              <p class="eyebrow">Leadership & Stage / Security Panel</p>
+              <h3>Institutional Security & Preparedness Panel</h3>
+              <p>Collaborating with international researchers and civil protection agencies on operational resilience and crisis simulations.</p>
+              <span class="project-proof">Panel · Security research collaboration</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="banking">
+            <figure class="project-media">
+              <img src="inbox/media/images/santander-dynamic-message.webp" width="600" height="662" alt="Santander Dynamic Customer Messaging Engine" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">16 /</span>
+              <p class="eyebrow">Banking & Scale / Santander</p>
+              <h3>Santander Dynamic Customer Messaging Engine</h3>
+              <p>Automated dynamic personalized visual communication pipeline transforming account lifecycle milestones into high-engagement touchpoints.</p>
+              <span class="project-proof">Fintech · Dynamic financial messaging</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="banking">
+            <figure class="project-media">
+              <img src="inbox/media/images/banco-galicia-onboarding.webp" width="503" height="671" alt="Banco Galicia Digital Onboarding Journey" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">17 /</span>
+              <p class="eyebrow">Banking & Scale / Banco Galicia</p>
+              <h3>Banco Galicia Digital Onboarding Journey</h3>
+              <p>Interactive customer acquisition and credit card onboarding journeys engineered for digital retail banking.</p>
+              <span class="project-proof">Banking · Interactive onboarding</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="banking">
+            <figure class="project-media">
+              <img src="inbox/media/images/banco-azteca-scale.webp" width="1280" height="720" alt="Banco Azteca Mass-Market Banking Architecture" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">18 /</span>
+              <p class="eyebrow">Banking & Scale / Banco Azteca</p>
+              <h3>Banco Azteca Mass-Market Banking Architecture</h3>
+              <p>High-throughput mobile visual communication architecture designed for mass financial inclusion across millions of account holders.</p>
+              <span class="project-proof">Architecture · High-throughput mobile messaging</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="banking">
+            <figure class="project-media">
+              <img src="inbox/media/images/amex-personalized-card.webp" width="1280" height="720" alt="American Express Member Engagement Flows" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">19 /</span>
+              <p class="eyebrow">Banking & Scale / American Express</p>
+              <h3>American Express Member Engagement Flows</h3>
+              <p>Personalized digital invitations and member loyalty communication journeys for premium cardholders.</p>
+              <span class="project-proof">Payments · Personalized member journey</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="banking">
+            <figure class="project-media">
+              <img src="inbox/media/images/wilobank-cloud-monitoring.webp" width="1280" height="400" alt="Wilobank Cloud-Native Neobank Telemetry" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">20 /</span>
+              <p class="eyebrow">Banking & Scale / Wilobank</p>
+              <h3>Wilobank Cloud-Native Neobank Telemetry</h3>
+              <p>Uptime monitoring, QA pipelines, and cloud infrastructure telemetry for 100% digital neobank banking operations.</p>
+              <span class="project-proof">Cloud · Neobank telemetry infrastructure</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="ai">
+            <figure class="project-media">
+              <img src="inbox/media/images/emood-dashboard.webp" width="985" height="576" alt="e-mood Organizational Wellbeing Analytics" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">21 /</span>
+              <p class="eyebrow">AI & Analytics / e-mood SaaS</p>
+              <h3>e-mood Organizational Wellbeing Analytics</h3>
+              <p>B2B SaaS analytics platform visualizing team engagement, pulse metrics, and sentiment trends for distributed companies.</p>
+              <span class="project-proof">SaaS · People analytics UI</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="ai">
+            <figure class="project-media">
+              <img src="inbox/media/images/emood-platform.webp" width="939" height="657" alt="e-mood Sentiment Data Pipeline Architecture" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">22 /</span>
+              <p class="eyebrow">AI & Analytics / Data Architecture</p>
+              <h3>e-mood Sentiment Data Pipeline Architecture</h3>
+              <p>Data collection and aggregation pipeline converting lightweight team feedback into executive wellbeing signals.</p>
+              <span class="project-proof">Product · Wellbeing analytics framework</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="creative">
+            <figure class="project-media">
+              <img src="inbox/media/images/pardo-videocall-platform.webp" width="1280" height="720" alt="Interactive Nationwide Retail Video Platform" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">23 /</span>
+              <p class="eyebrow">Creative Scale / Live Video Platform</p>
+              <h3>Interactive Nationwide Retail Video Platform</h3>
+              <p>Synchronized desktop and mobile video platform connecting thousands of families through personalized live interactive calls.</p>
+              <span class="project-proof">Platform · High-scale consumer video</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="ai">
+            <figure class="project-media">
+              <img src="inbox/media/images/inkua-copilot-training.webp" width="1280" height="724" alt="Applied AI & Developer Pair-Programming Workshops" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">24 /</span>
+              <p class="eyebrow">AI & Analytics / Developer Masterclasses</p>
+              <h3>Applied AI & Developer Pair-Programming Workshops</h3>
+              <p>Conducting hands-on masterclasses on AI agent workflows, Copilot pairing, and deterministic automation for software teams.</p>
+              <span class="project-proof">AI Training · Developer masterclasses</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="leadership">
+            <figure class="project-media">
+              <img src="inbox/media/images/inkua-tech-workshop.webp" width="1280" height="384" alt="InkuA Digital Skills & Talent Acceleration" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">25 /</span>
+              <p class="eyebrow">Leadership & Stage / Digital Skills</p>
+              <h3>InkuA Digital Skills & Talent Acceleration</h3>
+              <p>Civic technology initiative bridging international talent and young developers into tech careers through real-world projects.</p>
+              <span class="project-proof">Social Impact · Youth technology training</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="leadership">
+            <figure class="project-media">
+              <img src="inbox/media/images/inkua-startup-pitch.webp" width="1280" height="960" alt="Global Startup Pitching & Mentorship Sprints" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">26 /</span>
+              <p class="eyebrow">Leadership & Stage / Startup Pitch</p>
+              <h3>Global Startup Pitching & Mentorship Sprints</h3>
+              <p>Evaluating and mentoring early-stage technology founders on pitch mechanics, system architecture, and go-to-market execution.</p>
+              <span class="project-proof">Mentorship · International startup pitch</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="leadership">
+            <figure class="project-media">
+              <img src="inbox/media/images/inkua-digital-launch.webp" width="1024" height="1280" alt="Cross-Border Digital Publication & Initiatives" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">27 /</span>
+              <p class="eyebrow">Leadership & Stage / Digital Launch</p>
+              <h3>Cross-Border Digital Publication & Initiatives</h3>
+              <p>Launching international civic technology programs, publications, and open-source learning repositories.</p>
+              <span class="project-proof">Community · Digital publication milestone</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="infra">
+            <figure class="project-media">
+              <img src="inbox/media/images/frank-team-portrait.webp" width="500" height="500" alt="Cross-Functional Engineering Collaboration" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">28 /</span>
+              <p class="eyebrow">Systems & Infra / Team Collaboration</p>
+              <h3>Cross-Functional Engineering Collaboration</h3>
+              <p>Building alongside engineers, designers, and systems architects to turn complex constraints into reliable production reality.</p>
+              <span class="project-proof">Team · Collaborative engineering sprint</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="leadership">
+            <figure class="project-media">
+              <img src="inbox/media/images/frank-horse-portrait.webp" width="615" height="617" alt="Grounded Perspective Off the Terminal" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">29 /</span>
+              <p class="eyebrow">Personal / Grounded Discipline</p>
+              <h3>Grounded Perspective Off the Terminal</h3>
+              <p>Recharging outdoors—cultivating the calm discipline, patience, and perspective required to navigate high-stakes systems.</p>
+              <span class="project-proof">Personal · Grounded discipline</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="banking">
+            <figure class="project-media">
+              <img src="inbox/media/images/frank-portrait-studio.webp" width="1024" height="1024" alt="Strategic Systems Architect & Builder" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">30 /</span>
+              <p class="eyebrow">Founder & Advisor / Systems Architecture</p>
+              <h3>Strategic Systems Architect & Builder</h3>
+              <p>Frank Escudero: 40M+ personalized videos, >94% infrastructure cost reductions, and mission-critical solutions for tier-1 institutions.</p>
+              <span class="project-proof">Founder · Strategic systems architecture</span>
             </div>
           </li>
         </ol>
