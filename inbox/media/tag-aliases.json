@@ -12,7 +12,9 @@
     ],
     "personal": [
       "dog",
-      "perro"
+      "perro",
+      "horse",
+      "caballo"
     ],
     "video": [
       "videos",
@@ -20,13 +22,20 @@
       "charlas",
       "talk",
       "talks",
-      "youtube"
+      "youtube",
+      "studio",
+      "campaign"
     ],
     "creative-technology": [
       "technology",
       "tecnologia",
       "personalizacion",
-      "personalization"
+      "personalization",
+      "ai",
+      "analytics",
+      "saas",
+      "telemetry",
+      "dashboard"
     ],
     "social-impact": [
       "impacto social",
@@ -36,7 +45,10 @@
     "community": [
       "comunidad",
       "comunidades",
-      "encuentro"
+      "encuentro",
+      "brussels",
+      "parliament",
+      "workshop"
     ],
     "inclusion": [
       "inclusión",
@@ -60,11 +72,16 @@
     "entrepreneurship": [
       "emprendimiento",
       "founder",
-      "fundador"
+      "fundador",
+      "frankfurt",
+      "speaking",
+      "stage",
+      "keynote"
     ],
     "cybersecurity": [
       "ciberseguridad",
-      "security"
+      "security",
+      "setoff"
     ],
     "energy": [
       "energia",
@@ -76,7 +93,14 @@
       "robotica",
       "robótica",
       "3d printing",
-      "impresion 3d"
+      "impresion 3d",
+      "drones",
+      "drone",
+      "naval",
+      "maritime",
+      "hardware",
+      "autonomous",
+      "vessel"
     ],
     "medtech": [
       "medical technology",

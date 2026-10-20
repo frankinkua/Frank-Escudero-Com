@@ -110,7 +110,24 @@ test("canonical video sources and numerical bounds remain explicit", () => {
 });
 
 test("public catalogue contains only the owner's current approved references", () => {
-  assert.deepEqual(catalog.items.map((item) => item.id).sort(), ["frank-dog", "frank-portrait-studio", "mobile-metrics-ui", "setoff-2023"]);
+  assert.deepEqual(
+    catalog.items.map((item) => item.id).sort(),
+    [
+      "campaign-studio-set",
+      "drones-navales-hull",
+      "drones-navales-vessel",
+      "emood-dashboard",
+      "frank-dog",
+      "frank-eu-parliament",
+      "frank-founder-frankfurt",
+      "frank-horse-portrait",
+      "frank-portrait-studio",
+      "frank-speaking-stage",
+      "mobile-metrics-ui",
+      "setoff-2023",
+      "setoff-brussels-workshop",
+    ],
+  );
   assert.deepEqual(catalog.metrics.map((item) => item.id).sort(), ["images", "videos", "voip-after", "voip-before"]);
   assert.ok(catalog.metrics.every((metric) => metric.evidence_type === "owner_report"));
   const approvedHosts = new Set(["github.com", "www.linkedin.com", "setoff-project.eu"]);
@@ -138,11 +155,33 @@ test("withdrawn stencil artwork stays off the site", () => {
   assert.doesNotMatch(html, /stencil|street[- ]art|banksy/i);
 });
 
+test("institutions and banking showcase presents major bank names and logos generically", () => {
+  const section = html.match(/<section id="institutions"[\s\S]*?<\/section>/);
+  assert.ok(section, "institutions section exists");
+  for (const bank of [
+    "Santander",
+    "BBVA",
+    "citi",
+    "American Express",
+    "ICBC",
+    "Banco Galicia",
+    "BAC Credomatic",
+    "Banco Azteca",
+    "Wilobank",
+    "Mercedes-Benz",
+  ]) {
+    assert.ok(section[0].includes(bank), `includes ${bank}`);
+  }
+  const svgs = section[0].match(/<svg\b/g) || [];
+  assert.ok(svgs.length >= 10, "includes inline SVG bank emblems");
+});
+
 test("projects section is numbered, labelled and keeps owner-reported figures qualified", () => {
   const section = html.match(/<section id="projects"[\s\S]*?<\/section>/);
   assert.ok(section, "projects section exists");
   assert.match(html, /<a href="#projects">/);
   const cards = section[0].match(/<li class="project-card/g) || [];
+  assert.ok(cards.length >= 12, "includes expanded project gallery");
   const numbers = [...section[0].matchAll(/project-number">(\d+) \//g)].map((m) => Number(m[1]));
   assert.equal(numbers.length, cards.length);
   assert.deepEqual(numbers, numbers.map((_, i) => i + 1));

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "reviewed_at": "2026-10-12",
-  "rights_note": "Public availability is not a reuse license. User-supplied photographs are used for this requested website; no general redistribution license is asserted. Reference-only media stay at the publisher.",
+  "reviewed_at": "2026-10-20",
+  "rights_note": "Public availability is not a reuse license. User-supplied photographs and project visuals are used for this requested website; no general redistribution license is asserted. Reference-only media stay at the publisher.",
   "tag_aliases": "tag-aliases.json",
   "subject": "Frank / Ezequiel Escudero",
   "identity_note": "The site owner confirms Frank and Ezequiel Escudero are the same person.",
@@ -43,6 +43,163 @@
       "transformations": "Gemini-enhanced studio backdrop and color grading matching portfolio aesthetic. On 2026-10-12, at the owner's request, a decorative stencil graphic was retouched out of the background wall and the file was re-encoded as WebP (quality 85, same 1024x1024 size)."
     },
     {
+      "id": "frank-founder-frankfurt",
+      "type": "image",
+      "title": "Frank at Frankfurt Founders & TechQuartier event",
+      "source_url": null,
+      "local_path": "inbox/media/images/frank-founder-frankfurt.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied event photograph from cv-research-frank/media-options/assets/frank-founder-event-2023.jpg for personal branding on 2026-10-20.",
+      "tags": [
+        "portrait",
+        "entrepreneurship"
+      ],
+      "related_tags": [
+        "community"
+      ],
+      "retrieved_at": "2026-10-11",
+      "sha256": "5affdfd6323f06a410339936a8abe0266de5be5c1f46d5e87f55fbc8af4ed6b3",
+      "identity_evidence": "Identified as Frank by the site owner.",
+      "transformations": "Converted from JPEG to WebP (quality 84, 1280x797) and stripped of EXIF metadata."
+    },
+    {
+      "id": "frank-speaking-stage",
+      "type": "image",
+      "title": "Frank speaking on stage as IT Advisor & Tech Expert",
+      "source_url": null,
+      "local_path": "inbox/media/images/frank-speaking-stage.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied stage photograph from cv-research-frank/media-options/assets/inkua-stage-frank-2024-original.jpg for the site on 2026-10-20.",
+      "tags": [
+        "portrait",
+        "entrepreneurship",
+        "community"
+      ],
+      "related_tags": [
+        "social-impact"
+      ],
+      "retrieved_at": "2026-10-11",
+      "sha256": "4dbe66918a58ad7de78e7a43e4198c1aa79223a12509fbcaa294584b76dfc981",
+      "identity_evidence": "Confirmed as Frank speaking on stage by the site owner.",
+      "transformations": "Converted from JPEG to WebP (quality 84, 960x1280) and stripped of EXIF metadata."
+    },
+    {
+      "id": "frank-eu-parliament",
+      "type": "image",
+      "title": "Frank at European institutional conference session",
+      "source_url": null,
+      "local_path": "inbox/media/images/frank-eu-parliament.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied conference photograph from cv-research-frank/media-options/assets/inkua-parliament-frank-2023.png for the site on 2026-10-20.",
+      "tags": [
+        "portrait",
+        "community",
+        "social-impact"
+      ],
+      "related_tags": [
+        "entrepreneurship"
+      ],
+      "retrieved_at": "2026-10-11",
+      "sha256": "2d1d416158cfafd8d5f826e37c416de71dd64180d1cf977f51962dea1505f824",
+      "identity_evidence": "Identified as Frank in Brussels institutional conference hall by the owner.",
+      "transformations": "Converted from PNG to WebP (quality 84, 713x449) and stripped of metadata."
+    },
+    {
+      "id": "frank-horse-portrait",
+      "type": "image",
+      "title": "Frank outdoor portrait with horse",
+      "source_url": null,
+      "local_path": "inbox/media/images/frank-horse-portrait.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied personal portrait from cv-research-frank/media-options/assets/frank-horse-portrait-master-cv-2026.png on 2026-10-20.",
+      "tags": [
+        "portrait",
+        "personal"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "d532edcb381a01d4b25be26cc3a67b070595e2292fb558340abe671633c1612d",
+      "identity_evidence": "Confirmed as Frank by the site owner.",
+      "transformations": "Converted from PNG to WebP (quality 84, 615x617) and stripped of metadata."
+    },
+    {
+      "id": "drones-navales-vessel",
+      "type": "image",
+      "title": "Drones Navales autonomous surface vessel concept",
+      "source_url": null,
+      "local_path": "inbox/media/images/drones-navales-vessel.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied project visual from cv-research-frank/media-options/assets/drones-navales-river-render-slide-6-2019-private.jpg on 2026-10-20.",
+      "tags": [
+        "robotics",
+        "creative-technology",
+        "entrepreneurship"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "bc6d3206bb3003268a30f9f5495183f53e3f2cc90a6ba9ac98d41cc0fe74ade7",
+      "identity_evidence": "Owner-supplied Drones Navales autonomous watercraft project visual.",
+      "transformations": "Converted from JPEG to WebP (quality 84, 1280x720) and stripped of metadata."
+    },
+    {
+      "id": "drones-navales-hull",
+      "type": "image",
+      "title": "Autonomous watercraft propulsion and hull assembly",
+      "source_url": null,
+      "local_path": "inbox/media/images/drones-navales-hull.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied hardware prototype photo from cv-research-frank/media-options/assets/drones-navales-hull-2019.jpg on 2026-10-20.",
+      "tags": [
+        "robotics",
+        "creative-technology"
+      ],
+      "related_tags": [
+        "entrepreneurship"
+      ],
+      "retrieved_at": "2026-10-11",
+      "sha256": "dee22be7f4ad7db711707a5d5e83ff7c1590af8d8535c8685d4c8c064d2b24b2",
+      "identity_evidence": "Owner-supplied hardware build photograph of marine propulsion assembly.",
+      "transformations": "Converted from JPEG to WebP (quality 84, 552x414) and stripped of metadata."
+    },
+    {
+      "id": "campaign-studio-set",
+      "type": "image",
+      "title": "Interactive campaign production studio set",
+      "source_url": null,
+      "local_path": "inbox/media/images/campaign-studio-set.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied production set photograph from cv-research-frank/media-options/assets/coca-cola-santas-call-studio.jpg on 2026-10-20.",
+      "tags": [
+        "creative-technology",
+        "video"
+      ],
+      "related_tags": [
+        "entrepreneurship"
+      ],
+      "retrieved_at": "2026-10-11",
+      "sha256": "c119a7170f56e8c32562014114b77f00908d9343167eeb9d88c336a7ae1e2771",
+      "identity_evidence": "Owner-supplied physical production set photograph from interactive video campaign work.",
+      "transformations": "Converted from JPEG to WebP (quality 84, 939x704) and stripped of metadata."
+    },
+    {
+      "id": "emood-dashboard",
+      "type": "image",
+      "title": "Organizational wellbeing and sentiment analytics UI",
+      "source_url": null,
+      "local_path": "inbox/media/images/emood-dashboard.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied SaaS dashboard visual from cv-research-frank/media-options/assets/emood-dashboard.jpg on 2026-10-20.",
+      "tags": [
+        "creative-technology",
+        "entrepreneurship"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "e05c3dc0b6a33ffa7012d7d917c100bac6abf63bbfb0ab8d653e7ce569ebcfaf",
+      "identity_evidence": "Owner-supplied e-mood platform interface visual.",
+      "transformations": "Converted from JPEG to WebP (quality 84, 985x576) and stripped of metadata."
+    },
+    {
       "id": "mobile-metrics-ui",
       "type": "image",
       "title": "System metrics mobile telemetry card",
@@ -58,6 +215,25 @@
       "sha256": "ec94c4ebce4ef92fa9f5f4a604308c2ab01a7cadf052414bc4e4394e0bc0332f",
       "identity_evidence": "Architectural telemetry visualization approved by Frank.",
       "transformations": "Gemini-rendered Apple HIG dark card. On 2026-10-12, at the owner's request, cropped from 1376x768 to the 1024x768 area around the device to remove a decorative stencil graphic, and re-encoded as WebP (quality 85)."
+    },
+    {
+      "id": "setoff-brussels-workshop",
+      "type": "image",
+      "title": "SETOFF European cybersecurity workshop in Brussels",
+      "source_url": null,
+      "local_path": "inbox/media/images/setoff-brussels-workshop.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied workshop photograph from cv-research-frank/media-options/assets/setoff-brussels-event-2023.jpg on 2026-10-20.",
+      "tags": [
+        "cybersecurity",
+        "social-impact",
+        "community"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "747ad715cc05db552006e04a073be83748b5d80c9a408628dacdba16f86208ac",
+      "identity_evidence": "Owner-supplied photograph from the SETOFF third workshop in Brussels (June 2023).",
+      "transformations": "Converted from JPEG to WebP (quality 84, 1280x786) and stripped of metadata."
     },
     {
       "id": "setoff-2023",
