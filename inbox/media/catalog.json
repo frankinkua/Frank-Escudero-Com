@@ -7,159 +7,55 @@
   "identity_note": "The site owner confirms Frank and Ezequiel Escudero are the same person.",
   "items": [
     {
-      "id": "frank-dog",
+      "id": "amex-personalized-card",
       "type": "image",
-      "title": "Frank with his dog",
+      "title": "American Express personalized member flow",
       "source_url": null,
-      "local_path": "inbox/media/images/frank-with-dog.webp",
+      "local_path": "inbox/media/images/amex-personalized-card.webp",
       "rights_status": "user_supplied",
-      "rights_evidence": "User attached and selected this exact image for the site on 2026-10-11. Photographer and underlying license not supplied.",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
       "tags": [
-        "portrait",
-        "personal"
-      ],
-      "related_tags": [],
-      "retrieved_at": "2026-10-11",
-      "sha256": "bace2785ef361be56efcc0c560ec6b9a9ec93571af6215405bbc8bba26f3694d",
-      "identity_evidence": "Identified as Frank by the user.",
-      "transformations": "Re-encoded from the original PNG to WebP (quality 85, same 1062x942 dimensions) to cut page weight; no crop or edit."
-    },
-    {
-      "id": "frank-portrait-studio",
-      "type": "image",
-      "title": "Frank studio portrait",
-      "source_url": null,
-      "local_path": "inbox/media/images/frank-portrait-studio.webp",
-      "rights_status": "user_supplied",
-      "rights_evidence": "User supplied source photo PXL_20230316_202612489.jpg and approved Gemini stylized studio portrait for the site on 2026-10-12.",
-      "tags": [
-        "portrait",
-        "personal"
-      ],
-      "related_tags": [],
-      "retrieved_at": "2026-10-11",
-      "sha256": "fd121b156cfe2f884416f364972e84845de42a33e89e2ea529c05f217dc19e80",
-      "identity_evidence": "Confirmed as Frank by the owner.",
-      "transformations": "Gemini-enhanced studio backdrop and color grading matching portfolio aesthetic. On 2026-10-12, at the owner's request, a decorative stencil graphic was retouched out of the background wall and the file was re-encoded as WebP (quality 85, same 1024x1024 size)."
-    },
-    {
-      "id": "frank-founder-frankfurt",
-      "type": "image",
-      "title": "Frank at Frankfurt Founders & TechQuartier event",
-      "source_url": null,
-      "local_path": "inbox/media/images/frank-founder-frankfurt.webp",
-      "rights_status": "user_supplied",
-      "rights_evidence": "User supplied event photograph from cv-research-frank/media-options/assets/frank-founder-event-2023.jpg for personal branding on 2026-10-20.",
-      "tags": [
-        "portrait",
-        "entrepreneurship"
-      ],
-      "related_tags": [
-        "community"
-      ],
-      "retrieved_at": "2026-10-11",
-      "sha256": "5affdfd6323f06a410339936a8abe0266de5be5c1f46d5e87f55fbc8af4ed6b3",
-      "identity_evidence": "Identified as Frank by the site owner.",
-      "transformations": "Converted from JPEG to WebP (quality 84, 1280x797) and stripped of EXIF metadata."
-    },
-    {
-      "id": "frank-speaking-stage",
-      "type": "image",
-      "title": "Frank speaking on stage as IT Advisor & Tech Expert",
-      "source_url": null,
-      "local_path": "inbox/media/images/frank-speaking-stage.webp",
-      "rights_status": "user_supplied",
-      "rights_evidence": "User supplied stage photograph from cv-research-frank/media-options/assets/inkua-stage-frank-2024-original.jpg for the site on 2026-10-20.",
-      "tags": [
-        "portrait",
-        "entrepreneurship",
-        "community"
-      ],
-      "related_tags": [
-        "social-impact"
-      ],
-      "retrieved_at": "2026-10-11",
-      "sha256": "4dbe66918a58ad7de78e7a43e4198c1aa79223a12509fbcaa294584b76dfc981",
-      "identity_evidence": "Confirmed as Frank speaking on stage by the site owner.",
-      "transformations": "Converted from JPEG to WebP (quality 84, 960x1280) and stripped of EXIF metadata."
-    },
-    {
-      "id": "frank-eu-parliament",
-      "type": "image",
-      "title": "Frank at European institutional conference session",
-      "source_url": null,
-      "local_path": "inbox/media/images/frank-eu-parliament.webp",
-      "rights_status": "user_supplied",
-      "rights_evidence": "User supplied conference photograph from cv-research-frank/media-options/assets/inkua-parliament-frank-2023.png for the site on 2026-10-20.",
-      "tags": [
-        "portrait",
-        "community",
-        "social-impact"
-      ],
-      "related_tags": [
-        "entrepreneurship"
-      ],
-      "retrieved_at": "2026-10-11",
-      "sha256": "2d1d416158cfafd8d5f826e37c416de71dd64180d1cf977f51962dea1505f824",
-      "identity_evidence": "Identified as Frank in Brussels institutional conference hall by the owner.",
-      "transformations": "Converted from PNG to WebP (quality 84, 713x449) and stripped of metadata."
-    },
-    {
-      "id": "frank-horse-portrait",
-      "type": "image",
-      "title": "Frank outdoor portrait with horse",
-      "source_url": null,
-      "local_path": "inbox/media/images/frank-horse-portrait.webp",
-      "rights_status": "user_supplied",
-      "rights_evidence": "User supplied personal portrait from cv-research-frank/media-options/assets/frank-horse-portrait-master-cv-2026.png on 2026-10-20.",
-      "tags": [
-        "portrait",
-        "personal"
-      ],
-      "related_tags": [],
-      "retrieved_at": "2026-10-11",
-      "sha256": "d532edcb381a01d4b25be26cc3a67b070595e2292fb558340abe671633c1612d",
-      "identity_evidence": "Confirmed as Frank by the site owner.",
-      "transformations": "Converted from PNG to WebP (quality 84, 615x617) and stripped of metadata."
-    },
-    {
-      "id": "drones-navales-vessel",
-      "type": "image",
-      "title": "Drones Navales autonomous surface vessel concept",
-      "source_url": null,
-      "local_path": "inbox/media/images/drones-navales-vessel.webp",
-      "rights_status": "user_supplied",
-      "rights_evidence": "User supplied project visual from cv-research-frank/media-options/assets/drones-navales-river-render-slide-6-2019-private.jpg on 2026-10-20.",
-      "tags": [
-        "robotics",
-        "creative-technology",
-        "entrepreneurship"
-      ],
-      "related_tags": [],
-      "retrieved_at": "2026-10-11",
-      "sha256": "bc6d3206bb3003268a30f9f5495183f53e3f2cc90a6ba9ac98d41cc0fe74ade7",
-      "identity_evidence": "Owner-supplied Drones Navales autonomous watercraft project visual.",
-      "transformations": "Converted from JPEG to WebP (quality 84, 1280x720) and stripped of metadata."
-    },
-    {
-      "id": "drones-navales-hull",
-      "type": "image",
-      "title": "Autonomous watercraft propulsion and hull assembly",
-      "source_url": null,
-      "local_path": "inbox/media/images/drones-navales-hull.webp",
-      "rights_status": "user_supplied",
-      "rights_evidence": "User supplied hardware prototype photo from cv-research-frank/media-options/assets/drones-navales-hull-2019.jpg on 2026-10-20.",
-      "tags": [
-        "robotics",
         "creative-technology"
       ],
-      "related_tags": [
-        "entrepreneurship"
-      ],
+      "related_tags": [],
       "retrieved_at": "2026-10-11",
-      "sha256": "dee22be7f4ad7db711707a5d5e83ff7c1590af8d8535c8685d4c8c064d2b24b2",
-      "identity_evidence": "Owner-supplied hardware build photograph of marine propulsion assembly.",
-      "transformations": "Converted from JPEG to WebP (quality 84, 552x414) and stripped of metadata."
+      "sha256": "320ac7b64df23c228d8842ffd81f9f1e452a0879d41f9ecef330ec0d3cd5427d",
+      "identity_evidence": "Personalized cardholder onboarding visual.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "banco-azteca-scale",
+      "type": "image",
+      "title": "Banco Azteca consumer banking platform architecture",
+      "source_url": null,
+      "local_path": "inbox/media/images/banco-azteca-scale.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "creative-technology"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "7ebe8d8b5553e3d6cac56e092de710ea6cf828ef8a2f59f1c7a6f15819cc1e20",
+      "identity_evidence": "Mass-scale consumer visual architecture.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "banco-galicia-onboarding",
+      "type": "image",
+      "title": "Banco Galicia interactive onboarding flow",
+      "source_url": null,
+      "local_path": "inbox/media/images/banco-galicia-onboarding.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "creative-technology"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "abc2a3f998e960b96ae24ee69e3e6b9acd82f6bd74037e6acbe41b8e833ff66d",
+      "identity_evidence": "Interactive digital client onboarding.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
     },
     {
       "id": "campaign-studio-set",
@@ -168,18 +64,123 @@
       "source_url": null,
       "local_path": "inbox/media/images/campaign-studio-set.webp",
       "rights_status": "user_supplied",
-      "rights_evidence": "User supplied production set photograph from cv-research-frank/media-options/assets/coca-cola-santas-call-studio.jpg on 2026-10-20.",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
       "tags": [
         "creative-technology",
         "video"
       ],
-      "related_tags": [
-        "entrepreneurship"
-      ],
+      "related_tags": [],
       "retrieved_at": "2026-10-11",
       "sha256": "c119a7170f56e8c32562014114b77f00908d9343167eeb9d88c336a7ae1e2771",
-      "identity_evidence": "Owner-supplied physical production set photograph from interactive video campaign work.",
-      "transformations": "Converted from JPEG to WebP (quality 84, 939x704) and stripped of metadata."
+      "identity_evidence": "Physical production set for interactive campaigns.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "campaign-telephony-dashboard",
+      "type": "image",
+      "title": "Real-time telephony routing & call telemetry",
+      "source_url": null,
+      "local_path": "inbox/media/images/campaign-telephony-dashboard.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "creative-technology"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "13afdbea5b31f206097e524a4224df124065484faa5ad37b8c9d300faf2892dc",
+      "identity_evidence": "High-scale SIP and outbound telephony dashboard.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "campaign-video-render",
+      "type": "image",
+      "title": "Real-time dynamic video generation frame",
+      "source_url": null,
+      "local_path": "inbox/media/images/campaign-video-render.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "creative-technology",
+        "video"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "37b820314ca818cbc52bd1b4fe6c82b17c42b64b8a19a4b13cd07601294e04b8",
+      "identity_evidence": "Dynamic personalized video rendering frame.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "drones-navales-electronics",
+      "type": "image",
+      "title": "Autonomous waypoint telemetry & edge electronics",
+      "source_url": null,
+      "local_path": "inbox/media/images/drones-navales-electronics.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "robotics",
+        "creative-technology"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "e32e75ba31f62d1773fddc8ecf0594d82aef8cdf16cbb2353ca7f4faa75681d3",
+      "identity_evidence": "Embedded telemetry and control board.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "drones-navales-hull",
+      "type": "image",
+      "title": "Autonomous watercraft propulsion and hull assembly",
+      "source_url": null,
+      "local_path": "inbox/media/images/drones-navales-hull.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "robotics",
+        "creative-technology"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "dee22be7f4ad7db711707a5d5e83ff7c1590af8d8535c8685d4c8c064d2b24b2",
+      "identity_evidence": "Marine propulsion assembly in the workshop.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "drones-navales-vessel",
+      "type": "image",
+      "title": "Drones Navales autonomous surface vessel concept",
+      "source_url": null,
+      "local_path": "inbox/media/images/drones-navales-vessel.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "robotics",
+        "creative-technology"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "bc6d3206bb3003268a30f9f5495183f53e3f2cc90a6ba9ac98d41cc0fe74ade7",
+      "identity_evidence": "Autonomous watercraft project visual.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "drones-navales-water",
+      "type": "image",
+      "title": "Autonomous vessel coastal & waterway navigation",
+      "source_url": null,
+      "local_path": "inbox/media/images/drones-navales-water.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "robotics",
+        "creative-technology"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "ed13eafdf110f2adc4241c1cce8aa6c3980ec49fa548ee72533c6e32212b7267",
+      "identity_evidence": "Maritime simulation and field trial model.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
     },
     {
       "id": "emood-dashboard",
@@ -188,7 +189,7 @@
       "source_url": null,
       "local_path": "inbox/media/images/emood-dashboard.webp",
       "rights_status": "user_supplied",
-      "rights_evidence": "User supplied SaaS dashboard visual from cv-research-frank/media-options/assets/emood-dashboard.jpg on 2026-10-20.",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
       "tags": [
         "creative-technology",
         "entrepreneurship"
@@ -196,8 +197,242 @@
       "related_tags": [],
       "retrieved_at": "2026-10-11",
       "sha256": "e05c3dc0b6a33ffa7012d7d917c100bac6abf63bbfb0ab8d653e7ce569ebcfaf",
-      "identity_evidence": "Owner-supplied e-mood platform interface visual.",
-      "transformations": "Converted from JPEG to WebP (quality 84, 985x576) and stripped of metadata."
+      "identity_evidence": "e-mood platform interface visual.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "emood-platform",
+      "type": "image",
+      "title": "e-mood people analytics architecture",
+      "source_url": null,
+      "local_path": "inbox/media/images/emood-platform.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "creative-technology",
+        "entrepreneurship"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "49c1e142610fd6a41334ff700e190cecce1a570d51736333ad5827c3d742c8ca",
+      "identity_evidence": "Product framework and wellbeing metrics.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "frank-eu-parliament",
+      "type": "image",
+      "title": "Frank at European institutional conference session",
+      "source_url": null,
+      "local_path": "inbox/media/images/frank-eu-parliament.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "portrait",
+        "community",
+        "social-impact"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "2d1d416158cfafd8d5f826e37c416de71dd64180d1cf977f51962dea1505f824",
+      "identity_evidence": "Identified as Frank in Brussels conference hall.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "frank-founder-frankfurt",
+      "type": "image",
+      "title": "Frank at Frankfurt Founders & TechQuartier event",
+      "source_url": null,
+      "local_path": "inbox/media/images/frank-founder-frankfurt.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "portrait",
+        "entrepreneurship"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "5affdfd6323f06a410339936a8abe0266de5be5c1f46d5e87f55fbc8af4ed6b3",
+      "identity_evidence": "Identified as Frank by the site owner.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "frank-horse-portrait",
+      "type": "image",
+      "title": "Frank outdoor portrait with horse",
+      "source_url": null,
+      "local_path": "inbox/media/images/frank-horse-portrait.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "portrait",
+        "personal"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "d532edcb381a01d4b25be26cc3a67b070595e2292fb558340abe671633c1612d",
+      "identity_evidence": "Confirmed as Frank by the site owner.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "frank-portrait-studio",
+      "type": "image",
+      "title": "Frank studio portrait",
+      "source_url": null,
+      "local_path": "inbox/media/images/frank-portrait-studio.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "portrait",
+        "personal"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "fd121b156cfe2f884416f364972e84845de42a33e89e2ea529c05f217dc19e80",
+      "identity_evidence": "Confirmed as Frank by the owner.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "frank-speaking-stage",
+      "type": "image",
+      "title": "Frank speaking on stage as IT Advisor & Tech Expert",
+      "source_url": null,
+      "local_path": "inbox/media/images/frank-speaking-stage.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "portrait",
+        "entrepreneurship"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "4dbe66918a58ad7de78e7a43e4198c1aa79223a12509fbcaa294584b76dfc981",
+      "identity_evidence": "Confirmed as Frank speaking on stage by the site owner.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "frank-team-portrait",
+      "type": "image",
+      "title": "Engineering & venture team session",
+      "source_url": null,
+      "local_path": "inbox/media/images/frank-team-portrait.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "portrait",
+        "community"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "a203d21b4334b2ee350c85cdece0005965d0dff8fa7529a71ef5c851e8566f37",
+      "identity_evidence": "Frank with engineering collaborators.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "frank-with-dog",
+      "type": "image",
+      "title": "Frank with his dog",
+      "source_url": null,
+      "local_path": "inbox/media/images/frank-with-dog.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "portrait",
+        "personal"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "bace2785ef361be56efcc0c560ec6b9a9ec93571af6215405bbc8bba26f3694d",
+      "identity_evidence": "Identified as Frank by the user.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "frank-workstation",
+      "type": "image",
+      "title": "Engineering & systems architecture workstation",
+      "source_url": null,
+      "local_path": "inbox/media/images/frank-workstation.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "creative-technology"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "096711cf25641d92e9decf0c7a4c0a665341fc5fe391756a2cc262d838d087bf",
+      "identity_evidence": "Frank workstation multi-monitor architecture setup.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "inkua-copilot-training",
+      "type": "image",
+      "title": "AI-assisted software engineering session",
+      "source_url": null,
+      "local_path": "inbox/media/images/inkua-copilot-training.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "creative-technology",
+        "community"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "ea1a085a9890ec110dded02efb21e7539d93c0f573897b4bd149d93bce6bc0cb",
+      "identity_evidence": "Copilot & developer training workshop.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "inkua-digital-launch",
+      "type": "image",
+      "title": "InkuA digital initiative launch",
+      "source_url": null,
+      "local_path": "inbox/media/images/inkua-digital-launch.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "community",
+        "entrepreneurship"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "6d7b0d3214b90998b379f6a8613406ff41b2c196579b05b5726cb42de09dfe7c",
+      "identity_evidence": "Digital publication and project milestone.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "inkua-startup-pitch",
+      "type": "image",
+      "title": "InkuA international startup pitch session",
+      "source_url": null,
+      "local_path": "inbox/media/images/inkua-startup-pitch.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "entrepreneurship",
+        "community"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "28ebd2638f53ff15f33e2d2a224a68df1e549b12d7f51959fea23843f210417d",
+      "identity_evidence": "Global startup pitching and feedback event.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "inkua-tech-workshop",
+      "type": "image",
+      "title": "InkuA youth technology workshop",
+      "source_url": null,
+      "local_path": "inbox/media/images/inkua-tech-workshop.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "community",
+        "social-impact"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "8d5f4151c1ee45fd7512d6a5cecbed79bf64ee6fb00a50f205744877f80640ad",
+      "identity_evidence": "InkuA digital skills training session.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
     },
     {
       "id": "mobile-metrics-ui",
@@ -206,15 +441,68 @@
       "source_url": null,
       "local_path": "inbox/media/images/mobile-metrics-ui.webp",
       "rights_status": "user_supplied",
-      "rights_evidence": "User supplied telemetry screenshot Screenshot_20160718-102754.jpg and approved Gemini stylized Apple-HIG interface card on 2026-10-12.",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
       "tags": [
         "creative-technology"
       ],
       "related_tags": [],
       "retrieved_at": "2026-10-11",
       "sha256": "ec94c4ebce4ef92fa9f5f4a604308c2ab01a7cadf052414bc4e4394e0bc0332f",
-      "identity_evidence": "Architectural telemetry visualization approved by Frank.",
-      "transformations": "Gemini-rendered Apple HIG dark card. On 2026-10-12, at the owner's request, cropped from 1376x768 to the 1024x768 area around the device to remove a decorative stencil graphic, and re-encoded as WebP (quality 85)."
+      "identity_evidence": "Architectural telemetry visualization.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "pardo-videocall-platform",
+      "type": "image",
+      "title": "High-scale interactive video call platform",
+      "source_url": null,
+      "local_path": "inbox/media/images/pardo-videocall-platform.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "creative-technology",
+        "video"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "c16f2666baa266df4876c9a798a21a70f8afe4ac6cb21698aca8cba23dc1f3dd",
+      "identity_evidence": "Desktop video call interface for nationwide retail campaign.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "santander-dynamic-message",
+      "type": "image",
+      "title": "Santander dynamic personalized messaging",
+      "source_url": null,
+      "local_path": "inbox/media/images/santander-dynamic-message.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "creative-technology"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "a4c03a10d8a5b591abe9ca9f572165430349b06d2d78de0133224a9adcb5aa9d",
+      "identity_evidence": "Personalized client communication visual.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "santander-video-case",
+      "type": "image",
+      "title": "Santander personalized video pipeline case",
+      "source_url": null,
+      "local_path": "inbox/media/images/santander-video-case.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "creative-technology",
+        "video"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "606eaa5adf0fb6c4fb83da1918b03483704a1e4e4134f130700a22054fa5c7b5",
+      "identity_evidence": "Case study visual for Santander personalized video.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
     },
     {
       "id": "setoff-brussels-workshop",
@@ -223,7 +511,7 @@
       "source_url": null,
       "local_path": "inbox/media/images/setoff-brussels-workshop.webp",
       "rights_status": "user_supplied",
-      "rights_evidence": "User supplied workshop photograph from cv-research-frank/media-options/assets/setoff-brussels-event-2023.jpg on 2026-10-20.",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
       "tags": [
         "cybersecurity",
         "social-impact",
@@ -232,8 +520,43 @@
       "related_tags": [],
       "retrieved_at": "2026-10-11",
       "sha256": "747ad715cc05db552006e04a073be83748b5d80c9a408628dacdba16f86208ac",
-      "identity_evidence": "Owner-supplied photograph from the SETOFF third workshop in Brussels (June 2023).",
-      "transformations": "Converted from JPEG to WebP (quality 84, 1280x786) and stripped of metadata."
+      "identity_evidence": "SETOFF workshop in Brussels.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "setoff-expert-panel",
+      "type": "image",
+      "title": "SETOFF Brussels institutional resilience panel",
+      "source_url": null,
+      "local_path": "inbox/media/images/setoff-expert-panel.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "cybersecurity",
+        "social-impact"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "58f9a1aaba399fab5d44944fe6537dccf4edd7a822729cd304da086a88694ca4",
+      "identity_evidence": "Institutional panel discussion in Brussels.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "wilobank-cloud-monitoring",
+      "type": "image",
+      "title": "Wilobank cloud-native neobank QA & telemetry",
+      "source_url": null,
+      "local_path": "inbox/media/images/wilobank-cloud-monitoring.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "creative-technology"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "1da484af7ea325a3cee704d577e4a36f4014f58f3fa8af22883f8182055a7a73",
+      "identity_evidence": "Neobank cloud telemetry monitoring visual.",
+      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
     },
     {
       "id": "setoff-2023",

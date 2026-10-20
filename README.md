@@ -1,12 +1,12 @@
 # Frank Escudero — personal website
 
-A static, locally hosted-asset personal brand and systems portfolio for Frank / Ezequiel Escudero. Ivory, forest ink, cobalt and lime aesthetic; institutional banking & enterprise showcase; a 4-pillar resourcefulness playbook; a 12-project filterable gallery; two accessible comparison charts; and a multilingual searchable media catalogue.
+A static, locally hosted-asset personal brand and systems portfolio for Frank / Ezequiel Escudero. Ivory, forest ink, cobalt and lime aesthetic; institutional banking & enterprise showcase; a 4-pillar resourcefulness playbook; an interactive 30-picture pass-through project gallery; two accessible comparison charts; and a multilingual searchable media catalogue.
 
 ## Evidence and media
 
 - `inbox/media/catalog.json` records sources, rights, identity evidence, dates, exact local asset hashes, and numeric comparators.
 - Frank confirmed the 40M+ videos, 180M+ images and €9M to <€0.5M annual VoIP cost figures on 11 October 2026. These are explicitly owner-reported, not independently audited; project dates remain unspecified.
-- The public media catalogue contains the owner-approved portraits (studio, Frankfurt founders event, keynote stage, Brussels institutional session, dog, horse), project visuals (Drones Navales vessel and hull hardware, campaign studio set, system metrics telemetry card, e-mood dashboard, SETOFF Brussels workshop), and the approved institutional workshop reference.
+- The public media catalogue contains the owner-approved portraits and project visuals (31 WebP images covering the 30-picture project gallery and media archive, and the approved institutional workshop reference).
 - Shared canonical tags and bilingual aliases are in `inbox/media/tag-aliases.json`.
 - Jules draft research folders are not a source of automatic publication or verified claims.
 - Public content follows the owner's current publication choices. Do not restore withdrawn employer, agency, campaign or press associations from older commits or research drafts. New affiliations and related sources require explicit owner approval.
