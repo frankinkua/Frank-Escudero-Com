@@ -9,8 +9,26 @@ const tagAliases = {
     "photo",
     "fotografia",
   ],
-  personal: ["personal", "dog", "perro", "sonrisa", "smile"],
-  video: ["video", "videos", "charla", "charlas", "talk", "talks", "youtube"],
+  personal: [
+    "personal",
+    "dog",
+    "perro",
+    "sonrisa",
+    "smile",
+    "horse",
+    "caballo",
+  ],
+  video: [
+    "video",
+    "videos",
+    "charla",
+    "charlas",
+    "talk",
+    "talks",
+    "youtube",
+    "studio",
+    "campaign",
+  ],
   "creative-technology": [
     "creative technology",
     "creative-technology",
@@ -18,6 +36,11 @@ const tagAliases = {
     "technology",
     "personalizacion",
     "personalization",
+    "ai",
+    "analytics",
+    "saas",
+    "telemetry",
+    "dashboard",
   ],
   "social-impact": [
     "social impact",
@@ -26,7 +49,15 @@ const tagAliases = {
     "humanitarian",
     "humanitario",
   ],
-  community: ["community", "comunidad", "comunidades", "encuentro"],
+  community: [
+    "community",
+    "comunidad",
+    "comunidades",
+    "encuentro",
+    "brussels",
+    "parliament",
+    "workshop",
+  ],
   inclusion: ["inclusion", "inclusión", "incluir", "puentes", "bridges"],
   poverty: ["poverty", "pobreza"],
   music: ["music", "musica", "música", "piano"],
@@ -36,10 +67,27 @@ const tagAliases = {
     "emprendimiento",
     "founder",
     "fundador",
+    "frankfurt",
+    "speaking",
+    "stage",
+    "keynote",
   ],
-  cybersecurity: ["cybersecurity", "ciberseguridad", "security"],
+  cybersecurity: ["cybersecurity", "ciberseguridad", "security", "setoff"],
   energy: ["energy", "energia", "solar", "balcony", "balcon"],
-  robotics: ["robotics", "robotica", "robótica", "3d printing", "impresion 3d"],
+  robotics: [
+    "robotics",
+    "robotica",
+    "robótica",
+    "3d printing",
+    "impresion 3d",
+    "drones",
+    "drone",
+    "naval",
+    "maritime",
+    "hardware",
+    "autonomous",
+    "vessel",
+  ],
   medtech: ["medtech", "medical technology", "tecnologia medica"],
 };
 const normalize = (value) =>
@@ -97,6 +145,24 @@ if (typeof document !== "undefined") {
       .matchMedia("(min-width: 701px)")
       .addEventListener("change", closeMenu);
   }
+  const projectCards = [
+      ...document.querySelectorAll(".project-card[data-category]"),
+    ],
+    projectButtons = [...document.querySelectorAll("[data-project-filter]")];
+  if (projectCards.length && projectButtons.length) {
+    projectButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const selected = button.dataset.projectFilter;
+        projectButtons.forEach((b) =>
+          b.setAttribute("aria-pressed", String(b === button)),
+        );
+        projectCards.forEach((card) => {
+          const cats = (card.dataset.category || "").split(" ");
+          card.hidden = selected !== "all" && !cats.includes(selected);
+        });
+      });
+    });
+  }
   const cards = [...document.querySelectorAll(".media-card[data-tags]")],
     search = document.querySelector("#media-search");
   const filters = [...document.querySelectorAll("[data-filter]")],
@@ -133,45 +199,5 @@ if (typeof document !== "undefined") {
       }),
     );
     render();
-  }
-  const journey = document.querySelector(".journey");
-  if (journey) {
-    const steps = [...document.querySelectorAll(".story-step")],
-      label = document.querySelector("#scene-label"),
-      reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let queued = false;
-    const update = () => {
-      queued = false;
-      if (reduce.matches) {
-        journey.dataset.scene = "0";
-        journey.style.setProperty("--progress", "0");
-        label.textContent = steps[0].querySelector(".chapter").textContent;
-        return;
-      }
-      const focus =
-        window.innerWidth <= 700
-          ? Math.min(window.innerHeight * 0.75, window.innerHeight - 50)
-          : window.innerHeight * 0.55;
-      let active = 0;
-      steps.forEach((step, index) => {
-        if (step.getBoundingClientRect().top <= focus) active = index;
-      });
-      journey.dataset.scene = String(active);
-      journey.style.setProperty(
-        "--progress",
-        String(active / (steps.length - 1)),
-      );
-      label.textContent = steps[active].querySelector(".chapter").textContent;
-    };
-    const queue = () => {
-      if (!queued) {
-        queued = true;
-        window.requestAnimationFrame(update);
-      }
-    };
-    window.addEventListener("scroll", queue, { passive: true });
-    window.addEventListener("resize", queue);
-    reduce.addEventListener("change", queue);
-    update();
   }
 }
