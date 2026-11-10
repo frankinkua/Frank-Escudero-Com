@@ -89,6 +89,63 @@ const tagAliases = {
     "vessel",
   ],
   medtech: ["medtech", "medical technology", "tecnologia medica"],
+  banking: [
+    "banking",
+    "banca",
+    "fintech",
+    "finance",
+    "santander",
+    "amex",
+    "american express",
+    "galicia",
+    "bbva",
+    "citi",
+  ],
+  infra: [
+    "infra",
+    "infrastructure",
+    "systems",
+    "sistemas",
+    "cluster",
+    "pflops",
+    "rdma",
+    "gpu",
+    "sip",
+    "voip",
+    "telephony",
+    "bare metal",
+  ],
+  hardware: [
+    "hardware",
+    "robotics",
+    "robotica",
+    "drones",
+    "naval",
+    "vessel",
+    "hull",
+    "watercraft",
+  ],
+  "non-profit": [
+    "non profit",
+    "non-profit",
+    "ngo",
+    "ong",
+    "inkua",
+    "civic",
+    "teleton",
+    "setoff",
+    "volunteers",
+  ],
+  "coca-cola": [
+    "coca cola",
+    "coca-cola",
+    "christmas",
+    "navidad",
+    "xmas",
+    "santa",
+    "papa noel",
+    "holiday",
+  ],
 };
 const normalize = (value) =>
   String(value)
@@ -146,7 +203,7 @@ if (typeof document !== "undefined") {
       .addEventListener("change", closeMenu);
   }
 
-  // 30-Picture Pass-Through Gallery & Theater
+  // 30-Picture Pass-Through Gallery, Theater & Unified Search/Filter
   const theater = document.querySelector(".gallery-theater");
   if (theater) {
     const mainImg = theater.querySelector(".theater-main-img"),
@@ -157,22 +214,45 @@ if (typeof document !== "undefined") {
       proofEl = theater.querySelector(".theater-proof"),
       prevBtn = theater.querySelector(".theater-prev"),
       nextBtn = theater.querySelector(".theater-next"),
+      thumbsStrip = theater.querySelector(".theater-thumbs-strip"),
       thumbs = [...theater.querySelectorAll(".theater-thumb")],
       cards = [...document.querySelectorAll(".project-card")],
-      filterBtns = [...document.querySelectorAll("[data-project-filter]")];
+      filterBtns = [...document.querySelectorAll("[data-project-filter]")],
+      searchInput = document.querySelector("#media-search"),
+      statusEl = document.querySelector(".result-count");
 
     let currentIndex = 0;
-    const slides = thumbs.map((btn) => ({
-      src: btn.dataset.src,
-      alt: btn.dataset.alt,
-      width: btn.dataset.width,
-      height: btn.dataset.height,
-      title: btn.dataset.title,
-      desc: btn.dataset.desc,
-      category: btn.dataset.category,
-      proof: btn.dataset.proof,
-      number: btn.dataset.number,
-    }));
+    let activeFilter = "all";
+    const slides = thumbs.map((btn, i) => {
+      const card = cards[i];
+      const rawTags = [
+        card ? card.dataset.category : "",
+        ...(card && card.dataset.tags ? card.dataset.tags.split(/\s+/) : []),
+      ].filter(Boolean);
+      const tags = [...new Set(rawTags)];
+      const text = [
+        btn.dataset.title || "",
+        btn.dataset.desc || "",
+        btn.dataset.category || "",
+        btn.dataset.proof || "",
+        card ? card.textContent : "",
+      ].join(" ");
+      return {
+        src: btn.dataset.src,
+        alt: btn.dataset.alt,
+        width: btn.dataset.width,
+        height: btn.dataset.height,
+        title: btn.dataset.title,
+        desc: btn.dataset.desc,
+        category: btn.dataset.category,
+        proof: btn.dataset.proof,
+        number: btn.dataset.number,
+        tags,
+        text,
+      };
+    });
+
+    let visibleIndices = slides.map((_, i) => i);
 
     function showSlide(index) {
       if (!slides.length) return;
@@ -182,14 +262,14 @@ if (typeof document !== "undefined") {
       const s = slides[currentIndex];
 
       if (mainImg) {
-        mainImg.style.opacity = "0.7";
+        mainImg.style.opacity = "0.72";
         setTimeout(() => {
           mainImg.src = s.src;
           mainImg.alt = s.alt;
           mainImg.width = s.width;
           mainImg.height = s.height;
           mainImg.style.opacity = "1";
-        }, 80);
+        }, 70);
       }
       if (counter) counter.textContent = `${s.number} / ${slides.length}`;
       if (titleEl) titleEl.textContent = s.title;
@@ -200,11 +280,12 @@ if (typeof document !== "undefined") {
       thumbs.forEach((th, i) => {
         const isActive = i === currentIndex;
         th.setAttribute("aria-current", String(isActive));
-        if (isActive) {
-          th.scrollIntoView({
+        if (isActive && thumbsStrip) {
+          const targetLeft =
+            th.offsetLeft - thumbsStrip.clientWidth / 2 + th.clientWidth / 2;
+          thumbsStrip.scrollTo({
+            left: Math.max(0, targetLeft),
             behavior: "smooth",
-            block: "nearest",
-            inline: "center",
           });
         }
       });
@@ -216,8 +297,54 @@ if (typeof document !== "undefined") {
       });
     }
 
-    if (prevBtn) prevBtn.addEventListener("click", () => showSlide(currentIndex - 1));
-    if (nextBtn) nextBtn.addEventListener("click", () => showSlide(currentIndex + 1));
+    function stepSlide(delta) {
+      const pool = visibleIndices.length
+        ? visibleIndices
+        : slides.map((_, i) => i);
+      const pos = pool.indexOf(currentIndex);
+      if (pos === -1) {
+        showSlide(pool[0]);
+      } else {
+        const nextPos = (pos + delta + pool.length) % pool.length;
+        showSlide(pool[nextPos]);
+      }
+    }
+
+    function applyFilters() {
+      const query = searchInput ? searchInput.value : "";
+      visibleIndices = [];
+      slides.forEach((slide, i) => {
+        const visible = matchesMedia(
+          { tags: slide.tags, text: slide.text },
+          query,
+          activeFilter,
+        );
+        if (cards[i]) cards[i].hidden = !visible;
+        if (thumbs[i]) thumbs[i].hidden = !visible;
+        if (visible) visibleIndices.push(i);
+      });
+
+      if (statusEl) {
+        if (!query.trim() && activeFilter === "all") {
+          statusEl.textContent = `Showing all ${slides.length} verified artifacts`;
+        } else if (visibleIndices.length === 0) {
+          statusEl.textContent =
+            "0 matching artifacts — clear filter or select All 30";
+        } else {
+          statusEl.textContent = `Showing ${visibleIndices.length} of ${slides.length} verified artifacts`;
+        }
+      }
+
+      if (
+        visibleIndices.length > 0 &&
+        !visibleIndices.includes(currentIndex)
+      ) {
+        showSlide(visibleIndices[0]);
+      }
+    }
+
+    if (prevBtn) prevBtn.addEventListener("click", () => stepSlide(-1));
+    if (nextBtn) nextBtn.addEventListener("click", () => stepSlide(1));
 
     thumbs.forEach((th, i) => {
       th.addEventListener("click", () => showSlide(i));
@@ -230,18 +357,18 @@ if (typeof document !== "undefined") {
       });
     });
 
-    // Keyboard navigation when user is looking at gallery or page
     document.addEventListener("keydown", (e) => {
-      const activeTag = document.activeElement ? document.activeElement.tagName : "";
+      const activeTag = document.activeElement
+        ? document.activeElement.tagName
+        : "";
       if (activeTag === "INPUT" || activeTag === "TEXTAREA") return;
       if (e.key === "ArrowLeft") {
-        showSlide(currentIndex - 1);
+        stepSlide(-1);
       } else if (e.key === "ArrowRight") {
-        showSlide(currentIndex + 1);
+        stepSlide(1);
       }
     });
 
-    // Simple touch swipe for theater
     let touchStartX = 0;
     const stage = theater.querySelector(".theater-stage");
     if (stage) {
@@ -257,75 +384,32 @@ if (typeof document !== "undefined") {
         (e) => {
           const touchEndX = e.changedTouches[0].clientX;
           if (touchStartX - touchEndX > 45) {
-            showSlide(currentIndex + 1);
+            stepSlide(1);
           } else if (touchEndX - touchStartX > 45) {
-            showSlide(currentIndex - 1);
+            stepSlide(-1);
           }
         },
         { passive: true },
       );
     }
 
-    // Category filter for both cards and thumbs
     if (filterBtns.length) {
       filterBtns.forEach((btn) => {
         btn.addEventListener("click", () => {
-          const filter = btn.dataset.projectFilter;
+          activeFilter = btn.dataset.projectFilter || "all";
           filterBtns.forEach((b) =>
             b.setAttribute("aria-pressed", String(b === btn)),
           );
-          cards.forEach((card) => {
-            const cats = (card.dataset.category || "").split(" ");
-            card.hidden = filter !== "all" && !cats.includes(filter);
-          });
-          thumbs.forEach((thumb) => {
-            const cats = (thumb.dataset.category || "").toLowerCase();
-            thumb.hidden = filter !== "all" && !cats.includes(filter);
-          });
+          applyFilters();
         });
       });
     }
 
-    // Initialize first slide
-    showSlide(0);
-  }
+    if (searchInput) {
+      searchInput.addEventListener("input", applyFilters);
+    }
 
-  // Media Search & Filter in #media section
-  const cards = [...document.querySelectorAll(".media-card[data-tags]")],
-    search = document.querySelector("#media-search");
-  const filters = [...document.querySelectorAll("[data-filter]")],
-    status = document.querySelector(".result-count"),
-    empty = document.querySelector(".no-results");
-  if (search && cards.length) {
-    let filter = "all";
-    const render = () => {
-      let count = 0;
-      cards.forEach((card) => {
-        const visible = matchesMedia(
-          { tags: card.dataset.tags.split(" "), text: card.textContent },
-          search.value,
-          filter,
-        );
-        card.hidden = !visible;
-        if (visible) count++;
-      });
-      if (status)
-        status.textContent =
-          document.documentElement.lang === "es"
-            ? count + " de " + cards.length + " medios"
-            : count + " of " + cards.length + " items";
-      if (empty) empty.hidden = count !== 0;
-    };
-    search.addEventListener("input", render);
-    filters.forEach((button) =>
-      button.addEventListener("click", () => {
-        filter = button.dataset.filter;
-        filters.forEach((b) =>
-          b.setAttribute("aria-pressed", String(b === button)),
-        );
-        render();
-      }),
-    );
-    render();
+    showSlide(0);
+    applyFilters();
   }
 }
