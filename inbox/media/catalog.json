@@ -146,6 +146,23 @@
       "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
     },
     {
+      "id": "christmas-eve-htop",
+      "type": "image",
+      "title": "Christmas Eve live 48-core / 252 GB Ubuntu production monitor at holiday dinner",
+      "source_url": null,
+      "local_path": "inbox/media/images/christmas-eve-htop.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "creative-technology"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "211a6a3af1cbc0553f56da7344d20186e29f1db596b054b4495948c43a10f27d",
+      "identity_evidence": "Owner-supplied 24 December photograph monitoring a 48-core, 252 GB RAM Ubuntu server and live holiday worker queue from the Christmas Eve dinner table.",
+      "transformations": "Resized to 960x1280, redacted window titlebar and taskbar labels, converted to WebP (quality 86), and stripped of metadata."
+    },
+    {
       "id": "coca-cola-christmas-hero",
       "type": "image",
       "title": "International Coca-Cola Digital Christmas platform (El Llamado de Papá Noel)",
@@ -291,24 +308,6 @@
       "transformations": "Converted to WebP (quality 88) and stripped of metadata."
     },
     {
-      "id": "frank-frankfurt-founders",
-      "type": "image",
-      "title": "Frank Escudero at Frankfurt RheinMain innovation ecosystem gathering",
-      "source_url": null,
-      "local_path": "inbox/media/images/frank-frankfurt-founders.webp",
-      "rights_status": "user_supplied",
-      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
-      "tags": [
-        "portrait",
-        "entrepreneurship"
-      ],
-      "related_tags": [],
-      "retrieved_at": "2026-10-11",
-      "sha256": "6da757806aca9ffae9a2bea8ac5eb02c8907ebddf97046662d4460048bd27aea",
-      "identity_evidence": "Owner-supplied photograph of Frank Escudero at a Frankfurt RheinMain startup and economic development gathering.",
-      "transformations": "Resized to 1280px width, converted to WebP (quality 86), and stripped of metadata."
-    },
-    {
       "id": "frank-horse-portrait",
       "type": "image",
       "title": "Frank outdoor portrait with horse",
@@ -324,25 +323,6 @@
       "retrieved_at": "2026-10-11",
       "sha256": "d532edcb381a01d4b25be26cc3a67b070595e2292fb558340abe671633c1612d",
       "identity_evidence": "Confirmed as Frank by the site owner.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
-    },
-    {
-      "id": "frank-inkua-portrait",
-      "type": "image",
-      "title": "Frank outdoor founder portrait",
-      "source_url": null,
-      "local_path": "inbox/media/images/frank-inkua-portrait.webp",
-      "rights_status": "user_supplied",
-      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
-      "tags": [
-        "portrait",
-        "personal",
-        "community"
-      ],
-      "related_tags": [],
-      "retrieved_at": "2026-10-11",
-      "sha256": "7c9b231036b4c30404783c8ee613df36b01b4f7b33941efd24f1ae12a277a6c6",
-      "identity_evidence": "Confirmed as Frank Escudero, founder of InkuA.",
       "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
     },
     {
@@ -381,6 +361,24 @@
       "sha256": "06dfb9e4163bb03a36114027830de957701d27061c733690d5dafc1f0e819c75",
       "identity_evidence": "Owner-supplied outdoor portrait of Frank Escudero in Washington, D.C.",
       "transformations": "Cropped for portrait framing, converted to WebP (quality 86), and stripped of metadata."
+    },
+    {
+      "id": "frank-with-dog",
+      "type": "image",
+      "title": "Frank Escudero relaxing at home with his Rottweiler",
+      "source_url": null,
+      "local_path": "inbox/media/images/frank-with-dog.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "portrait",
+        "personal"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "effafa5d23292b96dd875c92ae02fb98455771a01d659f140bbe8e5c4ebbc97f",
+      "identity_evidence": "Owner-supplied personal photograph of Frank Escudero relaxing at home beside his Rottweiler.",
+      "transformations": "Converted to WebP (quality 86) and stripped of metadata."
     },
     {
       "id": "inkua-workshop-workbook",
