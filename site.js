@@ -208,6 +208,12 @@ if (typeof document !== "undefined") {
           });
         }
       });
+
+      cards.forEach((c, i) => {
+        const isActive = i === currentIndex;
+        c.classList.toggle("is-active", isActive);
+        c.setAttribute("aria-current", String(isActive));
+      });
     }
 
     if (prevBtn) prevBtn.addEventListener("click", () => showSlide(currentIndex - 1));
@@ -215,6 +221,13 @@ if (typeof document !== "undefined") {
 
     thumbs.forEach((th, i) => {
       th.addEventListener("click", () => showSlide(i));
+    });
+
+    cards.forEach((c, i) => {
+      c.addEventListener("click", () => {
+        showSlide(i);
+        theater.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
     });
 
     // Keyboard navigation when user is looking at gallery or page
