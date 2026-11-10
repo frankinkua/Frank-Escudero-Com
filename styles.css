@@ -665,54 +665,191 @@ nav a:hover,
   line-height: 1.5;
 }
 
-/* Section 02: Resourcefulness Playbook */
-.playbook-section {
-  background: var(--slate-dark);
-  color: var(--paper);
-  border-block: 1px solid var(--line-dark);
+/* Hero subtext */
+.hero-subtext {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-top: 14px;
+  max-width: 540px;
 }
 
-.playbook-section .section-heading > p {
-  color: #a8b8b3;
+/* Section 01: Non-Profit Profile (InkuA & Civic Tech) */
+.non-profit-section {
+  border-top: 1px solid var(--line);
+  background: #fdfcf9;
 }
 
-.playbook-section h2 em {
-  color: var(--ubuntu-orange);
-}
-
-.playbook-grid {
+.non-profit-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  gap: 16px;
+  margin-bottom: 40px;
 }
 
-.playbook-card {
-  background: var(--slate-panel);
-  border: 1px solid #233532;
-  padding: 26px 22px;
+.np-card {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: 3px;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.np-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--ink);
+}
+
+.np-card strong {
+  font-family: Instrument, Georgia, serif;
+  font-size: 38px;
+  color: var(--ubuntu-orange);
+  line-height: 1;
+  font-weight: 400;
+  letter-spacing: -1px;
+}
+
+.np-card h3 {
+  font-size: 17px;
+  font-weight: 600;
+  margin-top: 4px;
+  color: var(--ink);
+}
+
+.np-card p {
+  font-size: 13px;
+  color: var(--ink-secondary);
+  line-height: 1.5;
+}
+
+.np-highlight {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 36px;
+  background: #f4f2ea;
+  border: 1px solid var(--line);
+  padding: 32px;
+  align-items: center;
+  border-radius: 3px;
+}
+
+.np-highlight-copy {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.playbook-index {
-  font-family: var(--mono);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
-  color: var(--ubuntu-orange);
+.np-highlight-copy h3 {
+  font-size: 26px;
+  color: var(--ink);
 }
 
-.playbook-card h3 {
-  font-size: 22px;
-  color: #fff;
-}
-
-.playbook-card p {
-  font-size: 13.5px;
+.np-highlight-copy p {
+  font-size: 14.5px;
+  color: var(--ink-secondary);
   line-height: 1.6;
-  color: #b7c7c1;
+}
+
+.np-highlight-media {
+  background: var(--slate-dark);
+  border: 1px solid var(--line);
+  padding: 8px;
+  border-radius: 2px;
+}
+
+.np-highlight-media img {
+  width: 100%;
+  height: auto;
+  border-radius: 2px;
+  display: block;
+}
+
+.np-highlight-media figcaption {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: #7b8e88;
+  margin-top: 6px;
+  text-align: right;
+}
+
+/* Section 02: Scale Banner in Systems & Scale */
+.scale-banner {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 24px;
+  background: var(--slate-dark);
+  color: #fff;
+  border-radius: 3px;
+  border: 1px solid var(--line-dark);
+}
+
+.scale-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scale-stat strong {
+  font-family: Instrument, Georgia, serif;
+  font-size: 42px;
+  line-height: 1;
+  color: var(--ubuntu-orange);
+  letter-spacing: -1.5px;
+}
+
+.scale-stat span {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #9cb1aa;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Gallery Tools (Search + Filter in Gallery) */
+.gallery-tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-box label {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+.search-box input {
+  padding: 8px 14px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  width: 260px;
+  color: var(--ink);
+  transition: border-color 0.15s;
+}
+
+.search-box input:focus {
+  border-color: var(--ubuntu-orange);
+  outline: none;
 }
 
 /* Section 03: The 30-Picture Visual Dossier Theater */
@@ -1540,6 +1677,17 @@ footer a:hover {
   h1 {
     font-size: 72px;
   }
+  .non-profit-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .np-highlight {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 24px;
+  }
+  .scale-banner {
+    grid-template-columns: repeat(2, 1fr);
+  }
   .charts {
     gap: 16px;
   }
@@ -1598,6 +1746,19 @@ footer a:hover {
   }
   .hero h1 {
     font-size: clamp(48px, 11vw, 70px);
+  }
+  .non-profit-grid {
+    grid-template-columns: 1fr;
+  }
+  .scale-banner {
+    grid-template-columns: 1fr;
+  }
+  .gallery-tools {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .search-box input {
+    width: 100%;
   }
   .bank-grid {
     grid-template-columns: 1fr 1fr;
