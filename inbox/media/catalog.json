@@ -43,19 +43,20 @@
     {
       "id": "amex-personalized-card",
       "type": "image",
-      "title": "American Express personalized member flow",
+      "title": "American Express personalised member event flow",
       "source_url": null,
       "local_path": "inbox/media/images/amex-personalized-card.webp",
       "rights_status": "user_supplied",
       "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
       "tags": [
-        "creative-technology"
+        "creative-technology",
+        "video"
       ],
       "related_tags": [],
       "retrieved_at": "2026-10-11",
-      "sha256": "320ac7b64df23c228d8842ffd81f9f1e452a0879d41f9ecef330ec0d3cd5427d",
-      "identity_evidence": "Personalized cardholder onboarding visual.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+      "sha256": "ddfb878122c00ccc16f061645b0b5f91f6beeea82680c52e7dbfc57c1991386d",
+      "identity_evidence": "Personalised multi-channel mobile video, real-time call, and SMS flow for American Express.",
+      "transformations": "Cropped to remove outer presentation border and converted to WebP with metadata stripped."
     },
     {
       "id": "antel-worldcup-call",
@@ -74,6 +75,23 @@
       "sha256": "62c1027702c3b64dec0497f1f3b8ebcc65d8e4a2d789fde8b589d03f8acb30fb",
       "identity_evidence": "Synchronized personalized video, live SIP voice call, and SMS flow.",
       "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "audience-traffic-telemetry",
+      "type": "image",
+      "title": "High-concurrency campaign traffic surge telemetry (+1,265% live users)",
+      "source_url": null,
+      "local_path": "inbox/media/images/audience-traffic-telemetry.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "creative-technology"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "3eccbb16f32a1a127add91de7f08fa8ab2f1ab651ec9768f64214fb4ee111125",
+      "identity_evidence": "Owner-supplied production analytics capture showing real-time campaign user and session spike.",
+      "transformations": "Cropped to telemetry card, converted to WebP (quality 88), and stripped of metadata."
     },
     {
       "id": "banco-galicia-onboarding",
@@ -128,24 +146,6 @@
       "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
     },
     {
-      "id": "campaign-video-render",
-      "type": "image",
-      "title": "Real-time dynamic video generation frame",
-      "source_url": null,
-      "local_path": "inbox/media/images/campaign-video-render.webp",
-      "rights_status": "user_supplied",
-      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
-      "tags": [
-        "creative-technology",
-        "video"
-      ],
-      "related_tags": [],
-      "retrieved_at": "2026-10-11",
-      "sha256": "37b820314ca818cbc52bd1b4fe6c82b17c42b64b8a19a4b13cd07601294e04b8",
-      "identity_evidence": "Dynamic personalized video rendering frame.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
-    },
-    {
       "id": "coca-cola-christmas-hero",
       "type": "image",
       "title": "International Coca-Cola Digital Christmas platform (El Llamado de Papá Noel)",
@@ -162,6 +162,24 @@
       "sha256": "2b0d5b0e7fec25124436f8b4f46e90f4401210e932a77b301b0cbd3c1de20abc",
       "identity_evidence": "International Coca-Cola Christmas personalized video & live call platform.",
       "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+    },
+    {
+      "id": "drones-navales-gps-bench",
+      "type": "image",
+      "title": "Drones Navales dual Raspberry Pi Zero & u-blox marine GPS hardware bench",
+      "source_url": null,
+      "local_path": "inbox/media/images/drones-navales-gps-bench.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "robotics",
+        "creative-technology"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "770d28bb042b0ad5087f4bb76279a0f74ff8a9de7f1ea857a02d74278223ea37",
+      "identity_evidence": "Owner-supplied hardware bench photograph of Raspberry Pi Zero boards wired to marine GPS navigation module.",
+      "transformations": "Cropped to electronics bench, converted to WebP (quality 90), and stripped of metadata."
     },
     {
       "id": "drones-navales-hull",
@@ -218,24 +236,6 @@
       "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
     },
     {
-      "id": "drones-navales-water",
-      "type": "image",
-      "title": "Autonomous vessel coastal & waterway navigation",
-      "source_url": null,
-      "local_path": "inbox/media/images/drones-navales-water.webp",
-      "rights_status": "user_supplied",
-      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
-      "tags": [
-        "robotics",
-        "creative-technology"
-      ],
-      "related_tags": [],
-      "retrieved_at": "2026-10-11",
-      "sha256": "ed13eafdf110f2adc4241c1cce8aa6c3980ec49fa548ee72533c6e32212b7267",
-      "identity_evidence": "Maritime simulation and field trial model.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
-    },
-    {
       "id": "emood-dashboard",
       "type": "image",
       "title": "Organizational wellbeing and sentiment analytics UI",
@@ -254,27 +254,9 @@
       "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
     },
     {
-      "id": "emood-platform",
-      "type": "image",
-      "title": "e-mood people analytics architecture",
-      "source_url": null,
-      "local_path": "inbox/media/images/emood-platform.webp",
-      "rights_status": "user_supplied",
-      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
-      "tags": [
-        "creative-technology",
-        "entrepreneurship"
-      ],
-      "related_tags": [],
-      "retrieved_at": "2026-10-11",
-      "sha256": "49c1e142610fd6a41334ff700e190cecce1a570d51736333ad5827c3d742c8ca",
-      "identity_evidence": "Product framework and wellbeing metrics.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
-    },
-    {
       "id": "frank-alpine-portrait",
       "type": "image",
-      "title": "Frank outdoor alpine snow portrait",
+      "title": "Frank Escudero alpine snow portrait",
       "source_url": null,
       "local_path": "inbox/media/images/frank-alpine-portrait.webp",
       "rights_status": "user_supplied",
@@ -285,9 +267,46 @@
       ],
       "related_tags": [],
       "retrieved_at": "2026-10-11",
-      "sha256": "d22a185a6622bf97b5dc4e98a4e626e6dec9f140be4adc025a6f5dbd87bacbcc",
-      "identity_evidence": "Confirmed as Frank by the site owner.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+      "sha256": "12e7a0285ddf52b20edf9b74b92b94e06d8f4cb99fb49c34b2cf762cb60b477c",
+      "identity_evidence": "Owner-supplied outdoor winter photograph of Frank Escudero on an alpine slope.",
+      "transformations": "Cropped for portrait framing, converted to WebP (quality 86), and stripped of metadata."
+    },
+    {
+      "id": "frank-brussels-parliament",
+      "type": "image",
+      "title": "Frank Escudero with international InkuA delegation at the European Parliament, Brussels",
+      "source_url": null,
+      "local_path": "inbox/media/images/frank-brussels-parliament.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "portrait",
+        "community",
+        "social-impact"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "e2bb8cf139c8e28ddf48e25d1c778848e878884eae752089505ba18b5fe955be",
+      "identity_evidence": "Owner-supplied photograph showing Frank Escudero wearing official ESCUDERO Frank 23/03/2023 Parliament visitor badge in Brussels.",
+      "transformations": "Converted to WebP (quality 88) and stripped of metadata."
+    },
+    {
+      "id": "frank-frankfurt-founders",
+      "type": "image",
+      "title": "Frank Escudero at Frankfurt RheinMain innovation ecosystem gathering",
+      "source_url": null,
+      "local_path": "inbox/media/images/frank-frankfurt-founders.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "portrait",
+        "entrepreneurship"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "6da757806aca9ffae9a2bea8ac5eb02c8907ebddf97046662d4460048bd27aea",
+      "identity_evidence": "Owner-supplied photograph of Frank Escudero at a Frankfurt RheinMain startup and economic development gathering.",
+      "transformations": "Resized to 1280px width, converted to WebP (quality 86), and stripped of metadata."
     },
     {
       "id": "frank-horse-portrait",
@@ -327,11 +346,30 @@
       "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
     },
     {
-      "id": "frank-portrait-studio",
+      "id": "frank-speaking-frankfurt",
       "type": "image",
-      "title": "Frank studio portrait",
+      "title": "Frank Escudero speaking live on stage at InkuA Frankfurt event",
       "source_url": null,
-      "local_path": "inbox/media/images/frank-portrait-studio.webp",
+      "local_path": "inbox/media/images/frank-speaking-frankfurt.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "portrait",
+        "community",
+        "entrepreneurship"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "92c6936948b823f556e9bd8074cf1f8d713217ec903de1411bc859ae5c30dee9",
+      "identity_evidence": "Owner-supplied stage photograph of Frank Escudero speaking with microphone in front of InkuA presentation screen in Frankfurt.",
+      "transformations": "Resized to 960x1280, converted to WebP (quality 86), and stripped of metadata."
+    },
+    {
+      "id": "frank-washington-portrait",
+      "type": "image",
+      "title": "Frank Escudero outdoor portrait in Washington, D.C.",
+      "source_url": null,
+      "local_path": "inbox/media/images/frank-washington-portrait.webp",
       "rights_status": "user_supplied",
       "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
       "tags": [
@@ -340,107 +378,35 @@
       ],
       "related_tags": [],
       "retrieved_at": "2026-10-11",
-      "sha256": "fd121b156cfe2f884416f364972e84845de42a33e89e2ea529c05f217dc19e80",
-      "identity_evidence": "Confirmed as Frank by the owner.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+      "sha256": "06dfb9e4163bb03a36114027830de957701d27061c733690d5dafc1f0e819c75",
+      "identity_evidence": "Owner-supplied outdoor portrait of Frank Escudero in Washington, D.C.",
+      "transformations": "Cropped for portrait framing, converted to WebP (quality 86), and stripped of metadata."
     },
     {
-      "id": "frank-team-portrait",
+      "id": "inkua-workshop-workbook",
       "type": "image",
-      "title": "Frank studio headshot in patterned shirt",
+      "title": "InkuA Frankfurt strategy and self-efficacy participant workbook",
       "source_url": null,
-      "local_path": "inbox/media/images/frank-team-portrait.webp",
-      "rights_status": "user_supplied",
-      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
-      "tags": [
-        "portrait",
-        "personal"
-      ],
-      "related_tags": [],
-      "retrieved_at": "2026-10-11",
-      "sha256": "a203d21b4334b2ee350c85cdece0005965d0dff8fa7529a71ef5c851e8566f37",
-      "identity_evidence": "Confirmed as Frank Escudero studio portrait.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
-    },
-    {
-      "id": "inkua-copilot-training",
-      "type": "image",
-      "title": "AI-assisted software engineering session",
-      "source_url": null,
-      "local_path": "inbox/media/images/inkua-copilot-training.webp",
-      "rights_status": "user_supplied",
-      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
-      "tags": [
-        "creative-technology",
-        "community"
-      ],
-      "related_tags": [],
-      "retrieved_at": "2026-10-11",
-      "sha256": "ea1a085a9890ec110dded02efb21e7539d93c0f573897b4bd149d93bce6bc0cb",
-      "identity_evidence": "Copilot & developer training workshop.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
-    },
-    {
-      "id": "inkua-digital-launch",
-      "type": "image",
-      "title": "InkuA digital initiative launch",
-      "source_url": null,
-      "local_path": "inbox/media/images/inkua-digital-launch.webp",
+      "local_path": "inbox/media/images/inkua-workshop-workbook.webp",
       "rights_status": "user_supplied",
       "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
       "tags": [
         "community",
-        "entrepreneurship"
-      ],
-      "related_tags": [],
-      "retrieved_at": "2026-10-11",
-      "sha256": "6d7b0d3214b90998b379f6a8613406ff41b2c196579b05b5726cb42de09dfe7c",
-      "identity_evidence": "Digital publication and project milestone.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
-    },
-    {
-      "id": "inkua-frankfurt-stage",
-      "type": "image",
-      "title": "InkuA international team on stage in Frankfurt",
-      "source_url": null,
-      "local_path": "inbox/media/images/inkua-frankfurt-stage.webp",
-      "rights_status": "user_supplied",
-      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
-      "tags": [
-        "community",
-        "social-impact",
-        "entrepreneurship"
-      ],
-      "related_tags": [],
-      "retrieved_at": "2026-10-11",
-      "sha256": "61dff5b1e4941fc4687dfc10523ebd85cee6d35fd14da02a9169c62f8d1bd66e",
-      "identity_evidence": "InkuA Frankfurt event stage featuring Frank Escudero advisor profile.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
-    },
-    {
-      "id": "inkua-tech-workshop",
-      "type": "image",
-      "title": "InkuA youth technology workshop",
-      "source_url": null,
-      "local_path": "inbox/media/images/inkua-tech-workshop.webp",
-      "rights_status": "user_supplied",
-      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
-      "tags": [
-        "community",
+        "inclusion",
         "social-impact"
       ],
       "related_tags": [],
       "retrieved_at": "2026-10-11",
-      "sha256": "8d5f4151c1ee45fd7512d6a5cecbed79bf64ee6fb00a50f205744877f80640ad",
-      "identity_evidence": "InkuA digital skills training session.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+      "sha256": "ada0434093c15c3ca6a2c121f2045b5d6444fdb1f0cb7ef719b11ce789ca703b",
+      "identity_evidence": "Owner-supplied DSLR photograph of hands completing an InkuA strategy and self-efficacy workshop workbook.",
+      "transformations": "Resized to 1280x960, converted to WebP (quality 86), and stripped of metadata."
     },
     {
-      "id": "mobile-metrics-ui",
+      "id": "lxc-container-efficiency",
       "type": "image",
-      "title": "System metrics mobile telemetry card",
+      "title": "LXC container efficiency vs virtual machines benchmark (4 MB idle RAM, 80 desktops/server)",
       "source_url": null,
-      "local_path": "inbox/media/images/mobile-metrics-ui.webp",
+      "local_path": "inbox/media/images/lxc-container-efficiency.webp",
       "rights_status": "user_supplied",
       "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
       "tags": [
@@ -448,16 +414,34 @@
       ],
       "related_tags": [],
       "retrieved_at": "2026-10-11",
-      "sha256": "ec94c4ebce4ef92fa9f5f4a604308c2ab01a7cadf052414bc4e4394e0bc0332f",
-      "identity_evidence": "Architectural telemetry visualization.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+      "sha256": "49c154f17b9910441d5d7ef18c95bab986ecff283e58396755fecef7d75136bc",
+      "identity_evidence": "Owner-supplied systems architecture benchmark comparing LXC container overhead and density against traditional VMs.",
+      "transformations": "Cropped to benchmark chart, converted to WebP (quality 90), and stripped of metadata."
     },
     {
-      "id": "pardo-videocall-platform",
+      "id": "mechanical-linkage-prototype",
       "type": "image",
-      "title": "High-scale interactive video call platform",
+      "title": "3D-printed articulated mechanical linkage hardware prototype",
       "source_url": null,
-      "local_path": "inbox/media/images/pardo-videocall-platform.webp",
+      "local_path": "inbox/media/images/mechanical-linkage-prototype.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "robotics",
+        "entrepreneurship"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "1df766bc6b68a45fb36049f649c52bc29b968315f4b030dd1f537e40661adddb",
+      "identity_evidence": "Owner-supplied close-up workbench photograph of a 3D-printed articulated mechanical linkage prototype.",
+      "transformations": "Cropped to linkage mechanism, converted to WebP (quality 86), and stripped of metadata."
+    },
+    {
+      "id": "mercedes-showroom-video",
+      "type": "image",
+      "title": "Mercedes-Benz Vito dynamic showroom personalised video production frame",
+      "source_url": null,
+      "local_path": "inbox/media/images/mercedes-showroom-video.webp",
       "rights_status": "user_supplied",
       "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
       "tags": [
@@ -466,9 +450,9 @@
       ],
       "related_tags": [],
       "retrieved_at": "2026-10-11",
-      "sha256": "c16f2666baa266df4876c9a798a21a70f8afe4ac6cb21698aca8cba23dc1f3dd",
-      "identity_evidence": "Desktop video call interface for nationwide retail campaign.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+      "sha256": "e38c0cc41a5435e9a4d4aa9923dd1b73308db3d3aa138421892f275294fdf95f",
+      "identity_evidence": "Owner-supplied production frame from a dynamic personalised showroom video campaign for Mercedes-Benz Vito.",
+      "transformations": "Converted to WebP (quality 86) and stripped of metadata."
     },
     {
       "id": "samsung-netflix-production",
@@ -506,11 +490,11 @@
       "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
     },
     {
-      "id": "santander-video-case",
+      "id": "santander-studio-production",
       "type": "image",
-      "title": "Santander personalized video pipeline case",
+      "title": "Santander Río live-action personalised video studio production frame",
       "source_url": null,
-      "local_path": "inbox/media/images/santander-video-case.webp",
+      "local_path": "inbox/media/images/santander-studio-production.webp",
       "rights_status": "user_supplied",
       "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
       "tags": [
@@ -519,9 +503,26 @@
       ],
       "related_tags": [],
       "retrieved_at": "2026-10-11",
-      "sha256": "606eaa5adf0fb6c4fb83da1918b03483704a1e4e4134f130700a22054fa5c7b5",
-      "identity_evidence": "Case study visual for Santander personalized video.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+      "sha256": "c584c5d7b14ff4176b53672defddade6718e0c768a395c2d267e4a108671310b",
+      "identity_evidence": "Owner-supplied production frame from live-action personalised video delivery for Santander Río.",
+      "transformations": "Converted to WebP (quality 86) and stripped of metadata."
+    },
+    {
+      "id": "server-throughput-monitor",
+      "type": "image",
+      "title": "Live bare-metal server CPU, load average, and network throughput telemetry",
+      "source_url": null,
+      "local_path": "inbox/media/images/server-throughput-monitor.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "creative-technology"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "e894ef764749df34fbcc277f880a7903538189555e134451a911d076cd12729b",
+      "identity_evidence": "Owner-supplied live production server monitoring screen showing CPU, RAM, load average, and network throughput.",
+      "transformations": "Cropped to telemetry tiles, converted to WebP (quality 88), and stripped of metadata."
     },
     {
       "id": "setoff-2023",
