@@ -4,7 +4,10 @@ const fs = require("node:fs"),
   path = require("node:path"),
   crypto = require("node:crypto");
 const root = path.resolve(__dirname, "..");
-const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+const platformHtmlPath = fs.existsSync(path.join(root, "backend/index.html"))
+  ? path.join(root, "backend/index.html")
+  : path.join(root, "index.html");
+const html = fs.readFileSync(platformHtmlPath, "utf8");
 const catalog = JSON.parse(
   fs.readFileSync(path.join(root, "inbox/media/catalog.json"), "utf8"),
 );
@@ -19,8 +22,10 @@ test("all local files and fragments exist; no duplicated IDs", () => {
   assert.equal(new Set(ids).size, ids.length);
   for (const [, url] of html.matchAll(/\b(?:href|src)="([^"]+)"/g)) {
     if (url.startsWith("#")) assert.ok(ids.includes(url.slice(1)), url);
-    else if (!/^[a-z]+:/i.test(url))
-      assert.ok(fs.existsSync(path.join(root, url)), url);
+    else if (!/^[a-z]+:/i.test(url)) {
+      const cleanUrl = url.replace(/^\.\.\//, "");
+      assert.ok(fs.existsSync(path.join(root, cleanUrl)), url);
+    }
   }
   for (const file of [
     "styles.css",
@@ -72,8 +77,10 @@ test("catalogue preserves evidence, rights and exact local media checksums", () 
       );
     } else assert.equal(item.rights_status, "reference_only");
   }
-  for (const [, src] of html.matchAll(/<img[^>]+src="(inbox\/[^"]+)"/g))
-    assert.ok(catalog.items.some((item) => item.local_path === src));
+  for (const [, src] of html.matchAll(/<img[^>]+src="((?:\.\.\/)?inbox\/[^"]+)"/g)) {
+    const cleanSrc = src.replace(/^\.\.\//, "");
+    assert.ok(catalog.items.some((item) => item.local_path === cleanSrc));
+  }
 });
 test("tag search is multilingual, accent-insensitive, composable and literal", () => {
   assert.equal(core.normalize("MÚSICA"), "musica");
