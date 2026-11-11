@@ -13,7 +13,7 @@ const copy = (file) => {
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.cpSync(path.join(root, file), target, { recursive: true });
 };
-for (const file of ["index.html", "styles.css", "site.js", "assets", "CNAME", "backend"])
+for (const file of ["index.html", "styles.css", "site.js", "assets", "CNAME", "dev"])
   if (fs.existsSync(path.join(root, file))) copy(file);
 const catalog = JSON.parse(
   fs.readFileSync(path.join(root, "inbox/media/catalog.json"), "utf8"),

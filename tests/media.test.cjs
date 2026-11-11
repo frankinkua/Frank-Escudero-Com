@@ -4,8 +4,8 @@ const fs = require("node:fs"),
   path = require("node:path"),
   crypto = require("node:crypto");
 const root = path.resolve(__dirname, "..");
-const platformHtmlPath = fs.existsSync(path.join(root, "backend/index.html"))
-  ? path.join(root, "backend/index.html")
+const platformHtmlPath = fs.existsSync(path.join(root, "dev/index.html"))
+  ? path.join(root, "dev/index.html")
   : path.join(root, "index.html");
 const html = fs.readFileSync(platformHtmlPath, "utf8");
 const catalog = JSON.parse(

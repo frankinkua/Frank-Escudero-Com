@@ -8,7 +8,7 @@ const crypto = require("node:crypto");
 const { execSync } = require("node:child_process");
 
 const root = path.resolve(__dirname, "..");
-const backendHtmlPath = path.join(root, "backend/index.html");
+const backendHtmlPath = path.join(root, "dev/index.html");
 const rootHtmlPath = path.join(root, "index.html");
 const siteJsPath = path.join(root, "site.js");
 const stylesCssPath = path.join(root, "styles.css");
@@ -483,7 +483,7 @@ describe("Tier 2: Boundary & Corner Cases (Metrics & Mathematics)", () => {
       /(\b30[- ]?(artifact|picture|item|verified)|select all 30|index 01[–-]30|all 30|\/ 30\b)/i;
 
     const filesToCheck = [
-      { path: backendHtmlPath, name: "backend/index.html" },
+      { path: backendHtmlPath, name: "dev/index.html" },
       { path: siteJsPath, name: "site.js" },
       { path: stylesCssPath, name: "styles.css" },
     ];
@@ -632,7 +632,7 @@ describe("Tier 3: Cross-Feature Combinations (Media Uniqueness & Catalog Integri
     for (const file of diskWebps) {
       assert.ok(
         backendHtml.includes(file),
-        `Orphaned WebP on disk not referenced in backend/index.html: ${file}`,
+        `Orphaned WebP on disk not referenced in dev/index.html: ${file}`,
       );
     }
   });
@@ -676,7 +676,7 @@ describe("Tier 3: Cross-Feature Combinations (Media Uniqueness & Catalog Integri
     for (const name of prohibitedNames) {
       assert.ok(
         !backendHtml.includes(name),
-        `Prohibited name found in backend/index.html: ${name}`,
+        `Prohibited name found in dev/index.html: ${name}`,
       );
       assert.ok(
         !diskWebps.some((f) => f.includes(name)),
@@ -714,7 +714,7 @@ describe("Tier 4: Real-World Workflow & Build Packaging", () => {
 
       // Verify required site files exist in _site
       const requiredBuiltFiles = [
-        "backend/index.html",
+        "dev/index.html",
         "styles.css",
         "site.js",
         "index.html",
@@ -739,7 +739,11 @@ describe("Tier 4: Real-World Workflow & Build Packaging", () => {
         "_site must contain exactly 25 WebPs",
       );
 
-      // Verify exclusions (including catalog.json so it is never served online)
+      // Verify exclusions (including catalog.json, old /backend/ route, and P1/P2 PII strings)
+      assert.ok(
+        !fs.existsSync(path.join(dest, "backend")),
+        "Old /backend route must NEVER be published into _site",
+      );
       assert.ok(
         !fs.existsSync(path.join(dest, "inbox/media/catalog.json")),
         "catalog.json must NEVER be published into _site",
@@ -751,8 +755,32 @@ describe("Tier 4: Real-World Workflow & Build Packaging", () => {
       assert.doesNotMatch(
         backendHtml,
         /catalog\.json/i,
-        "backend/index.html must not link to catalog.json",
+        "dev/index.html must not link to catalog.json",
       );
+      assert.equal(
+        catalog.subject,
+        "Frank Escudero",
+        "Catalog subject must be 'Frank Escudero' only",
+      );
+      assert.equal(
+        catalog.identity_note,
+        undefined,
+        "Catalog must not carry identity_note",
+      );
+      const scrubbedTokenHashes = new Set([
+        "e7bbe9e7f6578cfa1fe74cd0f2b0cad6b2e9ea71231ec838eaf2ec9ec378b315",
+        "71d80e9160a1dfc2f1a9271165b4fbceab5295e137e0df02faaaccb5eb7a9b3a",
+      ]);
+      for (const checkRel of ["dev/index.html", "inbox/media/catalog.json", "README.md"]) {
+        const raw = fs.readFileSync(path.join(root, checkRel), "utf8").toLowerCase();
+        for (const tok of raw.split(/[^a-z0-9.-]+/).filter(Boolean)) {
+          const th = crypto.createHash("sha256").update(tok).digest("hex");
+          assert.ok(
+            !scrubbedTokenHashes.has(th),
+            `Scrubbed PII token hash matched in ${checkRel}`,
+          );
+        }
+      }
       assert.ok(
         !fs.existsSync(path.join(dest, "inbox/Photos-1-001")),
         "Raw Photos-1-001 must NEVER be copied into _site",
