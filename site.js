@@ -203,7 +203,7 @@ if (typeof document !== "undefined") {
       .addEventListener("change", closeMenu);
   }
 
-  // 30-Picture Pass-Through Gallery, Theater & Unified Search/Filter
+  // 20-Picture Pass-Through Gallery, Theater & Unified Search/Filter
   const theater = document.querySelector(".gallery-theater");
   if (theater) {
     const mainImg = theater.querySelector(".theater-main-img"),
@@ -329,7 +329,7 @@ if (typeof document !== "undefined") {
           statusEl.textContent = `Showing all ${slides.length} verified artifacts`;
         } else if (visibleIndices.length === 0) {
           statusEl.textContent =
-            "0 matching artifacts — clear filter or select All 30";
+            "0 matching artifacts — clear filter or select All 20";
         } else {
           statusEl.textContent = `Showing ${visibleIndices.length} of ${slides.length} verified artifacts`;
         }
