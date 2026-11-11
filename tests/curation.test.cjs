@@ -571,26 +571,26 @@ describe("Tier 3: Cross-Feature Combinations (Media Uniqueness & Catalog Integri
     );
   });
 
-  it("maintains exactly 22 WebPs on disk in inbox/media/images and 23 items in catalog.json", () => {
+  it("maintains exactly 25 WebPs on disk in inbox/media/images and 26 items in catalog.json", () => {
     const diskWebps = fs
       .readdirSync(imagesDir)
       .filter((f) => f.endsWith(".webp"));
     assert.equal(
       diskWebps.length,
-      22,
-      "Must have exactly 22 WebP images on disk in inbox/media/images",
+      25,
+      "Must have exactly 25 WebP images on disk in inbox/media/images",
     );
     assert.equal(
       catalog.items.length,
-      23,
-      "Catalog must contain exactly 23 items",
+      26,
+      "Catalog must contain exactly 26 items",
     );
 
     const localCatalogItems = catalog.items.filter((it) => it.local_path);
     assert.equal(
       localCatalogItems.length,
-      22,
-      "Catalog must have exactly 22 local image items",
+      25,
+      "Catalog must have exactly 25 local image items",
     );
 
     const refOnlyItems = catalog.items.filter(
@@ -729,7 +729,7 @@ describe("Tier 4: Real-World Workflow & Build Packaging", () => {
         );
       }
 
-      // Verify all 22 approved WebPs are copied to _site
+      // Verify all 25 approved WebPs are copied to _site
       const builtImagesDir = path.join(dest, "inbox/media/images");
       assert.ok(fs.existsSync(builtImagesDir), "Built images dir must exist");
       const builtWebps = fs
@@ -737,8 +737,8 @@ describe("Tier 4: Real-World Workflow & Build Packaging", () => {
         .filter((f) => f.endsWith(".webp"));
       assert.equal(
         builtWebps.length,
-        22,
-        "_site must contain exactly 22 WebPs",
+        25,
+        "_site must contain exactly 25 WebPs",
       );
 
       // Verify exclusions

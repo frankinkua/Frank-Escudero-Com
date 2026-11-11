@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "reviewed_at": "2026-11-10",
+  "reviewed_at": "2026-11-11",
   "rights_note": "Public availability is not a reuse license. User-supplied photographs and project visuals are used for this requested website; no general redistribution license is asserted. Reference-only media stay at the publisher.",
   "tag_aliases": "tag-aliases.json",
   "subject": "Frank Escudero",
@@ -23,11 +23,11 @@
       "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
     },
     {
-      "id": "amex-centurion-cup",
+      "id": "antel-worldcup-studio",
       "type": "image",
-      "title": "American Express × BAC Credomatic Centurion Cup regional platform",
+      "title": "Antel World Cup uncropped studio frame for live SIP call & video sync",
       "source_url": null,
-      "local_path": "inbox/media/images/amex-centurion-cup.webp",
+      "local_path": "inbox/media/images/antel-worldcup-studio.webp",
       "rights_status": "user_supplied",
       "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
       "tags": [
@@ -36,27 +36,26 @@
       ],
       "related_tags": [],
       "retrieved_at": "2026-10-11",
-      "sha256": "7e3ba5d4b906a26aa9527ee68f41c4d04bd6824c0e3e9c4b0788de233def79f3",
-      "identity_evidence": "Six-country regional cardholder & executive recognition platform.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+      "sha256": "1c81ffccaf13c08e2ba50e24071779b7948ea8431acc992e0818dd8d31d144f1",
+      "identity_evidence": "Owner-supplied uncropped 16:9 cinema studio frame from the Antel World Cup live SIP telephone call and personalised video platform.",
+      "transformations": "Resized to 1280x720, converted to WebP (quality 86), and stripped of metadata."
     },
     {
-      "id": "antel-worldcup-call",
+      "id": "banco-galicia-event-venue",
       "type": "image",
-      "title": "Antel World Cup real-time call & personalized video flow",
+      "title": "Banco Galicia Abordaje Comercial live venue deployment",
       "source_url": null,
-      "local_path": "inbox/media/images/antel-worldcup-call.webp",
+      "local_path": "inbox/media/images/banco-galicia-event-venue.webp",
       "rights_status": "user_supplied",
       "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
       "tags": [
-        "creative-technology",
-        "video"
+        "creative-technology"
       ],
       "related_tags": [],
       "retrieved_at": "2026-10-11",
-      "sha256": "62c1027702c3b64dec0497f1f3b8ebcc65d8e4a2d789fde8b589d03f8acb30fb",
-      "identity_evidence": "Synchronized personalized video, live SIP voice call, and SMS flow.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+      "sha256": "a0b5355bd60a2710df0b45d346ad3acf5bd87b82a89b85b8e4cefe397245ca7f",
+      "identity_evidence": "Owner-supplied on-site venue photograph from Banco Galicia’s Abordaje Comercial interactive event deployment.",
+      "transformations": "Converted to WebP (quality 88) and stripped of metadata."
     },
     {
       "id": "campaign-telephony-dashboard",
@@ -111,22 +110,56 @@
       "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
     },
     {
-      "id": "drones-navales-vessel",
+      "id": "coca-cola-santas-call-studio",
       "type": "image",
-      "title": "Drones Navales autonomous surface vessel concept",
+      "title": "Coca-Cola Santa’s Call physical clockwork filming studio set",
       "source_url": null,
-      "local_path": "inbox/media/images/drones-navales-vessel.webp",
+      "local_path": "inbox/media/images/coca-cola-santas-call-studio.webp",
       "rights_status": "user_supplied",
       "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
       "tags": [
-        "robotics",
-        "creative-technology"
+        "creative-technology",
+        "video"
       ],
       "related_tags": [],
       "retrieved_at": "2026-10-11",
-      "sha256": "bc6d3206bb3003268a30f9f5495183f53e3f2cc90a6ba9ac98d41cc0fe74ade7",
-      "identity_evidence": "Autonomous watercraft project visual.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+      "sha256": "50ff98d4cac435ebddd8bd3ffe5ca319612214e70fe4c43bbc09f3ff6f3fe02b",
+      "identity_evidence": "Owner-supplied production set photograph showing the physical clockwork gears and multi-timezone studio built for Coca-Cola Santa’s Call.",
+      "transformations": "Converted to WebP (quality 87) and stripped of metadata."
+    },
+    {
+      "id": "drones-navales-gps-bench",
+      "type": "image",
+      "title": "Drones Navales Raspberry Pi Zero and u-blox GPS bench prototype",
+      "source_url": null,
+      "local_path": "inbox/media/images/drones-navales-gps-bench.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "robotics"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "458800f1fc8c1beb7783aff8a53173cc767b72b86fb7c7c22d3e23428195a197",
+      "identity_evidence": "Owner-supplied electronics bench photograph showing two Raspberry Pi Zero boards wired to a u-blox GPS module over a Yacht Club Olivos nautical training sheet.",
+      "transformations": "Masked incidental receipt slip in top-left corner, converted to WebP (quality 88), and stripped of metadata."
+    },
+    {
+      "id": "drones-navales-hull-propeller",
+      "type": "image",
+      "title": "Drones Navales physical boat hull, combustion engine, and propeller build",
+      "source_url": null,
+      "local_path": "inbox/media/images/drones-navales-hull-propeller.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "robotics"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "633bc671108e7412b27c96abe88d97393be1982c31366c0c5671e0331190cfd3",
+      "identity_evidence": "Owner-supplied workbench photograph showing the physical Drones Navales hull interior, combustion engine, custom shaft coupling, and three-blade propeller.",
+      "transformations": "Converted to WebP (quality 88) and stripped of metadata."
     },
     {
       "id": "frank-alpine-portrait",
@@ -147,6 +180,24 @@
       "transformations": "Cropped for portrait framing, converted to WebP (quality 86), and stripped of metadata."
     },
     {
+      "id": "frank-archery-focus",
+      "type": "image",
+      "title": "Frank Escudero off-terminal portrait with compound bow and quiver",
+      "source_url": null,
+      "local_path": "inbox/media/images/frank-archery-focus.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "portrait",
+        "personal"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "d10fb3a2aad4c33b7af719b5a60b9f330d6b9861d98bdf3bced123762e204f9a",
+      "identity_evidence": "Owner-supplied personal photograph of Frank Escudero holding his compound bow and arrow quiver.",
+      "transformations": "Cropped to 4:5 (960x1200), converted to WebP (quality 86), and stripped of metadata."
+    },
+    {
       "id": "frank-brussels-parliament",
       "type": "image",
       "title": "Frank Escudero with international InkuA delegation at the European Parliament, Brussels",
@@ -164,6 +215,25 @@
       "sha256": "e2bb8cf139c8e28ddf48e25d1c778848e878884eae752089505ba18b5fe955be",
       "identity_evidence": "Owner-supplied photograph showing Frank Escudero wearing official ESCUDERO Frank 23/03/2023 Parliament visitor badge in Brussels.",
       "transformations": "Converted to WebP (quality 88) and stripped of metadata."
+    },
+    {
+      "id": "frank-engineering-workstation",
+      "type": "image",
+      "title": "Frank Escudero at his dual-monitor systems architecture workstation",
+      "source_url": null,
+      "local_path": "inbox/media/images/frank-engineering-workstation.webp",
+      "rights_status": "user_supplied",
+      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
+      "tags": [
+        "portrait",
+        "creative-technology",
+        "cybersecurity"
+      ],
+      "related_tags": [],
+      "retrieved_at": "2026-10-11",
+      "sha256": "39843603efda9a85235131607d13dcb49b3393bc4ed6313a0ad25d6acbc64ee6",
+      "identity_evidence": "Owner-supplied camera photograph of Frank Escudero working at his dual-monitor systems engineering and security workstation.",
+      "transformations": "Resized to 1280x960, blurred monitor glass interiors and desk notes for client confidentiality, converted to WebP (quality 86), and stripped of metadata."
     },
     {
       "id": "frank-speaking-frankfurt",
@@ -240,21 +310,22 @@
       "transformations": "Resized to 1280x960, converted to WebP (quality 86), and stripped of metadata."
     },
     {
-      "id": "lxc-container-efficiency",
+      "id": "linux-multi-node-lab",
       "type": "image",
-      "title": "LXC container efficiency vs virtual machines benchmark (4 MB idle RAM, 80 desktops/server)",
+      "title": "Four-screen bare-metal Linux and Ubuntu console engineering lab",
       "source_url": null,
-      "local_path": "inbox/media/images/lxc-container-efficiency.webp",
+      "local_path": "inbox/media/images/linux-multi-node-lab.webp",
       "rights_status": "user_supplied",
       "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
       "tags": [
-        "creative-technology"
+        "creative-technology",
+        "robotics"
       ],
       "related_tags": [],
       "retrieved_at": "2026-10-11",
-      "sha256": "49c154f17b9910441d5d7ef18c95bab986ecff283e58396755fecef7d75136bc",
-      "identity_evidence": "Owner-supplied systems architecture benchmark comparing LXC container overhead and density against traditional VMs.",
-      "transformations": "Cropped to benchmark chart, converted to WebP (quality 90), and stripped of metadata."
+      "sha256": "d1b20399ca644d87e475bc1e50ae2e6bd13916ec7f730856bbf3dc42c287692c",
+      "identity_evidence": "Owner-supplied camera photograph of Frank Escudero’s four-screen Linux engineering desk with Ubuntu 14.04 TTY console, Hackaday hardware reference, and live kernel process telemetry.",
+      "transformations": "Resized to 1280x960, redacted window headers, taskbar strips, and directory listings, converted to WebP (quality 86), and stripped of metadata."
     },
     {
       "id": "mechanical-linkage-prototype",
@@ -311,11 +382,11 @@
       "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
     },
     {
-      "id": "santander-dynamic-message",
+      "id": "santander-select-luggage-tag",
       "type": "image",
-      "title": "Santander personalized lifecycle newsletters & mobile platform",
+      "title": "Santander physical luggage-tag studio plate for dynamic visual compositing",
       "source_url": null,
-      "local_path": "inbox/media/images/santander-dynamic-message.webp",
+      "local_path": "inbox/media/images/santander-select-luggage-tag.webp",
       "rights_status": "user_supplied",
       "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
       "tags": [
@@ -323,9 +394,9 @@
       ],
       "related_tags": [],
       "retrieved_at": "2026-10-11",
-      "sha256": "3dd879a7839062253506d98cbb759af94de864fa832a8ef4927ed28bfa04caaa",
-      "identity_evidence": "Personalized financial lifecycle communications platform.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+      "sha256": "57e36c15b75b4c14fd8ac4f7856b8ea7cb91ba0db4e364017d976662f6031c1c",
+      "identity_evidence": "Owner-supplied studio photograph of a physical pink hardshell suitcase tag plate with placeholder tracking used for Santander dynamic visual synthesis.",
+      "transformations": "Trimmed 6px frame border, converted to WebP (quality 88), and stripped of metadata."
     },
     {
       "id": "santander-studio-production",
@@ -344,23 +415,6 @@
       "sha256": "c584c5d7b14ff4176b53672defddade6718e0c768a395c2d267e4a108671310b",
       "identity_evidence": "Owner-supplied production frame from live-action personalised video delivery for Santander Río.",
       "transformations": "Converted to WebP (quality 86) and stripped of metadata."
-    },
-    {
-      "id": "server-throughput-monitor",
-      "type": "image",
-      "title": "Live bare-metal server CPU, load average, and network throughput telemetry",
-      "source_url": null,
-      "local_path": "inbox/media/images/server-throughput-monitor.webp",
-      "rights_status": "user_supplied",
-      "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
-      "tags": [
-        "creative-technology"
-      ],
-      "related_tags": [],
-      "retrieved_at": "2026-10-11",
-      "sha256": "e894ef764749df34fbcc277f880a7903538189555e134451a911d076cd12729b",
-      "identity_evidence": "Owner-supplied live production server monitoring screen showing CPU, RAM, load average, and network throughput.",
-      "transformations": "Cropped to telemetry tiles, converted to WebP (quality 88), and stripped of metadata."
     },
     {
       "id": "setoff-2023",
@@ -401,23 +455,23 @@
       "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
     },
     {
-      "id": "teleton-donation-platform",
+      "id": "setoff-panel-brussels",
       "type": "image",
-      "title": "Teletón nationwide digital donation & live call platform",
+      "title": "SETOFF European cybersecurity workshop speaker panel in Brussels",
       "source_url": null,
-      "local_path": "inbox/media/images/teleton-donation-platform.webp",
+      "local_path": "inbox/media/images/setoff-panel-brussels.webp",
       "rights_status": "user_supplied",
       "rights_evidence": "User supplied asset for frank-escudero.com personal branding portfolio.",
       "tags": [
-        "creative-technology",
-        "social-impact",
-        "video"
+        "cybersecurity",
+        "community",
+        "social-impact"
       ],
       "related_tags": [],
       "retrieved_at": "2026-10-11",
-      "sha256": "07463c6a44d8ceba788dec52c9373b3a9003a30f333eeccb84eaea2ebb35eb0f",
-      "identity_evidence": "Nationwide digital fundraising, personalized video, and live call flow.",
-      "transformations": "Converted to WebP (quality 84-85) and stripped of metadata."
+      "sha256": "56f7fa004e473d5af76ac39ed52a9228c0a1a564cfb03cee6d61566cc826d64f",
+      "identity_evidence": "Owner-supplied panel photograph showing Frank Escudero seated at the speaker table during the Erasmus+ SETOFF 3rd International Workshop in Brussels.",
+      "transformations": "Converted to WebP (quality 87) and stripped of metadata."
     }
   ],
   "metrics": [

@@ -1260,6 +1260,11 @@ nav a:hover,
   opacity: 0.6;
 }
 
+.theater-thumb img[src*="frank-"],
+.project-media img[src*="frank-"] {
+  object-position: center 20%;
+}
+
 .theater-thumb:hover img {
   opacity: 1;
 }
@@ -1354,7 +1359,7 @@ nav a:hover,
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 8px;
-  max-height: 480px;
+  max-height: 760px;
   overflow-y: auto;
   border: 1px solid var(--line);
   background: #f7f6f0;
