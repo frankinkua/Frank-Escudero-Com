@@ -15,8 +15,6 @@ const copy = (file) => {
 };
 for (const file of ["index.html", "styles.css", "site.js", "assets", "CNAME", "backend"])
   if (fs.existsSync(path.join(root, file))) copy(file);
-copy("inbox/media/catalog.json");
-copy("inbox/media/tag-aliases.json");
 const catalog = JSON.parse(
   fs.readFileSync(path.join(root, "inbox/media/catalog.json"), "utf8"),
 );

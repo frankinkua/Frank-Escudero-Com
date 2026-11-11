@@ -718,8 +718,6 @@ describe("Tier 4: Real-World Workflow & Build Packaging", () => {
         "styles.css",
         "site.js",
         "index.html",
-        "inbox/media/catalog.json",
-        "inbox/media/tag-aliases.json",
         ".nojekyll",
       ];
       for (const rel of requiredBuiltFiles) {
@@ -741,7 +739,20 @@ describe("Tier 4: Real-World Workflow & Build Packaging", () => {
         "_site must contain exactly 25 WebPs",
       );
 
-      // Verify exclusions
+      // Verify exclusions (including catalog.json so it is never served online)
+      assert.ok(
+        !fs.existsSync(path.join(dest, "inbox/media/catalog.json")),
+        "catalog.json must NEVER be published into _site",
+      );
+      assert.ok(
+        !fs.existsSync(path.join(dest, "inbox/media/tag-aliases.json")),
+        "tag-aliases.json must NEVER be published into _site",
+      );
+      assert.doesNotMatch(
+        backendHtml,
+        /catalog\.json/i,
+        "backend/index.html must not link to catalog.json",
+      );
       assert.ok(
         !fs.existsSync(path.join(dest, "inbox/Photos-1-001")),
         "Raw Photos-1-001 must NEVER be copied into _site",
