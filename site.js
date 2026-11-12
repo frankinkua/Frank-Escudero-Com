@@ -438,7 +438,7 @@ if (typeof document !== "undefined") {
             <span class="demo-blinker">ATTENTION!!!</span>
             <span class="demo-badge-meta">[Technical Demo // Multi-Agent Sandbox]</span>
           </div>
-          <h2 id="demo-modal-title">Autonomous AI Experiment &amp; PII Stress-Test</h2>
+          <h2 id="demo-modal-title">Agentic AI Experiment</h2>
           <p>
             This <strong>live technical demo</strong> shows how autonomous AI agents sort unstructured data, curate photography, and build production websites without human input.
           </p>
