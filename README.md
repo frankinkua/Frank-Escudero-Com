@@ -1,6 +1,6 @@
 # Frank Escudero — personal website
 
-A static, locally hosted-asset personal brand and systems portfolio for Frank Escudero (currently staged under `/dev/` while root `/` remains blank). Executive Swiss Dossier aesthetic; cumulative scale totals; InkuA civic non-profit profile; and an interactive 20-artifact visual dossier.
+A static, locally hosted-asset personal brand and systems portfolio for Frank Escudero published at `frank-escudero.com/` and mirrored under `/dev/`. Executive Swiss Dossier aesthetic; cumulative scale totals; InkuA civic non-profit profile; and an interactive 20-artifact visual dossier.
 
 ## Evidence and media
 

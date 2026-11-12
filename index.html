@@ -3,15 +3,915 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Frank Escudero</title>
+    <meta name="theme-color" content="#fbfaf7" />
+    <title>Frank Escudero — Systems Architect, Builder &amp; InkuA Founder</title>
+    <meta
+      name="description"
+      content="Frank Escudero. Frankfurt-based systems architect, builder since 1996, and founder of InkuA. 180M+ dynamic visuals, 40M+ personalised videos, 17-country Coca-Cola Christmas platform, ~6 PFLOPS private AI lab, and borderless civic tech."
+    />
+    <meta
+      property="og:title"
+      content="Frank Escudero — Quietly Building at Improbable Scale"
+    />
+    <meta property="og:type" content="website" />
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-    <style>
-      body {
-        margin: 0;
-        background: #ffffff;
-      }
-    </style>
+    <link
+      rel="preload"
+      href="assets/fonts/instrument-serif.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="site.js" defer></script>
   </head>
   <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="shell header-inner">
+        <div class="brand-wrap">
+          <a class="brand" href="#about">frank escudero<span>.</span></a>
+          <span class="brand-meta">[frankfurt · systems &amp; civic tech]</span>
+        </div>
+        <button
+          class="menu-toggle"
+          aria-controls="navigation"
+          aria-expanded="false"
+          type="button"
+        >
+          Menu +
+        </button>
+        <nav id="navigation" aria-label="Main navigation">
+          <a href="#about">Who is Frank?</a>
+          <a href="#institutions">Totals &amp; Scale</a>
+          <a href="#non-profit">InkuA Non-Profit</a>
+          <a href="#projects">20-Artifact Dossier</a>
+          <a class="nav-contact" href="#contact">Let’s Build ↗</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <!-- Hero: Who is Frank? -->
+      <section class="hero shell" id="about">
+        <div class="hero-copy">
+          <div class="hero-dossier-bar" aria-hidden="true">
+            <span>FRANKFURT AM MAIN</span>
+            <span>DUAL CITIZEN (DE / AR)</span>
+            <span>BUILDING SYSTEMS SINCE 1996</span>
+          </div>
+          <div class="hero-status">
+            <span class="status-dot"></span>
+            <span>Independent · Open to ambitious builds &amp; civic collaborations</span>
+          </div>
+          <h1>Quietly building<br /><em>at improbable scale.</em></h1>
+          <p class="hero-intro">
+            I’m Frank Escudero. For three decades I’ve engineered systems where bare-metal computing meets practical impact—shipping software since 1996, piloting autonomous river vessels, benchmarking a private <code>~6 PFLOPS</code> AI cluster over <code>185 Gbps</code> RDMA, and operating platforms reaching tens of millions.
+          </p>
+          <p class="hero-subtext">
+            No slide decks, no agency theatre. From running the international Coca-Cola Christmas platform across 17 countries to cutting enterprise VoIP costs by 94%, advising presidential campaigns, and founding InkuA in 2021 to mentor emerging engineers across borders.
+          </p>
+          <div class="hero-mandates" aria-label="Core domains">
+            <span class="mandate-pill">15+ Yrs Tech Leadership</span>
+            <span class="mandate-pill">7+ Yrs Banking Systems</span>
+            <span class="mandate-pill">On-Prem AI &amp; Bare-Metal</span>
+            <span class="mandate-pill">Founder · InkuA NGO</span>
+          </div>
+          <div class="actions">
+            <a class="button" href="#contact">Let’s Build Something <span>↗</span></a>
+            <a class="text-link" href="#institutions">See the Cumulative Totals ↘</a>
+            <a class="text-link" href="#projects">Browse 20 Artifacts ↘</a>
+          </div>
+        </div>
+
+        <div class="hero-visual-stack">
+          <figure class="hero-dossier-card">
+            <span class="photo-tab" aria-hidden="true">DOSSIER // BRU · FFM</span>
+            <div class="hero-photo">
+              <img
+                src="inbox/media/images/frank-brussels-parliament.webp"
+                width="713"
+                height="449"
+                alt="Frank Escudero smiling in a light-blue collared shirt wearing his official European Parliament visitor badge alongside international InkuA fellows in Brussels."
+                fetchpriority="high"
+              />
+            </div>
+            <figcaption>
+              <span><strong>Frank Escudero</strong> · Systems Architect &amp; Founder</span>
+              <span>Brussels · Frankfurt am Main</span>
+            </figcaption>
+          </figure>
+
+          <div class="hero-humane-strip" aria-label="Stage and personal portraits">
+            <figure class="humane-mini-card">
+              <img
+                src="inbox/media/images/frank-speaking-frankfurt.webp"
+                width="960"
+                height="1280"
+                alt="Frank Escudero speaking live on stage with a microphone in front of the InkuA presentation screen in Frankfurt am Main."
+              />
+              <figcaption>
+                <span class="eyebrow">InkuA Stage · Frankfurt</span>
+                <strong>Live Community Keynote</strong>
+              </figcaption>
+            </figure>
+            <figure class="humane-mini-card">
+              <img
+                src="inbox/media/images/frank-alpine-portrait.webp"
+                width="960"
+                height="1100"
+                alt="Calm outdoor alpine portrait of Frank Escudero in winter snow."
+              />
+              <figcaption>
+                <span class="eyebrow">Off-Terminal</span>
+                <strong>Calm Under Altitude</strong>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 01: Cumulative Totals & Flagship Scale -->
+      <section id="institutions" class="section shell institutions-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">01 / Cumulative Scale</p>
+            <h2>Totals tell the story.<br /><em>No timeline needed.</em></h2>
+          </div>
+          <p>
+            Three decades of cumulative output across production infrastructure, high-concurrency consumer peaks, banking pipelines, and security audits.
+          </p>
+        </div>
+
+        <!-- 8-Cell Cumulative Totals Board -->
+        <div class="totals-board" aria-label="Cumulative career totals">
+          <article class="total-cell">
+            <span class="total-index">01 // MEDIA</span>
+            <strong>180M<span>+</span></strong>
+            <h3>Dynamic Visuals</h3>
+            <p>Personalised data-driven imagery rendered across banking lifecycles.*</p>
+          </article>
+          <article class="total-cell">
+            <span class="total-index">02 // VIDEO</span>
+            <strong>40M<span>+</span></strong>
+            <h3>Personalised Videos</h3>
+            <p>Individualised video stories synthesized on custom render pipelines.*</p>
+          </article>
+          <article class="total-cell">
+            <span class="total-index">03 // TELEPHONY</span>
+            <strong>20M<span>+</span></strong>
+            <h3>Interactive Calls</h3>
+            <p>Automated real-time SIP voice interactions across international carriers.*</p>
+          </article>
+          <article class="total-cell total-accent">
+            <span class="total-index">04 // UNIT ECONOMICS</span>
+            <strong>−94<span>%</span></strong>
+            <h3>Annual VoIP Spend</h3>
+            <p>Cut carrier run-rate from <code>€9.0M</code> to <code>&lt;€0.5M/yr</code> via bare-metal SIP architecture.*</p>
+          </article>
+          <article class="total-cell">
+            <span class="total-index">05 // PRIVATE AI LAB</span>
+            <strong>~6<span> PFLOPS</span></strong>
+            <h3>On-Prem AI Cluster</h3>
+            <p>Multi-node local GPU fabric interconnected at <code>185.2 Gbps</code> &amp; <code>1.4 µs</code> latency.</p>
+          </article>
+          <article class="total-cell">
+            <span class="total-index">06 // CYBERSECURITY</span>
+            <strong>60<span>+</span></strong>
+            <h3>Security Audits</h3>
+            <p>Offensive &amp; architectural assessments, including 10+ banking &amp; government systems.</p>
+          </article>
+          <article class="total-cell">
+            <span class="total-index">07 // SOFTWARE</span>
+            <strong>70<span>+</span></strong>
+            <h3>Apps &amp; Dashboards</h3>
+            <p>Production applications, live telemetry consoles, and analytics suites.</p>
+          </article>
+          <article class="total-cell">
+            <span class="total-index">08 // HIGH-STAKES</span>
+            <strong>4</strong>
+            <h3>Presidential Campaigns</h3>
+            <p>Advised national campaigns in Argentina, Bolivia, and Costa Rica.*</p>
+          </article>
+        </div>
+
+        <!-- Flagship Campaign Spotlight: International Coca-Cola Digital Christmas -->
+        <div class="flagship-spotlight" aria-label="Flagship Global Campaign Case">
+          <div class="flagship-copy">
+            <div class="flagship-kicker">
+              <span class="flagship-dot"></span>
+              <span>FLAGSHIP GLOBAL OPERATION · END-TO-END FULL-STACK PLATFORM</span>
+            </div>
+            <h3>The International Coca-Cola Digital Christmas Platform</h3>
+            <p>
+              Engineered and operated the international <em>“Santa’s Call / El Llamado de Papá Noel”</em> platform on custom video-synthesis and carrier SIP telephony stacks—absorbing peak December concurrency across two continents without missing Christmas Eve.
+            </p>
+            <div class="flagship-metrics">
+              <div>
+                <strong>6 Years</strong>
+                <span>Consecutive Holiday Seasons</span>
+              </div>
+              <div>
+                <strong>17 Countries</strong>
+                <span>Americas &amp; Europe (incl. AT, GR)</span>
+              </div>
+              <div>
+                <strong>25M+</strong>
+                <span>Personalised Videos &amp; Live Calls*</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flagship-visuals">
+            <figure class="flagship-main-shot">
+              <img
+                src="inbox/media/images/coca-cola-christmas-hero.webp"
+                width="1280"
+                height="659"
+                alt="Coca-Cola El Llamado de Papá Noel international digital Christmas platform landing screen."
+                loading="lazy"
+              />
+              <figcaption>International Holiday Platform · Americas &amp; Europe</figcaption>
+            </figure>
+            <figure class="flagship-inset-shot">
+              <img
+                src="inbox/media/images/campaign-telephony-dashboard.webp"
+                width="820"
+                height="802"
+                alt="Santa's Call live Christmas Day telemetry table tracking over two million country calls across Argentina, Chile, Mexico, Bolivia, and Uruguay."
+                loading="lazy"
+              />
+              <figcaption>Live Telemetry · 2016-12-25 02:00 GMT</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <p class="metric-note">
+          *Cumulative media volumes, multi-country campaign totals, and VoIP cost reduction (€9.0M/yr to &lt;€0.5M/yr) are owner-reported career totals. Not independently audited.
+        </p>
+
+        <!-- Tier-1 Institutions & Banking Grid -->
+        <div class="institutions-subhead">
+          <span class="eyebrow">Selected Financial &amp; Institutional Footprint</span>
+          <span>10+ Banking &amp; Regulated Environments</span>
+        </div>
+
+        <div class="bank-grid" role="list" aria-label="Selected institutions and banking platforms">
+          <article class="bank-card" role="listitem">
+            <div class="bank-logo-wrap" aria-hidden="true">
+              <svg viewBox="0 0 180 44" class="bank-svg">
+                <path
+                  d="M22 8c2.8 4.4-1.8 7.5-.4 11.4 1.1 3 4.8 4.5 4.8 8.4 0 4.6-4.7 7.8-10.4 7.8-6.4 0-11-3.3-11-8.2 0-3.5 2.5-6.2 5.4-7.6-.8 2.6.9 4.7 3.2 5.6 2.1.8 3.6-.5 3.1-2.5-.6-2.5-4.3-4.6-4.3-8.7 0-3.6 3.1-6.5 6.8-8.2-.7 2.2.4 3.8 2.8 2z"
+                  fill="#ec0000"
+                />
+                <text x="36" y="28" font-family="Instrument, Georgia, serif" font-size="25" font-weight="600" fill="currentColor">Santander</text>
+              </svg>
+            </div>
+            <span class="bank-tier">Global Retail &amp; Commercial</span>
+            <p>Personalised lifecycle video and dynamic visuals at scale.</p>
+          </article>
+
+          <article class="bank-card" role="listitem">
+            <div class="bank-logo-wrap" aria-hidden="true">
+              <svg viewBox="0 0 180 44" class="bank-svg">
+                <rect x="4" y="9" width="26" height="26" rx="4" fill="#072146" />
+                <path d="M11 27l6-12 6 12h-3.2l-2.8-6-2.8 6H11z" fill="#2dcccd" />
+                <text x="40" y="29" font-family="DM, Arial, sans-serif" font-size="23" font-weight="700" letter-spacing="1.5" fill="currentColor">BBVA</text>
+              </svg>
+            </div>
+            <span class="bank-tier">Multinational Banking Group</span>
+            <p>Automated communication pipelines and account journeys.</p>
+          </article>
+
+          <article class="bank-card" role="listitem">
+            <div class="bank-logo-wrap" aria-hidden="true">
+              <svg viewBox="0 0 180 44" class="bank-svg">
+                <path d="M40 16c9-8 23-8 32 0" stroke="#da1710" stroke-width="3.4" fill="none" stroke-linecap="round" />
+                <text x="8" y="31" font-family="DM, Arial, sans-serif" font-size="26" font-weight="700" letter-spacing="0.5" fill="#003b70">citi</text>
+              </svg>
+            </div>
+            <span class="bank-tier">Global Institutional Bank</span>
+            <p>High-volume client communications and secure delivery.</p>
+          </article>
+
+          <article class="bank-card" role="listitem">
+            <div class="bank-logo-wrap" aria-hidden="true">
+              <svg viewBox="0 0 210 44" class="bank-svg">
+                <rect x="4" y="8" width="42" height="28" rx="3" fill="#016fd0" />
+                <text x="9" y="26" font-family="DM, Arial, sans-serif" font-size="11" font-weight="700" letter-spacing="0.8" fill="#ffffff">AMEX</text>
+                <text x="56" y="27" font-family="DM, Arial, sans-serif" font-size="17" font-weight="700" letter-spacing="0.4" fill="currentColor">American Express</text>
+              </svg>
+            </div>
+            <span class="bank-tier">Global Payments Network</span>
+            <p>Six-country Centurion Cup and personalised card onboarding.</p>
+          </article>
+
+          <article class="bank-card" role="listitem">
+            <div class="bank-logo-wrap" aria-hidden="true">
+              <svg viewBox="0 0 180 44" class="bank-svg">
+                <circle cx="18" cy="22" r="12" stroke="#c5001a" stroke-width="3" fill="none" />
+                <rect x="13" y="17" width="10" height="10" stroke="#c5001a" stroke-width="2.4" fill="none" />
+                <text x="38" y="29" font-family="DM, Arial, sans-serif" font-size="23" font-weight="700" letter-spacing="1.2" fill="currentColor">ICBC</text>
+              </svg>
+            </div>
+            <span class="bank-tier">International Commercial Bank</span>
+            <p>Enterprise client communications and visual rendering.</p>
+          </article>
+
+          <article class="bank-card" role="listitem">
+            <div class="bank-logo-wrap" aria-hidden="true">
+              <svg viewBox="0 0 190 44" class="bank-svg">
+                <circle cx="17" cy="22" r="11" fill="#ff6600" />
+                <path d="M17 14v16M9 22h16" stroke="#ffffff" stroke-width="2.5" />
+                <text x="36" y="28" font-family="Instrument, Georgia, serif" font-size="24" fill="currentColor">Banco Galicia</text>
+              </svg>
+            </div>
+            <span class="bank-tier">Digital Banking Leader</span>
+            <p>Digital onboarding and customer retention pipelines.</p>
+          </article>
+
+          <article class="bank-card" role="listitem">
+            <div class="bank-logo-wrap" aria-hidden="true">
+              <svg viewBox="0 0 210 44" class="bank-svg">
+                <polygon points="6,32 16,12 26,32" fill="#e4002b" />
+                <text x="34" y="27" font-family="DM, Arial, sans-serif" font-size="18" font-weight="700" fill="currentColor">BAC Credomatic</text>
+              </svg>
+            </div>
+            <span class="bank-tier">Regional Financial Network</span>
+            <p>Executive incentives and 320k+ card placements.</p>
+          </article>
+
+          <article class="bank-card" role="listitem">
+            <div class="bank-logo-wrap" aria-hidden="true">
+              <svg viewBox="0 0 195 44" class="bank-svg">
+                <path d="M6 30l10-18 10 18H6z" fill="#006341" />
+                <path d="M12 30l6-11 6 11h-12z" fill="#ce1126" />
+                <text x="34" y="27" font-family="DM, Arial, sans-serif" font-size="19" font-weight="700" fill="currentColor">Banco Azteca</text>
+              </svg>
+            </div>
+            <span class="bank-tier">Consumer Scale Banking</span>
+            <p>Mobile messaging for mass-market financial inclusion.</p>
+          </article>
+
+          <article class="bank-card" role="listitem">
+            <div class="bank-logo-wrap" aria-hidden="true">
+              <svg viewBox="0 0 180 44" class="bank-svg">
+                <rect x="4" y="10" width="24" height="24" rx="12" fill="#2449df" />
+                <path d="M10 18l3 9 3-6 3 6 3-9" stroke="#ffffff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                <text x="36" y="28" font-family="DM, Arial, sans-serif" font-size="21" font-weight="700" fill="currentColor">Wilobank</text>
+              </svg>
+            </div>
+            <span class="bank-tier">Cloud-Native Neobank</span>
+            <p>Cloud-native neobank customer acquisition and onboarding.</p>
+          </article>
+
+          <article class="bank-card" role="listitem">
+            <div class="bank-logo-wrap" aria-hidden="true">
+              <svg viewBox="0 0 220 44" class="bank-svg">
+                <circle cx="17" cy="22" r="12" stroke="currentColor" stroke-width="2.2" fill="none" />
+                <path d="M17 11v11M17 22l-8.5 7M17 22l8.5 7" stroke="currentColor" stroke-width="2" fill="none" />
+                <text x="36" y="23" font-family="Instrument, Georgia, serif" font-size="18" fill="currentColor">Mercedes-Benz</text>
+                <text x="36" y="35" font-family="DM, Arial, sans-serif" font-size="10" letter-spacing="1.2" fill="#586461">FINANCIAL SERVICES</text>
+              </svg>
+            </div>
+            <span class="bank-tier">Automotive Financial Services</span>
+            <p>Contract lifecycle and dynamic showroom touchpoints.</p>
+          </article>
+        </div>
+
+        <div class="enterprise-strip" aria-label="Additional global enterprise and telecom sectors">
+          <span class="enterprise-label">Global Brand &amp; Carrier Reach:</span>
+          <div class="enterprise-badges">
+            <span><strong>The Coca-Cola Company</strong> · 6 Yrs · 17 Countries</span>
+            <span><strong>Samsung × Netflix</strong> · Interactive Studio Launches</span>
+            <span><strong>HSBC · Heineken · Scania</strong> · Enterprise Platforms</span>
+            <span><strong>Antel · Movistar · Sprint</strong> · Carrier SIP &amp; Live Calls</span>
+            <span><strong>Teletón</strong> · Nationwide Fundraising Infrastructure</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 02: The Non-Profit Profile (InkuA) -->
+      <section id="non-profit" class="section shell non-profit-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">02 / The Non-Profit Profile</p>
+            <h2>Talent has no postcode.<br /><em>The InkuA mission.</em></h2>
+          </div>
+          <p>
+            Founded InkuA in Germany in 2021 as a borderless civic non-profit—providing emerging developers and students production software teams, open-source mentorship, and applied AI workshops.
+          </p>
+        </div>
+
+        <div class="non-profit-grid">
+          <article class="np-card">
+            <strong>40,000+</strong>
+            <h3>Cumulative Applicants</h3>
+            <p>Emerging builders across Latin America and Europe shipping production code.</p>
+          </article>
+          <article class="np-card">
+            <strong>3,000+</strong>
+            <h3>Volunteers &amp; Mentors</h3>
+            <p>Practising engineers and educators mentoring cross-functional squads.</p>
+          </article>
+          <article class="np-card">
+            <strong>20+</strong>
+            <h3>Nationalities Connected</h3>
+            <p>Distributed teams collaborating on code review and resilient systems.</p>
+          </article>
+          <article class="np-card">
+            <strong>SETOFF / EU</strong>
+            <h3>Brussels Cyber Resilience</h3>
+            <p>Invited speaker on cybersecurity preparedness at Erasmus+ workshop in Brussels.</p>
+          </article>
+        </div>
+
+        <div class="np-highlight">
+          <div class="np-highlight-copy">
+            <span class="eyebrow">Open-Source Civic Ethos</span>
+            <h3>Real keyboards, real code reviews, zero gatekeeping.</h3>
+            <p>
+              From Frankfurt stages to European civil-protection workshops in Brussels, InkuA’s principle is clear: real problems and thoughtful mentorship accelerate builder growth faster than credentials.
+            </p>
+            <a class="text-link" href="https://setoff-project.eu/wp-content/uploads/2023/07/PR_3RD_WORKSHOP_June2023.pdf">European SETOFF Workshop Press Release (PDF) ↗</a>
+          </div>
+          <div class="np-visual-pair">
+            <figure class="np-highlight-media">
+              <img
+                src="inbox/media/images/inkua-workshop-workbook.webp"
+                width="1280"
+                height="960"
+                alt="Close-up of participant hands completing an InkuA strategy and self-efficacy workshop workbook in Frankfurt am Main."
+                loading="lazy"
+              />
+              <figcaption>InkuA Strategy Workbook · Frankfurt</figcaption>
+            </figure>
+            <figure class="np-highlight-media">
+              <img
+                src="inbox/media/images/setoff-brussels-workshop.webp"
+                width="1280"
+                height="786"
+                alt="Researchers and speakers gathered at the SETOFF European cybersecurity and crisis resilience workshop in Brussels."
+                loading="lazy"
+              />
+              <figcaption>SETOFF European Workshop · Brussels</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+            <!-- Section 03: 20-Artifact Visual Dossier -->
+      <section id="projects" class="section shell projects-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">03 / Visual Dossier</p>
+            <h2>20 verified artifacts.<br /><em>Pass through the work.</em></h2>
+          </div>
+          <p>
+            Real camera frames only—from the Coca-Cola clockwork studio set and a <code>185.2 Gbps</code> private AI fabric to marine engines on a workbench, RED cinema rigs, and InkuA stages.
+          </p>
+        </div>
+
+        <!-- 20-Picture Pass-Through Gallery Theater -->
+        <div class="gallery-theater" aria-label="20-Picture Project Visual Gallery">
+          <div class="theater-top-bar">
+            <div class="theater-status">
+              <span class="status-dot"></span>
+              <span class="theater-counter">01 / 20</span>
+              <span class="theater-hint">(Use ← / → arrow keys, swipe, or click any row below)</span>
+            </div>
+            <div class="theater-nav-controls">
+              <button type="button" class="theater-nav-btn theater-prev" aria-label="Previous picture">← Prev</button>
+              <button type="button" class="theater-nav-btn theater-next" aria-label="Next picture">Next →</button>
+            </div>
+          </div>
+          <div class="theater-stage">
+            <img
+              class="theater-main-img"
+              src="inbox/media/images/coca-cola-santas-call-studio.webp"
+              width="939"
+              height="704"
+              alt="Physical theatrical studio set with wooden clockwork gears and world time-zone clocks built for Coca-Cola Santa’s Call"
+            />
+            <div class="theater-caption">
+              <div class="theater-info">
+                <div class="theater-category">Flagship Global Scale / The Coca-Cola Company</div>
+                <div class="theater-title">Coca-Cola Santa’s Call Studio Set (6 Yrs · 17 Countries)</div>
+                <div class="theater-desc">Physical clockwork studio set built for the 17-country Coca-Cola Christmas platform, delivering 25M+ personalised videos and calls.</div>
+              </div>
+              <div class="theater-proof">6 Yrs · 17 Countries · 25M+ Videos &amp; Calls</div>
+            </div>
+          </div>
+          <div class="theater-thumbs-strip" aria-label="All 20 gallery thumbnails">
+            <div class="theater-thumbs" role="group">
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/coca-cola-santas-call-studio.webp" data-alt="Physical theatrical studio set with wooden clockwork gears and world time-zone clocks built for Coca-Cola Santa’s Call" data-width="939" data-height="704" data-title="Coca-Cola Santa’s Call Studio Set (6 Yrs · 17 Countries)" data-desc="Physical clockwork studio set built for the 17-country Coca-Cola Christmas platform, delivering 25M+ personalised videos and calls." data-category="Flagship Global Scale / The Coca-Cola Company" data-proof="6 Yrs · 17 Countries · 25M+ Videos &amp; Calls" data-number="01" aria-label="Jump to picture 01">
+                <img src="inbox/media/images/coca-cola-santas-call-studio.webp" width="939" height="704" alt="Coca-Cola Santa’s Call Studio Set (6 Yrs · 17 Countries)" loading="lazy" />
+                <span>01</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/santander-studio-production.webp" data-alt="Live-action Santander Río branch set frame from personalised customer video delivery" data-width="1280" data-height="720" data-title="Santander Live-Action Personalised Video Delivery" data-desc="Live-action branch studio production compositing dynamic account-level data into millions of individualised retail banking video briefings." data-category="Banking &amp; Scale / Santander Río" data-proof="40 million+ videos · Owner-reported, not independently audited" data-number="02" aria-label="Jump to picture 02">
+                <img src="inbox/media/images/santander-studio-production.webp" width="1280" height="720" alt="Santander Live-Action Personalised Video Delivery" loading="lazy" />
+                <span>02</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/santander-select-luggage-tag.webp" data-alt="Close-up studio photograph of a pink hardshell suitcase luggage tag prepared for dynamic Santander cardholder personalisation" data-width="738" data-height="446" data-title="Santander Physical-Plate Dynamic Visual Compositing" data-desc="Studio camera plate of a physical hardshell luggage tag tracked for real-time cardholder name synthesis at scale." data-category="Banking &amp; Scale / Santander" data-proof="180M+ Career Dynamic Visuals" data-number="03" aria-label="Jump to picture 03">
+                <img src="inbox/media/images/santander-select-luggage-tag.webp" width="738" height="446" alt="Santander Physical-Plate Dynamic Visual Compositing" loading="lazy" />
+                <span>03</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/banco-galicia-event-venue.webp" data-alt="Outdoor sunlit photograph of the Banco Galicia Abordaje Comercial live onboarding event banner on site" data-width="503" data-height="671" data-title="Banco Galicia Commercial Onboarding Live Venue" data-desc="On-site venue deployment for Banco Galicia’s commercial onboarding event, pairing live stage presentations with synchronised mobile flows." data-category="Banking &amp; Scale / Banco Galicia" data-proof="Live Event · Real-Time Mobile Sync" data-number="04" aria-label="Jump to picture 04">
+                <img src="inbox/media/images/banco-galicia-event-venue.webp" width="503" height="671" alt="Banco Galicia Commercial Onboarding Live Venue" loading="lazy" />
+                <span>04</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/mercedes-showroom-video.webp" data-alt="Mercedes-Benz Vito commercial van inside dealership showroom during personalised video shoot" data-width="1280" data-height="720" data-title="Mercedes-Benz Dynamic Showroom Video Personalisation" data-desc="Showroom camera plate for Mercedes-Benz Vito commercial vans, rendering personalised buyer configurations and financial service briefings." data-category="Automotive &amp; Finance / Mercedes-Benz" data-proof="Automotive · Dynamic Video" data-number="05" aria-label="Jump to picture 05">
+                <img src="inbox/media/images/mercedes-showroom-video.webp" width="1280" height="720" alt="Mercedes-Benz Dynamic Showroom Video Personalisation" loading="lazy" />
+                <span>05</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/samsung-netflix-production.webp" data-alt="RED cinema camera filming an actor in a red jumpsuit on set for Samsung and Netflix campaign" data-width="1280" data-height="853" data-title="Samsung × Netflix Interactive Studio Production" data-desc="RED cinema rig on set filming interactive personalised sequences with cast members for the regional Samsung × Netflix launch." data-category="Creative Scale / Samsung × Netflix" data-proof="Studio Shoot · RED Cinema Pipeline" data-number="06" aria-label="Jump to picture 06">
+                <img src="inbox/media/images/samsung-netflix-production.webp" width="1280" height="853" alt="Samsung × Netflix Interactive Studio Production" loading="lazy" />
+                <span>06</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/ai-cluster-fabric.webp" data-alt="Monitor photograph showing multi-node on-premise AI cluster interconnect benchmark at 185.2 Gbps bandwidth and 1.4 microsecond latency" data-width="1280" data-height="808" data-title="Private ~6 PFLOPS On-Premise AI Cluster Fabric" data-desc="Direct monitor capture benchmarking our multi-node on-premise GPU fabric at 185.2 Gbps throughput and 1.4 µs RDMA latency." data-category="Systems &amp; Infra / Bare-Metal AI Lab" data-proof="185.2 Gbps · 1.4 µs · ~6 PFLOPS" data-number="07" aria-label="Jump to picture 07">
+                <img src="inbox/media/images/ai-cluster-fabric.webp" width="1280" height="808" alt="Private ~6 PFLOPS On-Premise AI Cluster Fabric" loading="lazy" />
+                <span>07</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/christmas-eve-htop.webp" data-alt="Laptop on Christmas Eve monitoring a 48-core 252 GB RAM Ubuntu server with family dinner in the background" data-width="960" data-height="1280" data-title="Christmas Eve Production War Room (48-Core Ubuntu Peak)" data-desc="Laptop on the Christmas Eve dinner table monitoring a 48-core, 252 GB Ubuntu host during peak holiday traffic." data-category="Systems &amp; Infra / Holiday Peak Operations" data-proof="24 Dec Peak · 48 Cores / 252 GB" data-number="08" aria-label="Jump to picture 08">
+                <img src="inbox/media/images/christmas-eve-htop.webp" width="960" height="1280" alt="Christmas Eve Production War Room (48-Core Ubuntu Peak)" loading="lazy" />
+                <span>08</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/linux-multi-node-lab.webp" data-alt="Four-screen bare-metal Linux engineering desk showing Ubuntu 14.04 console, Hackaday hardware reference, and live top process telemetry" data-width="1280" data-height="960" data-title="Bare-Metal Linux Lab &amp; SIP Architecture (€9.0M → &lt;€0.5M/yr)" data-desc="Four-screen Linux bench running Ubuntu TTY consoles and live kernel telemetry behind bare-metal SIP VoIP cost reductions." data-category="Systems &amp; Infra / Bare-Metal Linux &amp; SIP" data-proof="€9.0M to &lt;€0.5M/yr · Owner-reported, not independently audited" data-number="09" aria-label="Jump to picture 09">
+                <img src="inbox/media/images/linux-multi-node-lab.webp" width="1280" height="960" alt="Bare-Metal Linux Lab &amp; SIP Architecture (€9.0M → &lt;€0.5M/yr)" loading="lazy" />
+                <span>09</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/frank-engineering-workstation.webp" data-alt="Frank Escudero at his dual-monitor systems architecture and code-audit workstation" data-width="1280" data-height="960" data-title="Dual-Monitor Systems Architecture &amp; Security Desk" data-desc="Late-night engineering session at a dual-monitor Linux and code-audit workstation designing high-density container and banking backends." data-category="Systems &amp; Infra / Systems &amp; Security" data-proof="60+ Security Audits · LXC Architecture" data-number="10" aria-label="Jump to picture 10">
+                <img src="inbox/media/images/frank-engineering-workstation.webp" width="1280" height="960" alt="Dual-Monitor Systems Architecture &amp; Security Desk" loading="lazy" />
+                <span>10</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/antel-worldcup-studio.webp" data-alt="Uncropped cinema studio frame of Luis Suárez on the telephone in an Antel jersey for the World Cup live call platform" data-width="1280" data-height="720" data-title="Antel × World Cup Live SIP Call &amp; Video Studio" data-desc="Uncropped studio cinema frame with Luis Suárez synchronising personalised video playback and live carrier SIP telephone calls." data-category="Systems &amp; Infra / Telecom &amp; Live Voice" data-proof="Carrier SIP · Video + Live Call" data-number="11" aria-label="Jump to picture 11">
+                <img src="inbox/media/images/antel-worldcup-studio.webp" width="1280" height="720" alt="Antel × World Cup Live SIP Call &amp; Video Studio" loading="lazy" />
+                <span>11</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/drones-navales-hull-propeller.webp" data-alt="Overhead workbench photograph inside the Drones Navales boat hull showing the internal-combustion engine, orange drive-shaft coupling, three-blade propeller, and hand tools" data-width="552" data-height="414" data-title="Drones Navales Hull, Marine Engine &amp; Drive Coupling" data-desc="Workbench build of the autonomous watercraft hull showing its combustion engine, machined shaft coupling, and three-blade propeller." data-category="Robotics &amp; Hardware / Drones Navales" data-proof="Physical Hull · Engine &amp; Propeller" data-number="12" aria-label="Jump to picture 12">
+                <img src="inbox/media/images/drones-navales-hull-propeller.webp" width="552" height="414" alt="Drones Navales Hull, Marine Engine &amp; Drive Coupling" loading="lazy" />
+                <span>12</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/drones-navales-gps-bench.webp" data-alt="Two Raspberry Pi Zero boards wired to a u-blox GPS ceramic patch antenna resting on a Yacht Club Olivos nautical training sheet" data-width="408" data-height="419" data-title="Raspberry Pi Zero &amp; u-blox GPS Navigation Bench" data-desc="Embedded Raspberry Pi Zero controllers wired to a ceramic u-blox GPS receiver over Río de la Plata charts." data-category="Robotics &amp; Hardware / Marine Avionics" data-proof="Raspberry Pi Zero · u-blox GPS" data-number="13" aria-label="Jump to picture 13">
+                <img src="inbox/media/images/drones-navales-gps-bench.webp" width="408" height="419" alt="Raspberry Pi Zero &amp; u-blox GPS Navigation Bench" loading="lazy" />
+                <span>13</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/mechanical-linkage-prototype.webp" data-alt="Close-up photograph of a red 3D-printed articulated mechanical linkage and rotary joint on a wooden workbench" data-width="1280" data-height="1227" data-title="3D-Printed Articulated Mechanical Linkage Prototype" data-desc="Macro workbench inspection of FDM-printed articulated kinematics, dual-pivot rotary joints, and custom mechanical actuator linkages." data-category="Robotics &amp; Hardware / Rapid Prototyping" data-proof="CAD → FDM · Articulated Joint" data-number="14" aria-label="Jump to picture 14">
+                <img src="inbox/media/images/mechanical-linkage-prototype.webp" width="1280" height="1227" alt="3D-Printed Articulated Mechanical Linkage Prototype" loading="lazy" />
+                <span>14</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/frank-speaking-frankfurt.webp" data-alt="Frank Escudero speaking live into a microphone on stage in front of the InkuA presentation screen in Frankfurt" data-width="960" data-height="1280" data-title="Speaking Live on Stage — InkuA Frankfurt am Main" data-desc="Live Frankfurt keynote introducing InkuA’s borderless engineering squads, open-access mentorship, and civic technology fellowships." data-category="Non-Profit &amp; Civic / InkuA Keynote Stage" data-proof="InkuA · 40,000+ Applicants" data-number="15" aria-label="Jump to picture 15">
+                <img src="inbox/media/images/frank-speaking-frankfurt.webp" width="960" height="1280" alt="Speaking Live on Stage — InkuA Frankfurt am Main" loading="lazy" />
+                <span>15</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/setoff-panel-brussels.webp" data-alt="Invited speakers seated at the panel table during the SETOFF European cybersecurity and crisis resilience workshop in Brussels" data-width="1024" data-height="577" data-title="SETOFF European Cyber Resilience Panel (Brussels)" data-desc="Speaker panel at the Erasmus+ SETOFF workshop in Brussels addressing civil-protection readiness and cybersecurity training." data-category="Non-Profit &amp; Civic / EU SETOFF" data-proof="Brussels · Erasmus+ SETOFF" data-number="16" aria-label="Jump to picture 16">
+                <img src="inbox/media/images/setoff-panel-brussels.webp" width="1024" height="577" alt="SETOFF European Cyber Resilience Panel (Brussels)" loading="lazy" />
+                <span>16</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/inkua-workshop-workbook.webp" data-alt="Close-up photograph of participant hands completing an InkuA strategy and self-efficacy workshop workbook" data-width="1280" data-height="960" data-title="InkuA Strategy &amp; Self-Efficacy Participant Workbook" data-desc="Participant hands completing an InkuA strategy and self-efficacy workbook during a collaborative Frankfurt mentorship session." data-category="Non-Profit &amp; Civic / Mentorship Craft" data-proof="3,000+ Volunteers &amp; Mentors" data-number="17" aria-label="Jump to picture 17">
+                <img src="inbox/media/images/inkua-workshop-workbook.webp" width="1280" height="960" alt="InkuA Strategy &amp; Self-Efficacy Participant Workbook" loading="lazy" />
+                <span>17</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/frank-washington-portrait.webp" data-alt="Outdoor portrait of Frank Escudero in a light-blue collared shirt in front of the White House in Washington, D.C." data-width="960" data-height="1076" data-title="Cross-Continental Civic &amp; Institutional Perspective" data-desc="Outdoor portrait in Washington, D.C., reflecting transatlantic civic engagement and advisory work across four national campaigns." data-category="Who is Frank? / International Perspective" data-proof="Europe · Americas · 4 National Campaigns" data-number="18" aria-label="Jump to picture 18">
+                <img src="inbox/media/images/frank-washington-portrait.webp" width="960" height="1076" alt="Cross-Continental Civic &amp; Institutional Perspective" loading="lazy" />
+                <span>18</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/frank-archery-focus.webp" data-alt="Candid indoor portrait of Frank Escudero smiling warmly with his compound bow and arrow quiver before range practice" data-width="960" data-height="1200" data-title="Compound Archery — Off-Terminal Focus &amp; Practice" data-desc="Heading to the archery range with compound bow and quiver—deliberate mechanical focus away from keyboards." data-category="Who is Frank? / Precision Off-Terminal" data-proof="Off-Terminal · Compound Archery" data-number="19" aria-label="Jump to picture 19">
+                <img src="inbox/media/images/frank-archery-focus.webp" width="960" height="1200" alt="Compound Archery — Off-Terminal Focus &amp; Practice" loading="lazy" />
+                <span>19</span>
+              </button>
+              <button type="button" class="theater-thumb" data-src="inbox/media/images/frank-with-dog.webp" data-alt="Candid portrait of Frank Escudero smiling at home beside his Rottweiler" data-width="1062" data-height="942" data-title="At Home — Quiet Moments Off-Grid" data-desc="Unplugged afternoon at home beside his Rottweiler companion, balancing high-concurrency systems engineering with quiet downtime." data-category="Who is Frank? / Personal &amp; Humane" data-proof="Personal · Off-Terminal" data-number="20" aria-label="Jump to picture 20">
+                <img src="inbox/media/images/frank-with-dog.webp" width="1062" height="942" alt="At Home — Quiet Moments Off-Grid" loading="lazy" />
+                <span>20</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="gallery-tools">
+          <div class="search-box">
+            <label for="media-search">Filter dossier</label>
+            <input
+              id="media-search"
+              type="search"
+              placeholder="Try: coca-cola, cluster, banking, robotics, inkua..."
+              autocomplete="off"
+            />
+          </div>
+          <div class="project-filters" role="group" aria-label="Filter artifacts">
+            <button type="button" data-project-filter="all" aria-pressed="true">All 20</button>
+            <button type="button" data-project-filter="banking" aria-pressed="false">Campaigns &amp; Banking</button>
+            <button type="button" data-project-filter="infra" aria-pressed="false">AI Cluster &amp; Systems</button>
+            <button type="button" data-project-filter="hardware" aria-pressed="false">Robotics &amp; Hardware</button>
+            <button type="button" data-project-filter="non-profit" aria-pressed="false">InkuA &amp; Civic</button>
+            <button type="button" data-project-filter="portrait" aria-pressed="false">Portraits</button>
+          </div>
+        </div>
+        <p class="result-count" role="status" aria-live="polite"></p>
+
+        <div class="ledger-header" aria-hidden="true">
+          <span>[VERIFIED ARTIFACT REGISTER · 20 ITEMS — CLICK ANY ROW TO INSPECT IN THEATER]</span>
+          <span class="ledger-header-meta">INDEX 01–20 ↘</span>
+        </div>
+
+        <ol class="project-list">
+          <li class="project-card" data-category="banking" data-tags="coca-cola santa christmas holiday banking creative-technology video studio">
+            <figure class="project-media">
+              <img src="inbox/media/images/coca-cola-santas-call-studio.webp" width="939" height="704" alt="Coca-Cola Santa’s Call Studio Set (6 Yrs · 17 Countries)" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">01 /</span>
+              <div>
+                <span class="eyebrow">Flagship Global Scale / Coca-Cola</span>
+                <h3>Coca-Cola Santa’s Call Studio Set (6 Yrs · 17 Countries)</h3>
+              </div>
+              <span class="project-proof">25M+ Videos &amp; Calls</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="banking" data-tags="banking santander video studio personalized-video creative-technology">
+            <figure class="project-media">
+              <img src="inbox/media/images/santander-studio-production.webp" width="1280" height="720" alt="Santander Live-Action Personalised Video Delivery" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">02 /</span>
+              <div>
+                <span class="eyebrow">Banking &amp; Scale / Santander Río</span>
+                <h3>Santander Live-Action Personalised Video Delivery</h3>
+              </div>
+              <span class="project-proof">40 million+ videos · Owner-reported, not independently audited</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="banking" data-tags="banking santander personalization lifecycle studio creative-technology">
+            <figure class="project-media">
+              <img src="inbox/media/images/santander-select-luggage-tag.webp" width="738" height="446" alt="Santander Physical-Plate Dynamic Visual Compositing" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">03 /</span>
+              <div>
+                <span class="eyebrow">Banking &amp; Scale / Santander</span>
+                <h3>Santander Physical-Plate Dynamic Visual Compositing</h3>
+              </div>
+              <span class="project-proof">180M+ Visuals Scale</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="banking" data-tags="banking galicia banco-galicia onboarding event creative-technology">
+            <figure class="project-media">
+              <img src="inbox/media/images/banco-galicia-event-venue.webp" width="503" height="671" alt="Banco Galicia Commercial Onboarding Live Venue" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">04 /</span>
+              <div>
+                <span class="eyebrow">Banking &amp; Scale / Banco Galicia</span>
+                <h3>Banco Galicia Commercial Onboarding Live Venue</h3>
+              </div>
+              <span class="project-proof">Live Venue Sync</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="banking" data-tags="banking mercedes automotive financial-services video personalization creative-technology">
+            <figure class="project-media">
+              <img src="inbox/media/images/mercedes-showroom-video.webp" width="1280" height="720" alt="Mercedes-Benz Dynamic Showroom Video Personalisation" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">05 /</span>
+              <div>
+                <span class="eyebrow">Automotive &amp; Finance / Mercedes-Benz</span>
+                <h3>Mercedes-Benz Dynamic Showroom Video Personalisation</h3>
+              </div>
+              <span class="project-proof">Showroom Video Engine</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="banking" data-tags="banking samsung netflix studio red camera video creative-technology">
+            <figure class="project-media">
+              <img src="inbox/media/images/samsung-netflix-production.webp" width="1280" height="853" alt="Samsung × Netflix Interactive Studio Production" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">06 /</span>
+              <div>
+                <span class="eyebrow">Creative Scale / Samsung × Netflix</span>
+                <h3>Samsung × Netflix Interactive Studio Production</h3>
+              </div>
+              <span class="project-proof">RED Cinema Pipeline</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="infra" data-tags="infra ai cluster pflops rdma gpu bare-metal creative-technology">
+            <figure class="project-media">
+              <img src="inbox/media/images/ai-cluster-fabric.webp" width="1280" height="808" alt="Private ~6 PFLOPS On-Premise AI Cluster Fabric" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">07 /</span>
+              <div>
+                <span class="eyebrow">Systems &amp; Infra / Bare-Metal AI Lab</span>
+                <h3>Private ~6 PFLOPS On-Premise AI Cluster Fabric</h3>
+              </div>
+              <span class="project-proof">185.2 Gbps · 1.4 µs</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="infra" data-tags="infra linux ubuntu htop coca-cola christmas bare-metal concurrency creative-technology">
+            <figure class="project-media">
+              <img src="inbox/media/images/christmas-eve-htop.webp" width="960" height="1280" alt="Christmas Eve Production War Room (48-Core Ubuntu Peak)" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">08 /</span>
+              <div>
+                <span class="eyebrow">Systems &amp; Infra / Holiday Peak Operations</span>
+                <h3>Christmas Eve Production War Room (48-Core Ubuntu Peak)</h3>
+              </div>
+              <span class="project-proof">48 Cores · 252 GB RAM</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="infra" data-tags="infra linux ubuntu sip voip telephony bare-metal server telemetry creative-technology">
+            <figure class="project-media">
+              <img src="inbox/media/images/linux-multi-node-lab.webp" width="1280" height="960" alt="Bare-Metal Linux Lab &amp; SIP Architecture (€9.0M → &lt;€0.5M/yr)" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">09 /</span>
+              <div>
+                <span class="eyebrow">Systems &amp; Infra / Bare-Metal Linux &amp; SIP</span>
+                <h3>Bare-Metal Linux Lab &amp; SIP Architecture (€9.0M → &lt;€0.5M/yr)</h3>
+              </div>
+              <span class="project-proof">€9.0M to &lt;€0.5M/yr · Owner-reported, not independently audited</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="infra" data-tags="infra linux lxc cybersecurity security architecture workstation portrait creative-technology">
+            <figure class="project-media">
+              <img src="inbox/media/images/frank-engineering-workstation.webp" width="1280" height="960" alt="Dual-Monitor Systems Architecture &amp; Security Desk" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">10 /</span>
+              <div>
+                <span class="eyebrow">Systems &amp; Infra / Systems &amp; Security</span>
+                <h3>Dual-Monitor Systems Architecture &amp; Security Desk</h3>
+              </div>
+              <span class="project-proof">60+ Security Audits</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="infra" data-tags="infra antel telecom world-cup live-call sip video studio creative-technology">
+            <figure class="project-media">
+              <img src="inbox/media/images/antel-worldcup-studio.webp" width="1280" height="720" alt="Antel × World Cup Live SIP Call &amp; Video Studio" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">11 /</span>
+              <div>
+                <span class="eyebrow">Systems &amp; Infra / Telecom &amp; Live Voice</span>
+                <h3>Antel × World Cup Live SIP Call &amp; Video Studio</h3>
+              </div>
+              <span class="project-proof">Video + Live SIP Call</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="hardware" data-tags="hardware robotics drones naval vessel autonomous maritime propulsion">
+            <figure class="project-media">
+              <img src="inbox/media/images/drones-navales-hull-propeller.webp" width="552" height="414" alt="Drones Navales Hull, Marine Engine &amp; Drive Coupling" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">12 /</span>
+              <div>
+                <span class="eyebrow">Robotics &amp; Hardware / Drones Navales</span>
+                <h3>Drones Navales Hull, Marine Engine &amp; Drive Coupling</h3>
+              </div>
+              <span class="project-proof">Marine Propulsion Build</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="hardware" data-tags="hardware robotics drones naval gps raspberry-pi maritime autonomous">
+            <figure class="project-media">
+              <img src="inbox/media/images/drones-navales-gps-bench.webp" width="408" height="419" alt="Raspberry Pi Zero &amp; u-blox GPS Navigation Bench" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">13 /</span>
+              <div>
+                <span class="eyebrow">Robotics &amp; Hardware / Marine Avionics</span>
+                <h3>Raspberry Pi Zero &amp; u-blox GPS Navigation Bench</h3>
+              </div>
+              <span class="project-proof">GPS + Pi Zero Avionics</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="hardware" data-tags="hardware robotics 3d-printing cad mechanical linkage prototype">
+            <figure class="project-media">
+              <img src="inbox/media/images/mechanical-linkage-prototype.webp" width="1280" height="1227" alt="3D-Printed Articulated Mechanical Linkage Prototype" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">14 /</span>
+              <div>
+                <span class="eyebrow">Robotics &amp; Hardware / Rapid Prototyping</span>
+                <h3>3D-Printed Articulated Mechanical Linkage Prototype</h3>
+              </div>
+              <span class="project-proof">3D-Printed Kinematics</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="non-profit" data-tags="non-profit inkua frankfurt stage keynote speaking community entrepreneurship">
+            <figure class="project-media">
+              <img src="inbox/media/images/frank-speaking-frankfurt.webp" width="960" height="1280" alt="Speaking Live on Stage — InkuA Frankfurt am Main" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">15 /</span>
+              <div>
+                <span class="eyebrow">Non-Profit &amp; Civic / InkuA Keynote Stage</span>
+                <h3>Speaking Live on Stage — InkuA Frankfurt am Main</h3>
+              </div>
+              <span class="project-proof">Keynote · InkuA Frankfurt</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="non-profit" data-tags="non-profit setoff brussels cybersecurity community social-impact">
+            <figure class="project-media">
+              <img src="inbox/media/images/setoff-panel-brussels.webp" width="1024" height="577" alt="SETOFF European Cyber Resilience Panel (Brussels)" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">16 /</span>
+              <div>
+                <span class="eyebrow">Non-Profit &amp; Civic / EU SETOFF</span>
+                <h3>SETOFF European Cyber Resilience Panel (Brussels)</h3>
+              </div>
+              <span class="project-proof">Brussels · Erasmus+ SETOFF</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="non-profit" data-tags="non-profit inkua workshop mentorship community inclusion frankfurt">
+            <figure class="project-media">
+              <img src="inbox/media/images/inkua-workshop-workbook.webp" width="1280" height="960" alt="InkuA Strategy &amp; Self-Efficacy Participant Workbook" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">17 /</span>
+              <div>
+                <span class="eyebrow">Non-Profit &amp; Civic / Mentorship Craft</span>
+                <h3>InkuA Strategy &amp; Self-Efficacy Participant Workbook</h3>
+              </div>
+              <span class="project-proof">Frankfurt Workshop Craft</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="portrait" data-tags="portrait washington civic international advisory personal">
+            <figure class="project-media">
+              <img src="inbox/media/images/frank-washington-portrait.webp" width="960" height="1076" alt="Cross-Continental Civic &amp; Institutional Perspective" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">18 /</span>
+              <div>
+                <span class="eyebrow">Who is Frank? / International Perspective</span>
+                <h3>Cross-Continental Civic &amp; Institutional Perspective</h3>
+              </div>
+              <span class="project-proof">Washington, D.C.</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="portrait" data-tags="portrait personal archery focus hardware">
+            <figure class="project-media">
+              <img src="inbox/media/images/frank-archery-focus.webp" width="960" height="1200" alt="Compound Archery — Off-Terminal Focus &amp; Practice" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">19 /</span>
+              <div>
+                <span class="eyebrow">Who is Frank? / Precision Off-Terminal</span>
+                <h3>Compound Archery — Off-Terminal Focus &amp; Practice</h3>
+              </div>
+              <span class="project-proof">Archery · Off-Terminal</span>
+            </div>
+          </li>
+          <li class="project-card" data-category="portrait" data-tags="portrait personal dog rottweiler home grounded">
+            <figure class="project-media">
+              <img src="inbox/media/images/frank-with-dog.webp" width="1062" height="942" alt="At Home — Quiet Moments Off-Grid" loading="lazy" />
+            </figure>
+            <div class="project-body">
+              <span class="project-number">20 /</span>
+              <div>
+                <span class="eyebrow">Who is Frank? / Personal &amp; Humane</span>
+                <h3>At Home — Quiet Moments Off-Grid</h3>
+              </div>
+              <span class="project-proof">Personal · Off-Terminal</span>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <!-- Section 04: Let's Build Something Together -->
+      <section class="contact-section" id="contact">
+        <div class="shell">
+          <p class="eyebrow">04 / Direct Line</p>
+          <h2>
+            Hard problem? High-scale build?<br /><em
+              >Let’s build something together.</em
+            >
+          </h2>
+          <p class="contact-lead">
+            Bare-metal AI clusters, high-concurrency systems, or civic technology initiatives—write directly. Discreet by default; primary architectural references shared peer-to-peer.
+          </p>
+          <div class="contact-cta-row">
+            <a class="button light" href="mailto:frank@inkua.eu"
+              >Write Directly: frank@inkua.eu <span>↗</span></a
+            >
+            <div class="contact-links">
+              <a href="https://github.com/frankinkua">GitHub ↗</a>
+              <a href="https://www.linkedin.com/in/frankeee/">LinkedIn ↗</a>
+            </div>
+          </div>
+          <span class="contact-arrow" aria-hidden="true">↗</span>
+        </div>
+      </section>
+    </main>
+
+    <footer class="shell">
+      <div class="brand-wrap">
+        <a class="brand" href="#about">frank escudero<span>.</span></a>
+        <span class="brand-meta">[systems architect · inkua founder]</span>
+      </div>
+      <p>Frankfurt am Main · Building reliable systems since 1996</p>
+      <a href="#about">Back to top ↑</a>
+    </footer>
   </body>
 </html>

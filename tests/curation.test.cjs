@@ -452,30 +452,30 @@ describe("Tier 2: Boundary & Corner Cases (Metrics & Mathematics)", () => {
     );
   });
 
-  it("ensures root index.html is strictly 381 bytes and remains a blank placeholder", () => {
-    const stats = fs.statSync(rootHtmlPath);
-    assert.equal(
-      stats.size,
-      381,
-      `Root index.html must be exactly 381 bytes, but found ${stats.size}`,
-    );
-
+  it("ensures root index.html is published and fully synchronized with dev/index.html across all 20 artifacts", () => {
+    assert.ok(fs.existsSync(rootHtmlPath), "Root index.html must exist");
     const rootContent = fs.readFileSync(rootHtmlPath, "utf8");
     assert.match(
       rootContent,
-      /<title>Frank Escudero<\/title>/i,
-      "Root index.html should have expected title",
+      /<title>Frank Escudero — Systems Architect, Builder &amp; InkuA Founder<\/title>/i,
+      "Root index.html should have full title",
     );
     assert.match(
       rootContent,
-      /<body>\s*<\/body>/,
-      "Root index.html should have an empty body (permanent blank placeholder)",
-    );
-    assert.doesNotMatch(
-      rootContent,
       /<section id="projects"/,
-      "Root index.html must not contain portfolio sections",
+      "Root index.html must contain portfolio projects section",
     );
+
+    const rootThumbs = parseThumbs(rootContent);
+    const rootCards = parseCards(rootContent);
+    assert.equal(rootThumbs.length, 20, "Root index.html must have 20 theater thumbs");
+    assert.equal(rootCards.length, 20, "Root index.html must have 20 project cards");
+
+    for (let i = 0; i < 20; i++) {
+      assert.ok(!rootThumbs[i].src.startsWith("../"), `Root thumb ${i} src must be root-relative`);
+      assert.ok(!rootCards[i].imgSrc.startsWith("../"), `Root card ${i} imgSrc must be root-relative`);
+      assert.ok(fs.existsSync(path.join(root, rootCards[i].imgSrc)), `Asset file must exist: ${rootCards[i].imgSrc}`);
+    }
   });
 
   it("verifies zero stale '30' labels across HTML, JS, and CSS", () => {
@@ -771,7 +771,7 @@ describe("Tier 4: Real-World Workflow & Build Packaging", () => {
         "e7bbe9e7f6578cfa1fe74cd0f2b0cad6b2e9ea71231ec838eaf2ec9ec378b315",
         "71d80e9160a1dfc2f1a9271165b4fbceab5295e137e0df02faaaccb5eb7a9b3a",
       ]);
-      for (const checkRel of ["dev/index.html", "inbox/media/catalog.json", "README.md"]) {
+      for (const checkRel of ["index.html", "dev/index.html", "inbox/media/catalog.json", "README.md"]) {
         const raw = fs.readFileSync(path.join(root, checkRel), "utf8").toLowerCase();
         for (const tok of raw.split(/[^a-z0-9.-]+/).filter(Boolean)) {
           const th = crypto.createHash("sha256").update(tok).digest("hex");
