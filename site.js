@@ -412,4 +412,98 @@ if (typeof document !== "undefined") {
     showSlide(0);
     applyFilters();
   }
+
+  // 5-Second Technical Demo Warning Modal with Case-Insensitive "demo" Dismiss
+  function initDemoModal() {
+    try {
+      if (sessionStorage.getItem("frank_demo_dismissed") === "1") return;
+    } catch (e) {}
+
+    setTimeout(() => {
+      try {
+        if (sessionStorage.getItem("frank_demo_dismissed") === "1") return;
+      } catch (e) {}
+      if (document.getElementById("demo-modal-overlay")) return;
+
+      const overlay = document.createElement("div");
+      overlay.id = "demo-modal-overlay";
+      overlay.className = "demo-modal-overlay";
+      overlay.setAttribute("role", "dialog");
+      overlay.setAttribute("aria-modal", "true");
+      overlay.setAttribute("aria-labelledby", "demo-modal-title");
+
+      overlay.innerHTML = `
+        <div class="demo-modal-dialog">
+          <div class="demo-modal-header">
+            <span class="demo-blinker">ATTENTION!!!</span>
+            <span class="demo-badge-meta">[Technical Demo // Autonomous Multi-Agent Sandbox]</span>
+          </div>
+          <h2 id="demo-modal-title">Live Autonomous AI Experiment &amp; PII Boundary Stress-Test</h2>
+          <p>
+            This website is a <strong>live technical demonstration</strong> showing how autonomous multi-agent AI systems analyze raw unstructured data, curate photographic archives, and assemble production-grade web systems without human editorial intervention.
+          </p>
+          <div class="demo-modal-callout">
+            <strong>Active Research Context &amp; PII Stress-Testing:</strong><br />
+            This demonstration intentionally processes real personal data from Frank Escudero as part of an active evaluation measuring autonomous agent safety, PII boundary enforcement, and data leakage resilience across thousands of coordinated agent runs. Because this is an empirical stress-test, boundary anomalies will occur and are being measured for risk, impact, and containment analysis.
+          </div>
+          <p>
+            Beyond a personal portfolio, this is an open research benchmark proving that high-agency AI architectures can be operated <strong>100% home-based, low-footprint, highly capable, and completely free</strong> of proprietary SaaS dependencies.
+          </p>
+          <div class="demo-dismiss-container">
+            <label for="demo-unlock-input" class="demo-input-label">To dismiss this notice and explore the dossier, type <code>demo</code> (case-insensitive):</label>
+            <div class="demo-input-group">
+              <input type="text" id="demo-unlock-input" class="demo-unlock-input" placeholder="Type &quot;demo&quot; to dismiss..." spellcheck="false" autocomplete="off" />
+              <button type="button" id="demo-unlock-btn" class="demo-unlock-btn">Unlock &amp; Dismiss ↗</button>
+            </div>
+            <div id="demo-input-error" class="demo-input-error" role="alert">Please type &ldquo;demo&rdquo; (e.g. demo, DEMO, DEmO) to dismiss this notice.</div>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+
+      requestAnimationFrame(() => {
+        overlay.classList.add("is-visible");
+      });
+
+      const input = overlay.querySelector("#demo-unlock-input");
+      const btn = overlay.querySelector("#demo-unlock-btn");
+      const err = overlay.querySelector("#demo-input-error");
+
+      function dismiss() {
+        if (!input) return;
+        const val = input.value.trim().toLowerCase();
+        if (val === "demo") {
+          try {
+            sessionStorage.setItem("frank_demo_dismissed", "1");
+          } catch (e) {}
+          overlay.classList.remove("is-visible");
+          setTimeout(() => {
+            if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+          }, 300);
+        } else {
+          err.style.display = "block";
+          input.classList.add("input-shake");
+          setTimeout(() => input.classList.remove("input-shake"), 400);
+          input.focus();
+        }
+      }
+
+      btn.addEventListener("click", dismiss);
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          dismiss();
+        }
+      });
+
+      setTimeout(() => {
+        try {
+          input.focus();
+        } catch (e) {}
+      }, 100);
+    }, 5000);
+  }
+
+  initDemoModal();
 }
