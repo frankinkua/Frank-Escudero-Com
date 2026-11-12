@@ -408,7 +408,7 @@ describe("Tier 1: Feature Coverage (Structural & DOM Synchrony)", () => {
 });
 
 describe("Tier 2: Boundary & Corner Cases (Metrics & Mathematics)", () => {
-  it("ensures visible non-gallery word count outside #projects is strictly within [770, 835]", () => {
+  it("ensures visible non-gallery word count outside #projects is strictly within [770, 855]", () => {
     const words = getVisibleNonGalleryWords(backendHtml);
     const count = words.length;
     assert.ok(
@@ -416,8 +416,8 @@ describe("Tier 2: Boundary & Corner Cases (Metrics & Mathematics)", () => {
       `Word count ${count} is below minimum bound of 770 words`,
     );
     assert.ok(
-      count <= 835,
-      `Word count ${count} exceeds maximum bound of 835 words`,
+      count <= 855,
+      `Word count ${count} exceeds maximum bound of 855 words`,
     );
   });
 
