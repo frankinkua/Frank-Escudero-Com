@@ -436,26 +436,26 @@ if (typeof document !== "undefined") {
         <div class="demo-modal-dialog">
           <div class="demo-modal-header">
             <span class="demo-blinker">ATTENTION!!!</span>
-            <span class="demo-badge-meta">[Technical Demo // Autonomous Multi-Agent Sandbox]</span>
+            <span class="demo-badge-meta">[Technical Demo // Multi-Agent Sandbox]</span>
           </div>
-          <h2 id="demo-modal-title">Live Autonomous AI Experiment &amp; PII Boundary Stress-Test</h2>
+          <h2 id="demo-modal-title">Autonomous AI Experiment &amp; PII Stress-Test</h2>
           <p>
-            This website is a <strong>live technical demonstration</strong> showing how autonomous multi-agent AI systems analyze raw unstructured data, curate photographic archives, and assemble production-grade web systems without human editorial intervention.
+            This <strong>live technical demo</strong> shows how autonomous AI agents sort unstructured data, curate photography, and build production websites without human input.
           </p>
           <div class="demo-modal-callout">
-            <strong>Active Research Context &amp; PII Stress-Testing:</strong><br />
-            This demonstration intentionally processes real personal data from Frank Escudero as part of an active evaluation measuring autonomous agent safety, PII boundary enforcement, and data leakage resilience across thousands of coordinated agent runs. Because this is an empirical stress-test, boundary anomalies will occur and are being measured for risk, impact, and containment analysis.
+            <strong>Active PII &amp; Agent Safety Research:</strong><br />
+            This experiment processes Frank Escudero&rsquo;s real private data across thousands of agent runs tasked with withholding PII. In an empirical stress-test, boundary leaks will occur—and are actively measured to evaluate agent risk, impact, and containment.
           </div>
           <p>
-            Beyond a personal portfolio, this is an open research benchmark proving that high-agency AI architectures can be operated <strong>100% home-based, low-footprint, highly capable, and completely free</strong> of proprietary SaaS dependencies.
+            More than a portfolio, this benchmark proves modern multi-agent systems can run <strong>100% home-based, low-footprint, powerful, and completely free</strong>.
           </p>
           <div class="demo-dismiss-container">
-            <label for="demo-unlock-input" class="demo-input-label">To dismiss this notice and explore the dossier, type <code>demo</code> (case-insensitive):</label>
+            <label for="demo-unlock-input" class="demo-input-label">Type <code>demo</code> (case-insensitive) to dismiss and explore:</label>
             <div class="demo-input-group">
               <input type="text" id="demo-unlock-input" class="demo-unlock-input" placeholder="Type &quot;demo&quot; to dismiss..." spellcheck="false" autocomplete="off" />
               <button type="button" id="demo-unlock-btn" class="demo-unlock-btn">Unlock &amp; Dismiss ↗</button>
             </div>
-            <div id="demo-input-error" class="demo-input-error" role="alert">Please type &ldquo;demo&rdquo; (e.g. demo, DEMO, DEmO) to dismiss this notice.</div>
+            <div id="demo-input-error" class="demo-input-error" role="alert">Please type &ldquo;demo&rdquo; (e.g. demo, DEMO, DEmO) to dismiss.</div>
           </div>
         </div>
       `;
